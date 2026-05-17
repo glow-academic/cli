@@ -1,28 +1,64 @@
 // resource.rs — Resource type definitions for generic CLI dispatch
 //
-// Each Glow resource maps to a URL slug: POST /v5/{slug}/{action}
-// The macro generates the enum, slug mapping, and help text.
+// Each Glow resource has two surface forms:
+//   * ``cli_name`` — what the user types (always plural — ``glow personas
+//     search``, ``glow scenarios get``).
+//   * ``api_path`` — what the CLI sends on the wire. The frozen Glow API
+//     exposes routes at ``POST /{artifact}/{operation}`` where artifact
+//     is singular (``/persona/search``, ``/scenario/get``). So the CLI
+//     maps plural→singular at dispatch time.
+//
+// View artifacts (dashboard, home, leaderboard, practice, reports,
+// activity, health, sessions, groups, pricing) and nested-op artifacts
+// (chat, benchmark, invocation) live *inside* a parent artifact's URL
+// space (``/attempt/dashboard``, ``/system/health``, ``/test/benchmark``).
+// They're intentionally NOT in this macro — they'll surface as
+// subcommands of their parent artifact in Phase 4 (e.g. ``glow attempts
+// dashboard``, ``glow system health``, ``glow tests benchmark``).
 
-/// Generate a Resource enum with slug and description mappings.
+/// Generate a Resource enum with cli_name → api_path → description mappings.
 macro_rules! define_resources {
-    ( $( ($variant:ident, $slug:expr, $about:expr) ),* $(,)? ) => {
+    ( $( ($variant:ident, $cli_name:expr, $api_path:expr, $about:expr) ),* $(,)? ) => {
         #[derive(Debug, Clone, Copy, PartialEq, Eq)]
         pub enum Resource {
             $( $variant, )*
         }
 
         impl Resource {
-            pub fn slug(&self) -> &'static str {
+            /// The plural user-facing name (what the user types).
+            pub fn cli_name(&self) -> &'static str {
                 match self {
-                    $( Resource::$variant => $slug, )*
+                    $( Resource::$variant => $cli_name, )*
                 }
             }
 
-            pub fn from_slug(s: &str) -> Option<Self> {
+            /// The singular API path segment (what the CLI sends on the wire).
+            pub fn api_path(&self) -> &'static str {
+                match self {
+                    $( Resource::$variant => $api_path, )*
+                }
+            }
+
+            /// Backwards-compatible alias for ``cli_name`` — kept so the
+            /// ``Display`` impl + a few internal callers don't churn.
+            /// New code should prefer ``cli_name`` / ``api_path`` explicitly.
+            #[allow(dead_code)]
+            pub fn slug(&self) -> &'static str {
+                self.cli_name()
+            }
+
+            /// Resolve by the user-facing name (what shows up on argv).
+            pub fn from_cli_name(s: &str) -> Option<Self> {
                 match s {
-                    $( $slug => Some(Resource::$variant), )*
+                    $( $cli_name => Some(Resource::$variant), )*
                     _ => None,
                 }
+            }
+
+            /// Backwards-compatible alias for ``from_cli_name`` — kept so
+            /// existing callers (dispatch.rs, completions) don't churn.
+            pub fn from_slug(s: &str) -> Option<Self> {
+                Self::from_cli_name(s)
             }
 
             pub fn about(&self) -> &'static str {
@@ -37,62 +73,47 @@ macro_rules! define_resources {
 
             #[allow(dead_code)]
             pub fn all_slugs() -> Vec<&'static str> {
-                vec![ $( $slug, )* ]
+                vec![ $( $cli_name, )* ]
             }
         }
 
         impl std::fmt::Display for Resource {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "{}", self.slug())
+                write!(f, "{}", self.cli_name())
             }
         }
     };
 }
 
 define_resources! {
-    // Core content
-    (Personas,     "persona",      "AI personas for simulation"),
-    (Scenarios,    "scenarios",    "Simulation scenarios"),
-    (Simulations,  "simulations",  "Simulation configurations"),
-    (Documents,    "documents",    "Document management"),
-    (Agents,       "agents",       "AI agents"),
-    (Models,       "models",       "AI model configurations"),
-    (Providers,    "providers",    "AI provider integrations"),
-    (Parameters,   "parameters",   "Configuration parameters"),
-    (Fields,       "fields",       "Custom fields"),
-    (Tools,        "tools",        "Tool integrations"),
+    // ── Core content ──────────────────────────────────────────
+    (Personas,     "personas",     "persona",     "AI personas for simulation"),
+    (Scenarios,    "scenarios",    "scenario",    "Simulation scenarios"),
+    (Simulations,  "simulations",  "simulation",  "Simulation configurations"),
+    (Documents,    "documents",    "document",    "Document management"),
+    (Agents,       "agents",       "agent",       "AI agents"),
+    (Models,       "models",       "model",       "AI model configurations"),
+    (Providers,    "providers",    "provider",    "AI provider integrations"),
+    (Parameters,   "parameters",   "parameter",   "Configuration parameters"),
+    (Fields,       "fields",       "field",       "Custom fields"),
+    (Tools,        "tools",        "tool",        "Tool integrations"),
 
-    // Organization
-    (Departments,  "departments",  "Organizational departments"),
-    (Cohorts,      "cohorts",      "User cohorts"),
+    // ── Organization ──────────────────────────────────────────
+    (Departments,  "departments",  "department",  "Organizational departments"),
+    (Cohorts,      "cohorts",      "cohort",      "User cohorts"),
 
-    // Evaluation
-    (Evals,        "evals",        "Evaluation configurations"),
-    (Rubrics,      "rubrics",      "Grading rubrics"),
-    (Benchmarks,   "benchmarks",   "Performance benchmarks"),
+    // ── Evaluation ────────────────────────────────────────────
+    (Evals,        "evals",        "eval",        "Evaluation configurations"),
+    (Rubrics,      "rubrics",      "rubric",      "Grading rubrics"),
 
-    // User management
-    (Profiles,     "profiles",     "User profiles"),
-    (Auths,        "auths",        "Authentication records"),
-    (Settings,     "settings",     "Instance settings"),
+    // ── User management ───────────────────────────────────────
+    (Profiles,     "profiles",     "profile",     "User profiles"),
+    (Auths,        "auths",        "auth",        "Authentication records"),
+    (Settings,     "settings",     "setting",     "Instance settings"),
 
-    // Session/interactive
-    (Attempt,      "attempt",      "Simulation attempts"),
-    (Test,         "test",         "Test sessions"),
-    (Chat,         "chat",         "Chat sessions"),
-
-    // Read-only / view
-    (Activity,     "activity",     "Activity logs"),
-    (Record,       "record",       "Records"),
-    (Dashboard,    "dashboard",    "Dashboard data"),
-    (Leaderboard,  "leaderboard",  "Leaderboard data"),
-    (Reports,      "reports",      "Report generation"),
-    (Home,         "home",         "Home page data"),
-    (Practice,     "practice",     "Practice sessions"),
-    (Group,        "group",        "Group management"),
-    (Pricing,      "pricing",      "Pricing information"),
-    (Session,      "session",      "Session management"),
-    (Invocation,   "invocation",   "AI invocation records"),
+    // ── Session / interactive (top-level CRUD on the API) ─────
+    (Attempts,     "attempts",     "attempt",     "Simulation attempts"),
+    (Tests,        "tests",        "test",        "Test sessions"),
 }
 
 // ── Media types ──────────────────────────────────────────────
@@ -139,7 +160,7 @@ impl MediaType {
 pub fn unknown_resource_error(given: &str) -> String {
     let mut msg = format!("Unknown resource '{}'. Available resources:\n", given);
     for r in Resource::all() {
-        msg.push_str(&format!("  {:15} {}\n", r.slug(), r.about()));
+        msg.push_str(&format!("  {:15} {}\n", r.cli_name(), r.about()));
     }
     msg
 }
@@ -149,10 +170,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_from_slug_roundtrip() {
+    fn test_from_cli_name_roundtrip() {
         for r in Resource::all() {
-            let slug = r.slug();
-            let parsed = Resource::from_slug(slug).unwrap();
+            let name = r.cli_name();
+            let parsed = Resource::from_cli_name(name).unwrap();
+            assert_eq!(*r, parsed);
+        }
+    }
+
+    #[test]
+    fn test_from_slug_roundtrip_backcompat() {
+        for r in Resource::all() {
+            let parsed = Resource::from_slug(r.slug()).unwrap();
             assert_eq!(*r, parsed);
         }
     }
@@ -165,13 +194,26 @@ mod tests {
     #[test]
     fn test_all_slugs_count() {
         assert_eq!(Resource::all().len(), Resource::all_slugs().len());
-        assert!(Resource::all().len() >= 30); // we have 32 resources
+        // 19 CRUD resources after the singular→plural rename + view-artifact removal.
+        // Phase 4 will re-introduce views/nested as subcommands of their parent.
+        assert!(Resource::all().len() >= 19);
     }
 
     #[test]
-    fn test_display() {
-        assert_eq!(format!("{}", Resource::Personas), "persona");
-        assert_eq!(format!("{}", Resource::Attempt), "attempt");
+    fn test_display_uses_plural_cli_name() {
+        assert_eq!(format!("{}", Resource::Personas), "personas");
+        assert_eq!(format!("{}", Resource::Attempts), "attempts");
+        assert_eq!(format!("{}", Resource::Tests), "tests");
+    }
+
+    #[test]
+    fn test_cli_to_api_mapping() {
+        // The whole point of Phase 1: plural CLI → singular API path.
+        assert_eq!(Resource::Personas.cli_name(), "personas");
+        assert_eq!(Resource::Personas.api_path(), "persona");
+        assert_eq!(Resource::Scenarios.api_path(), "scenario");
+        assert_eq!(Resource::Attempts.api_path(), "attempt");
+        assert_eq!(Resource::Tests.api_path(), "test");
     }
 
     #[test]
@@ -180,7 +222,7 @@ mod tests {
             assert!(
                 !r.about().is_empty(),
                 "Resource {} has empty about",
-                r.slug()
+                r.cli_name()
             );
         }
     }
@@ -189,7 +231,7 @@ mod tests {
     fn test_unknown_resource_error_message() {
         let msg = unknown_resource_error("foo");
         assert!(msg.contains("Unknown resource 'foo'"));
-        assert!(msg.contains("persona"));
+        assert!(msg.contains("personas"));
         assert!(msg.contains("scenarios"));
     }
 
