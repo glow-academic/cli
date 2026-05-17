@@ -51,7 +51,7 @@ macro_rules! define_resources {
 
 define_resources! {
     // Core content
-    (Personas,     "personas",     "AI personas for simulation"),
+    (Personas,     "persona",      "AI personas for simulation"),
     (Scenarios,    "scenarios",    "Simulation scenarios"),
     (Simulations,  "simulations",  "Simulation configurations"),
     (Documents,    "documents",    "Document management"),
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn test_display() {
-        assert_eq!(format!("{}", Resource::Personas), "personas");
+        assert_eq!(format!("{}", Resource::Personas), "persona");
         assert_eq!(format!("{}", Resource::Attempt), "attempt");
     }
 
@@ -189,7 +189,7 @@ mod tests {
     fn test_unknown_resource_error_message() {
         let msg = unknown_resource_error("foo");
         assert!(msg.contains("Unknown resource 'foo'"));
-        assert!(msg.contains("personas"));
+        assert!(msg.contains("persona"));
         assert!(msg.contains("scenarios"));
     }
 

@@ -1,135 +1,52 @@
-# Glow CLI
+# Glow — CLI
 
-CLI for the Glow platform. Talks to both the central LearnLoop API and individual Glow instances.
+Glow is source-available for academic, research, educational, and other noncommercial use under the [PolyForm Noncommercial License 1.0.0](./LICENSE).
+
+Commercial use requires a separate written license from Purdue Research Foundation / Purdue University. Contact: ashok@learn-loop.org.
+
+This repository contains the **CLI** — the canonical tool for deploying and managing a Glow instance. It is one of four components in the Glow platform:
+
+| Component | What it is |
+|---|---|
+| [api](https://github.com/glow-academic/api) | FastAPI backend |
+| [client](https://github.com/glow-academic/client) | Next.js frontend |
+| **cli** (this repo) | Rust CLI — what end users actually install |
+| [docs](https://github.com/glow-academic/docs) | Nextra docs site |
 
 ## Install
 
-### Homebrew (macOS / Linux)
-
 ```bash
-brew install learnloopllc/glow-cli/glow
+brew tap glow-academic/tap
+brew install glow             # stable
+# or:
+brew install glow-beta        # pre-release channel
 ```
 
-### Shell script
+For non-Homebrew installs, download a prebuilt binary from [releases](https://github.com/glow-academic/cli/releases) for your platform (`darwin-arm64`, `darwin-x64`, `linux-arm64`, `linux-x64`).
+
+## Quick start
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/learnloopllc/glow-cli/main/install.sh | sh
+glow init       # interactive wizard writes ~/.glow/instances/default/glow-deploy.yaml
+glow deploy     # pulls api + client images, brings up the stack
+glow status     # show container health + active blue/green colors
+glow redeploy   # update to a new api/client version with zero-downtime swap
+glow stop / start / destroy
+glow backup list / create / restore
 ```
 
-### From source
+See the [docs](https://glow-academic.github.io/docs/) for the full deployment guide, including topology modes (`airgapped`, `exposed`, `api_only`), TLS setup, and configuration reference.
+
+## Local development
 
 ```bash
-cargo install --git https://github.com/learnloopllc/glow-cli.git
+cargo build
+cargo run -- --help
+cargo test
 ```
 
-Installs two binaries: `glow` (full name) and `glw` (short alias).
+## License
 
-## Shell completions
+This project is licensed under the [PolyForm Noncommercial License 1.0.0](./LICENSE).
 
-```bash
-# Bash
-echo 'source <(glow completions bash)' >> ~/.bashrc
-
-# Zsh
-echo 'source <(glow completions zsh)' >> ~/.zshrc
-
-# Fish
-glow completions fish > ~/.config/fish/completions/glow.fish
-```
-
-## Global flags
-
-| Flag | Env | Description |
-|------|-----|-------------|
-| `--api-url` | `GLOW_API_URL` | LearnLoop API URL (default: `https://api.learn-loop.org`) |
-| `--instance-url` | `GLOW_INSTANCE_URL` | Glow instance URL |
-| `--client-id` | `GLOW_CLIENT_ID` | OAuth client ID |
-| `--json` | | Output as JSON |
-| `--yes` / `-y` | | Skip confirmation prompts |
-| `--version` | | Print version |
-
-## Glow instance commands
-
-```bash
-glow login                                  # OAuth login to Glow instance
-glow logout                                 # Remove stored token
-glow health                                 # Check instance health
-glow context                                # Show current user identity
-glow emulate <profile_id> [--ttl 120]       # Emulate another user
-glow unemulate                              # Stop emulating
-glow generate <group_id> [--body JSON]      # Generate content for a group
-glow stream --artifact X --operation Y      # Stream SSE events
-```
-
-## Instance management
-
-```bash
-glow instances list                         # List configured instances
-glow instances add <name> --url <url>       # Add an instance
-glow instances remove <name>                # Remove an instance
-glow use <name>                             # Switch active instance
-```
-
-## Admin commands (LearnLoop management plane)
-
-### Auth & status
-
-```bash
-glow admin login                            # OAuth login to LearnLoop API
-glow admin logout                           # Remove stored token
-glow admin sessions                         # List all active sessions
-glow admin whoami                           # Show authenticated user
-glow admin network                          # Check API connectivity
-glow admin status                           # Config + connection status
-```
-
-### Organizations
-
-```bash
-glow admin orgs list                        # List your organizations
-glow admin orgs create --name X             # Create organization
-glow admin orgs get <id>                    # Get organization details
-glow admin orgs update <id> [--name X]      # Update organization
-glow admin orgs delete <id>                 # Delete organization
-glow admin orgs members <id> list           # List members
-glow admin orgs members <id> add --email X  # Add member
-glow admin orgs members <id> remove <uid>   # Remove member
-glow admin orgs deployments <id>            # List org deployments
-```
-
-### Deployments
-
-```bash
-glow admin deploy create --org-id X --name Y --subdomain Z --version V
-glow admin deploy stop <id>                 # Stop deployment
-glow admin deploy destroy <id>              # Destroy deployment
-glow admin deploy list [--all]              # List deployments
-```
-
-### Usage & billing
-
-```bash
-glow admin usage <org_id>                   # Usage summary
-glow admin billing plans                    # List available plans
-glow admin billing status <org_id>          # Subscription status
-glow admin billing checkout <org_id>        # Start checkout
-glow admin billing portal <org_id>          # Open billing portal
-```
-
-## Dynamic resources (Glow instance)
-
-Parameters can be passed directly as flags or as raw JSON:
-
-```bash
-glow personas search --query math --limit 10
-glow personas search --body '{"query": "math", "limit": 10}'
-glow <resource> <action> --help             # Show available parameters
-```
-
-### Media operations
-
-```bash
-glow <resource> <media> <action> [flags]    # e.g. glow documents file upload --file X
-```
-
-Actions: `upload`, `download`, `create`, `chunk`, `status`, `finalize`, `discover`, `preview`
+This is not an OSI-approved open-source license. It is intended to support academic and research dissemination while preserving separate commercial licensing rights.

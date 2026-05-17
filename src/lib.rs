@@ -1,15 +1,22 @@
-// main.rs — Entry point for "glow" / "glw" CLI
+// glow / glw — Glow OSS command-line interface.
 //
-// Two APIs:
-//   - LearnLoop API (central): licensing, billing, OAuth — one instance
-//   - Glow API (instance): personas, agents, etc. — many on customer machines
+// Two responsibilities:
+//   1. Own the local deploy lifecycle (init / deploy / redeploy / stop /
+//      start / destroy / status / backup) — talks to docker compose,
+//      stores per-instance state under `~/.glow/instances/<name>/`.
+//   2. Manage a running instance (auth / context / generate / resource
+//      CRUD / streaming) — talks to the Glow HTTP API on the configured
+//      instance URL.
 //
-// The CLI talks to both.
+// v1.0.0 is single-instance: one machine, one deployment. Multi-instance
+// switching is intentionally out of scope.
 
 mod api_common;
 mod auth;
+mod backup;
 mod commands;
 mod config;
+mod deploy;
 mod glow;
 mod output;
 mod resource;
@@ -122,19 +129,6 @@ enum Commands {
         message: String,
     },
 
-    /// Manage configured Glow instances
-    #[command(alias = "inst")]
-    Instances {
-        #[command(subcommand)]
-        action: InstanceCommands,
-    },
-
-    /// Switch to a configured Glow instance
-    Use {
-        /// Instance name (as configured with 'glow instances add')
-        name: String,
-    },
-
     /// Generate shell completions
     Completions {
         /// Shell to generate completions for
@@ -148,29 +142,134 @@ enum Commands {
         port: u16,
     },
 
+    /// Interactive wizard: scaffold a `glow-deploy.yaml` under
+    /// `~/.glow/instances/<name>/`. Walks you through origin URL, AI
+    /// provider + key, seed template, and optional OIDC. Idempotent —
+    /// re-running overwrites the yaml.
+    Init {
+        #[arg(long, default_value = "default")]
+        name: String,
+    },
+
+    /// Tail container logs (`docker compose logs [-f]`).
+    Logs {
+        #[arg(long, default_value = "default")]
+        name: String,
+        /// Follow log output.
+        #[arg(short, long)]
+        follow: bool,
+        /// Optional service name (e.g. `server-blue`, `database`).
+        service: Option<String>,
+    },
+
+    /// Deploy a Glow instance to the local machine (first-time setup).
+    /// Reads `~/.glow/instances/<name>/glow-deploy.yaml`. Run `glow init`
+    /// first to scaffold one interactively.
+    Deploy {
+        /// Instance name (defaults to "default").
+        #[arg(long, default_value = "default")]
+        name: String,
+        /// API image version, e.g. `v1.0.0`.
+        #[arg(long, default_value = "v1.0.0")]
+        api_version: String,
+        /// Client image version (required unless topology=api_only).
+        #[arg(long, default_value = "v1.0.0")]
+        client_version: String,
+        /// Seed template for first deploy: fresh | university | organization.
+        #[arg(long)]
+        seed_setup: Option<String>,
+        /// Grace period (minutes) to watch the new color after traffic swap.
+        #[arg(long, default_value = "2")]
+        grace_minutes: u32,
+    },
+
+    /// Roll out a new version while keeping the database. Auto-pre-backs
+    /// up before doing anything destructive, blue/green swaps with
+    /// healthcheck monitoring + auto-rollback if the new color flaps.
+    Redeploy {
+        #[arg(long, default_value = "default")]
+        name: String,
+        #[arg(long)]
+        api_version: Option<String>,
+        /// Client image tag — falls back to the last-deployed version
+        /// recorded in state when omitted.
+        #[arg(long)]
+        client_version: Option<String>,
+        /// Restore from a named backup as part of the redeploy.
+        #[arg(long, conflicts_with = "reseed")]
+        from_backup: Option<String>,
+        /// DESTRUCTIVE: re-run seed-gen and wipe the DB. Use with care.
+        #[arg(long, conflicts_with = "from_backup")]
+        reseed: Option<String>,
+        #[arg(long, default_value = "2")]
+        grace_minutes: u32,
+    },
+
+    /// Stop containers; volumes + network intact. `glow start` resumes.
+    Stop {
+        #[arg(long, default_value = "default")]
+        name: String,
+    },
+
+    /// Resume previously-stopped containers.
+    Start {
+        #[arg(long, default_value = "default")]
+        name: String,
+    },
+
+    /// Tear down containers + volumes (DESTROYS DATA — confirm twice).
+    /// Config + backups under `~/.glow/instances/<name>/` are preserved.
+    Destroy {
+        #[arg(long, default_value = "default")]
+        name: String,
+    },
+
+    /// Show instance state + per-container health.
+    Status {
+        #[arg(long, default_value = "default")]
+        name: String,
+    },
+
+    /// Manage local pg_dump backups.
+    Backup {
+        #[command(subcommand)]
+        action: BackupCommands,
+    },
+
     /// Interact with a resource on the Glow instance (e.g. glow personas search)
     #[command(external_subcommand)]
     Resource(Vec<String>),
 }
 
 #[derive(Subcommand)]
-enum InstanceCommands {
-    /// List configured instances
+enum BackupCommands {
+    /// List local backups for an instance.
     #[command(alias = "ls")]
-    List,
-    /// Add a new instance
-    Add {
-        /// Instance name (e.g. "prod", "staging")
+    List {
+        #[arg(long, default_value = "default")]
         name: String,
-        /// Instance URL
-        #[arg(long)]
-        url: String,
     },
-    /// Remove a configured instance
-    #[command(alias = "rm")]
-    Remove {
-        /// Instance name
+    /// Create a new pg_dump backup.
+    Create {
+        #[arg(long, default_value = "default")]
         name: String,
+        /// Optional label tag; filename becomes `manual-<label>-<ts>.sql.gz`.
+        #[arg(long)]
+        label: Option<String>,
+    },
+    /// Restore an existing backup (destructive — drops + recreates DB).
+    Restore {
+        #[arg(long, default_value = "default")]
+        name: String,
+        /// Backup filename inside the instance's `backups/` dir.
+        file: String,
+    },
+    /// Delete a backup file.
+    #[command(alias = "rm")]
+    Delete {
+        #[arg(long, default_value = "default")]
+        name: String,
+        file: String,
     },
 }
 
@@ -394,29 +493,89 @@ pub fn run() -> Result<()> {
             tokio::runtime::Runtime::new()?.block_on(serve::run(port))?;
         }
 
-        // ── Instance management ──────────────────────────────
-        Commands::Instances { action } => dispatch_instances(action, cfg, mode)?,
-        Commands::Use { name } => {
-            let mut cfg = cfg;
-            if !cfg.instances.contains_key(&name) {
-                anyhow::bail!(
-                    "Unknown instance '{}'. Add it first with: glow instances add {} --url <url>",
-                    name,
-                    name,
-                );
-            }
-            cfg.active_instance = Some(name.clone());
-            cfg.save()?;
-            if mode == OutputMode::Human {
-                use colored::Colorize;
-                println!(
-                    "{} Now using instance '{}' ({})",
-                    "OK".green().bold(),
-                    name.bold(),
-                    cfg.instances[&name].url.dimmed(),
-                );
-            }
+        // ── Local deploy lifecycle ────────────────────────────
+        Commands::Init { name } => {
+            deploy::wizard::run(&name)?;
         }
+        Commands::Logs { name, follow, service } => {
+            let i = deploy::instance::Instance::open(&name)?;
+            deploy::runtime::logs(&i.dir, &i.project_name(), follow, service.as_deref())?;
+        }
+        Commands::Deploy { name, api_version, client_version, seed_setup, grace_minutes } => {
+            deploy::deploy(deploy::DeployArgs {
+                name,
+                api_version,
+                client_version: Some(client_version),
+                config_path: None,
+                seed_setup,
+                db_backup: None,
+                grace_minutes,
+            })?;
+        }
+        Commands::Redeploy { name, api_version, client_version, from_backup, reseed, grace_minutes } => {
+            // Resolve image versions from state when not passed.
+            let i = deploy::instance::Instance::open(&name)?;
+            let state = deploy::instance::DeployState::load(&i.state_file())?;
+            let resolved_api = match api_version {
+                Some(v) => v,
+                None => state.api_version.clone().ok_or_else(|| anyhow::anyhow!(
+                    "no pinned api_version on disk and --api-version not passed"
+                ))?,
+            };
+            let resolved_client = client_version.or(state.client_version.clone());
+            deploy::deploy(deploy::DeployArgs {
+                name,
+                api_version: resolved_api,
+                client_version: resolved_client,
+                config_path: None,
+                seed_setup: reseed,
+                db_backup: from_backup,
+                grace_minutes,
+            })?;
+        }
+        Commands::Stop { name } => deploy::stop(&name)?,
+        Commands::Start { name } => deploy::start(&name)?,
+        Commands::Destroy { name } => {
+            // Double-confirm unless --yes — destruction is volume-removing.
+            if !cli.yes {
+                use std::io::Write;
+                print!("This destroys ALL containers + volumes for `{name}`. Type the name to confirm: ");
+                std::io::stdout().flush().ok();
+                let mut answer = String::new();
+                std::io::stdin().read_line(&mut answer)?;
+                if answer.trim() != name {
+                    anyhow::bail!("aborted (name didn't match)");
+                }
+            }
+            deploy::destroy(&name)?;
+        }
+        Commands::Status { name } => deploy::status(&name)?,
+        Commands::Backup { action } => match action {
+            BackupCommands::List { name } => {
+                for b in backup::list(&name)? {
+                    println!("{}\t{} bytes\t{:?}", b.name, b.size_bytes, b.path);
+                }
+            }
+            BackupCommands::Create { name, label } => {
+                backup::create(&name, label.as_deref())?;
+            }
+            BackupCommands::Restore { name, file } => {
+                if !cli.yes {
+                    use std::io::Write;
+                    print!("RESTORE will DROP the existing database for `{name}`. Type 'restore' to confirm: ");
+                    std::io::stdout().flush().ok();
+                    let mut answer = String::new();
+                    std::io::stdin().read_line(&mut answer)?;
+                    if answer.trim() != "restore" {
+                        anyhow::bail!("aborted");
+                    }
+                }
+                backup::restore(&name, &file)?;
+            }
+            BackupCommands::Delete { name, file } => {
+                backup::delete(&name, &file)?;
+            }
+        },
 
         // ── Generic resource dispatch ────────────────────────
         Commands::Resource(args) => {
@@ -429,78 +588,6 @@ pub fn run() -> Result<()> {
     Ok(())
 }
 
-/// Dispatch instance management subcommands
-fn dispatch_instances(
-    action: InstanceCommands,
-    mut cfg: config::Config,
-    mode: OutputMode,
-) -> Result<()> {
-    use colored::Colorize;
-
-    match action {
-        InstanceCommands::List => {
-            if cfg.instances.is_empty() {
-                if mode == OutputMode::Human {
-                    println!("No instances configured. Add one with: glow instances add <name> --url <url>");
-                } else {
-                    println!("{}", serde_json::json!({ "instances": {}, "active": null }));
-                }
-            } else if mode == OutputMode::Json {
-                println!(
-                    "{}",
-                    serde_json::json!({
-                        "instances": &cfg.instances,
-                        "active": &cfg.active_instance,
-                    })
-                );
-            } else {
-                println!("{}\n", "Configured Instances".bold());
-                for (name, inst) in &cfg.instances {
-                    let active = if cfg.active_instance.as_deref() == Some(name.as_str()) {
-                        " (active)".green().to_string()
-                    } else {
-                        String::new()
-                    };
-                    println!("  {} → {}{}", name.bold(), inst.url.dimmed(), active);
-                }
-            }
-        }
-        InstanceCommands::Add { name, url } => {
-            cfg.instances.insert(
-                name.clone(),
-                config::Instance {
-                    url: url.trim_end_matches('/').to_string(),
-                },
-            );
-            // If this is the first instance, auto-activate it
-            if cfg.instances.len() == 1 {
-                cfg.active_instance = Some(name.clone());
-            }
-            cfg.save()?;
-            if mode == OutputMode::Human {
-                println!(
-                    "{} Added instance '{}' ({})",
-                    "OK".green().bold(),
-                    name.bold(),
-                    url.dimmed()
-                );
-            }
-        }
-        InstanceCommands::Remove { name } => {
-            if cfg.instances.remove(&name).is_none() {
-                anyhow::bail!("Instance '{}' not found", name);
-            }
-            if cfg.active_instance.as_deref() == Some(name.as_str()) {
-                cfg.active_instance = None;
-            }
-            cfg.save()?;
-            if mode == OutputMode::Human {
-                println!("{} Removed instance '{}'", "OK".green().bold(), name.bold());
-            }
-        }
-    }
-    Ok(())
-}
 fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMode) -> Result<()> {
     if args.is_empty() {
         anyhow::bail!("Expected a resource name. Run 'glow --help' for usage.");
