@@ -48,7 +48,7 @@ pub fn list(instance_name: &str) -> Result<Vec<BackupEntry>> {
         });
     }
     // Most recent first.
-    out.sort_by(|a, b| b.mtime.cmp(&a.mtime));
+    out.sort_by_key(|b| std::cmp::Reverse(b.mtime));
     Ok(out)
 }
 
