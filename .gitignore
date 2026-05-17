@@ -1,0 +1,6 @@
+target/
+.DS_Store
+
+# Claude Code
+.claude/worktrees/
+.claude/plans/

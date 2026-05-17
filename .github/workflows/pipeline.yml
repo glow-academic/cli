@@ -1,0 +1,264 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [main, beta]
+  pull_request:
+    branches: [main, beta]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ── Stage 1: Test ───────────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Test
+        run: cargo test
+
+  # ── Stage 2: Release ────────────────────────────────────────
+  release:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.check.outputs.released }}
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          BRANCH="${{ github.ref_name }}"
+          if [ "$BRANCH" = "beta" ]; then
+            TAG="v${VERSION}-beta"
+          else
+            TAG="v${VERSION}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Check if release exists
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists — skipping"
+            echo "released=false" >> $GITHUB_OUTPUT
+          else
+            echo "Release $TAG not found — will build"
+            echo "released=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create tag (idempotent)
+        if: steps.check.outputs.released == 'true'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git ls-remote --tags origin "refs/tags/$TAG" | grep -q .; then
+            echo "Tag $TAG already exists"
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+            echo "Created tag $TAG"
+          fi
+
+  # ── Stage 3: Build ──────────────────────────────────────────
+  build:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package (unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd target/${{ matrix.target }}/release
+          if [ "${{ github.ref_name }}" = "beta" ]; then
+            cp glow glow-beta
+            cp glw glw-beta
+            tar czf ../../../glow-${{ matrix.target }}.tar.gz glow-beta glw-beta
+          else
+            tar czf ../../../glow-${{ matrix.target }}.tar.gz glow glw
+          fi
+          cd ../../..
+
+      - name: Package (windows)
+        if: runner.os == 'Windows'
+        run: |
+          cd target/${{ matrix.target }}/release
+          if ("${{ github.ref_name }}" -eq "beta") {
+            Copy-Item glow.exe glow-beta.exe
+            Copy-Item glw.exe glw-beta.exe
+            7z a ../../../glow-${{ matrix.target }}.zip glow-beta.exe glw-beta.exe
+          } else {
+            7z a ../../../glow-${{ matrix.target }}.zip glow.exe glw.exe
+          }
+          cd ../../..
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: glow-${{ matrix.target }}
+          path: glow-${{ matrix.target }}.*
+
+  # ── Stage 4: Publish ────────────────────────────────────────
+  publish:
+    name: Publish Release
+    needs: [release, build]
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate cli-spec.json
+        run: |
+          tar xzf artifacts/glow-x86_64-unknown-linux-gnu.tar.gz -C /tmp
+          if [ "${{ github.ref_name }}" = "beta" ]; then
+            BIN="/tmp/glow-beta"
+          else
+            BIN="/tmp/glow"
+          fi
+          chmod +x "$BIN"
+          "$BIN" --dump-cli-spec > artifacts/cli-spec.json 2>/dev/null || echo '{}' > artifacts/cli-spec.json
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ needs.release.outputs.tag }}"
+          PRERELEASE=""
+          if [ "${{ github.ref_name }}" = "beta" ]; then
+            PRERELEASE="--prerelease"
+          fi
+          gh release create "$TAG" artifacts/* \
+            --title "$TAG" \
+            --generate-notes \
+            $PRERELEASE
+          echo "Created release $TAG"
+
+      - name: Generate app token for Homebrew tap
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.DEPLOY_APP_ID }}
+          private-key: ${{ secrets.DEPLOY_APP_PRIVATE_KEY }}
+          owner: learnloopllc
+          repositories: homebrew-tap
+
+      - name: Update Homebrew tap
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          TAG="${{ needs.release.outputs.tag }}"
+          BRANCH="${{ github.ref_name }}"
+
+          SHA_ARM=$(shasum -a 256 artifacts/glow-aarch64-apple-darwin.tar.gz | cut -d' ' -f1)
+          SHA_X86_MAC=$(shasum -a 256 artifacts/glow-x86_64-apple-darwin.tar.gz | cut -d' ' -f1)
+          SHA_LINUX=$(shasum -a 256 artifacts/glow-x86_64-unknown-linux-gnu.tar.gz | cut -d' ' -f1)
+
+          if [ "$BRANCH" = "beta" ]; then
+            FORMULA="glow-beta"
+            BIN_NAME="glow-beta"
+            BIN_ALIAS="glw-beta"
+          else
+            FORMULA="glow"
+            BIN_NAME="glow"
+            BIN_ALIAS="glw"
+          fi
+
+          gh workflow run update-formula.yml \
+            -R learnloopllc/homebrew-tap \
+            -f formula="$FORMULA" \
+            -f version="$VERSION" \
+            -f tag="$TAG" \
+            -f repo="learnloopllc/glow-cli" \
+            -f bin_name="$BIN_NAME" \
+            -f bin_alias="$BIN_ALIAS" \
+            -f sha_arm="$SHA_ARM" \
+            -f sha_x86_mac="$SHA_X86_MAC" \
+            -f sha_linux="$SHA_LINUX"
+
+          echo "Dispatched formula update for $FORMULA $TAG to homebrew-tap"
+
+      - name: Build and push Docker image
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          TAG="${{ needs.release.outputs.tag }}"
+          BRANCH="${{ github.ref_name }}"
+
+          tar xzf artifacts/glow-x86_64-unknown-linux-gnu.tar.gz -C /tmp
+          if [ "$BRANCH" = "beta" ]; then
+            cp /tmp/glow-beta ./glow
+          else
+            cp /tmp/glow .
+          fi
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker build --label "org.opencontainers.image.source=https://github.com/learnloopllc/glow-cli" -t ghcr.io/learnloopllc/glow-cli:${TAG} .
+          docker push ghcr.io/learnloopllc/glow-cli:${TAG}
+
+          # Rolling tag: latest for main, beta for beta
+          if [ "$BRANCH" = "main" ]; then
+            docker tag ghcr.io/learnloopllc/glow-cli:${TAG} ghcr.io/learnloopllc/glow-cli:latest
+            docker push ghcr.io/learnloopllc/glow-cli:latest
+          else
+            docker tag ghcr.io/learnloopllc/glow-cli:${TAG} ghcr.io/learnloopllc/glow-cli:beta
+            docker push ghcr.io/learnloopllc/glow-cli:beta
+          fi
+          rm glow

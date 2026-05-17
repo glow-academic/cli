@@ -1,0 +1,10 @@
+{
+  "platform-api": {
+    "version": "2.0.9",
+    "synced_at": "2026-03-29T00:00:00Z"
+  },
+  "glow-api": {
+    "version": "2.6.0",
+    "synced_at": "2026-03-29T00:00:00Z"
+  }
+}
