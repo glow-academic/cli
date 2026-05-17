@@ -2,6 +2,8 @@ use crate::glow::GlowClient;
 use crate::output::{self, OutputMode};
 use anyhow::Result;
 
+pub(crate) mod helpers;
+
 // ── Generic resource action ──────────────────────────────────
 
 pub(crate) fn cmd_resource_action(
