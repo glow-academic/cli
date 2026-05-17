@@ -99,13 +99,27 @@ enum Commands {
     /// Stop emulating and return to your own profile
     Unemulate,
 
-    /// Generate content for a group
+    /// Generate content for a group.
+    ///
+    /// With ``--wait``: block on the per-artifact watch SSE stream
+    /// after firing the trigger, until a terminal lifecycle event
+    /// (``.completed`` / ``.failed``) arrives. Pair with ``--artifact``
+    /// to scope the watch route (defaults to ``attempt``).
     Generate {
         /// Group ID to generate for
         group_id: String,
         /// JSON body for additional options
         #[arg(long)]
         body: Option<String>,
+        /// Block until the run terminates instead of returning the
+        /// trigger response immediately.
+        #[arg(long)]
+        wait: bool,
+        /// Artifact scope for the watch stream (only meaningful with
+        /// ``--wait``). Singular API path: ``attempt`` / ``scenario``
+        /// / ``persona`` / etc. Defaults to ``attempt``.
+        #[arg(long, default_value = "attempt")]
+        artifact: String,
     },
 
     /// Stream events via SSE (Server-Sent Events)
@@ -525,10 +539,25 @@ pub fn run() -> Result<()> {
             let client = glow::GlowClient::new(&glow_url);
             glow_cmd::cmd_unemulate(&client, mode)?
         }
-        Commands::Generate { group_id, body } => {
+        Commands::Generate {
+            group_id,
+            body,
+            wait,
+            artifact,
+        } => {
             let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
             let client = glow::GlowClient::new(&glow_url);
-            glow_cmd::cmd_generate(&client, &group_id, body.as_deref(), mode)?
+            if wait {
+                glow_cmd::cmd_generate_and_wait(
+                    &client,
+                    &group_id,
+                    body.as_deref(),
+                    &artifact,
+                    mode,
+                )?
+            } else {
+                glow_cmd::cmd_generate(&client, &group_id, body.as_deref(), mode)?
+            }
         }
         Commands::Stream {
             artifact,
@@ -712,6 +741,54 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
     }
 
     let action = &args[1];
+
+    // ── Watch intercept ─────────────────────────────────────
+    // ``glow <res> watch <run_id> [--group-id <id>]`` is a per-
+    // artifact SSE GET, not a JSON POST — needs its own dispatch
+    // path. ``watch`` is reserved at the action slot; nothing else
+    // is named that across the 19 CRUD resources currently in scope.
+    if action == "watch" {
+        if args[2..].iter().any(|a| a == "--help" || a == "-h") {
+            use colored::Colorize;
+            println!("{}\n", format!("glow {} watch", resource.cli_name()).bold());
+            println!(
+                "  {} /{}/watch?run_id=<id>&group_id=<id>\n",
+                "GET".dimmed(),
+                resource.api_path()
+            );
+            println!("  Stream the per-artifact watch SSE filtered to a run_id.");
+            println!("  Blocks until a terminal lifecycle event (.completed / .failed)\n");
+            println!("{}:", "Args".bold());
+            println!("  <run_id>             {}", "Required positional".dimmed());
+            println!("\n{}:", "Options".bold());
+            println!(
+                "  {:<30} Scope to a group (optional, server resolves if omitted)",
+                "--group-id <id>".green()
+            );
+            println!("  {:<30} Output frames as JSON lines", "--json".green());
+            return Ok(());
+        }
+        if args.len() < 3 {
+            anyhow::bail!(
+                "Expected a run_id: glow {} watch <run_id> [--group-id <id>]",
+                resource.cli_name(),
+            );
+        }
+        let run_id = &args[2];
+        // --group-id (or --group_id) is optional. The per-artifact
+        // watch route accepts it as a query param to scope the
+        // subscriber room; omit it and the server-side resolver
+        // derives the group from run_id.
+        let group_id = parse_flag(&args[3..], "--group-id")?
+            .or(parse_flag(&args[3..], "--group_id")?);
+        return commands::glow::cmd_watch_run(
+            client,
+            resource.api_path(),
+            run_id,
+            group_id.as_deref(),
+            mode,
+        );
+    }
 
     // Show help for resource action. UX note: the heading uses the
     // user-facing plural ``cli_name`` ("glow personas search") so the

@@ -378,6 +378,48 @@ impl GlowClient {
         api_request(&self.http, reqwest::Method::GET, &url, None, self.auth())
     }
 
+    // ── Watch (per-artifact, run-scoped SSE) ─────────────────
+    //
+    // The API exposes ``GET /{artifact}/watch?run_id=...&group_id=...``
+    // as a per-artifact SSE stream filtered to a specific run. The
+    // resolver inside the route reads ``run_id`` from the event
+    // envelope and only emits matching frames. Used by the watch
+    // helper to block until the run reaches a terminal lifecycle
+    // state.
+
+    /// Open the per-artifact watch SSE stream filtered to ``run_id``.
+    /// Returns the raw Response so the caller can read events
+    /// line-by-line. ``api_path`` should be the singular artifact
+    /// path (``attempt``, ``scenario``, ...).
+    pub fn watch_run(
+        &self,
+        api_path: &str,
+        run_id: &str,
+        group_id: Option<&str>,
+    ) -> Result<blocking::Response> {
+        let mut params = vec![format!("run_id={}", run_id)];
+        if let Some(g) = group_id {
+            params.push(format!("group_id={}", g));
+        }
+        let url = format!(
+            "{}?{}",
+            self.url(&format!("/{}/watch", api_path)),
+            params.join("&"),
+        );
+        let resp = self
+            .authed_request(reqwest::Method::GET, &url)
+            .header("Accept", "text/event-stream")
+            .send()
+            .with_context(|| format!("Failed to connect to watch stream at {}", url))?;
+
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let text = resp.text().unwrap_or_default();
+            anyhow::bail!("Watch stream error (HTTP {}): {}", status, text);
+        }
+        Ok(resp)
+    }
+
     // ── Streaming ─────────────────────────────────────────────
 
     /// SSE stream — returns raw response for line-by-line reading.
@@ -435,6 +477,42 @@ pub fn read_sse_events(response: blocking::Response, mut handler: impl FnMut(&st
             handler(data);
         }
         // Silently skip event:, id:, retry:, and blank lines
+    }
+    Ok(())
+}
+
+/// Read SSE events with both event names and payloads. Handler receives
+/// ``(event_name, data_json_str)`` per frame. ``event_name`` is empty
+/// when the SSE frame omits the ``event:`` line (rare for our API but
+/// permitted by the SSE spec). Used by the watch helper to detect
+/// terminal lifecycle events (``.completed`` / ``.failed``) without
+/// having to parse the data payload.
+pub fn read_sse_events_with_names(
+    response: blocking::Response,
+    mut handler: impl FnMut(&str, &str) -> std::ops::ControlFlow<()>,
+) -> Result<()> {
+    let reader = std::io::BufReader::new(response);
+    let mut current_event = String::new();
+    for line in reader.lines() {
+        let line = line.context("Error reading SSE stream")?;
+        if let Some(name) = line.strip_prefix("event: ") {
+            current_event = name.to_string();
+            continue;
+        }
+        if let Some(data) = line.strip_prefix("data: ") {
+            if let std::ops::ControlFlow::Break(()) = handler(&current_event, data) {
+                return Ok(());
+            }
+            // Per SSE spec, event: applies only to the next data: frame;
+            // reset after dispatching.
+            current_event.clear();
+            continue;
+        }
+        if line.is_empty() {
+            // Blank line = end of message; reset any pending event name.
+            current_event.clear();
+        }
+        // Silently skip id:, retry:, and other lines.
     }
     Ok(())
 }

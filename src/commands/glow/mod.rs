@@ -119,6 +119,137 @@ pub(crate) fn cmd_generate(
     Ok(())
 }
 
+/// Like ``cmd_generate`` but extracts the ``run_id`` from the response
+/// and blocks on ``cmd_watch_run`` until the run reaches a terminal
+/// lifecycle state. Powers ``glow generate --wait``.
+pub(crate) fn cmd_generate_and_wait(
+    client: &GlowClient,
+    group_id: &str,
+    body_str: Option<&str>,
+    artifact_api_path: &str,
+    mode: OutputMode,
+) -> Result<()> {
+    use colored::Colorize;
+
+    let body = match body_str {
+        Some(s) => Some(
+            serde_json::from_str::<serde_json::Value>(s)
+                .map_err(|e| anyhow::anyhow!("Invalid JSON for --body: {}", e))?,
+        ),
+        None => None,
+    };
+
+    let response = client.generate(group_id, body)?;
+    // Surface the trigger response first (run_id, group_id, etc.) so
+    // the user has the handles even if the watch fails midway.
+    let run_id = response
+        .get("run_id")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    output::print_result(mode, &response, |resp| {
+        if let Some(rid) = resp.get("run_id").and_then(|v| v.as_str()) {
+            println!("{} run_id: {}", "OK".green().bold(), rid.dimmed());
+        }
+    });
+
+    let Some(rid) = run_id else {
+        anyhow::bail!("generate response had no ``run_id`` to watch");
+    };
+    eprintln!("{} Watching {}/watch run_id={} …", "·".dimmed(), artifact_api_path, rid);
+    cmd_watch_run(client, artifact_api_path, &rid, Some(group_id), mode)
+}
+
+/// Stream the per-artifact watch endpoint scoped to a single run,
+/// printing event payloads and blocking until a terminal lifecycle
+/// event (``.completed`` or ``.failed``) arrives — or the stream
+/// closes naturally.
+///
+/// ``artifact_api_path`` is the singular API path (``attempt``,
+/// ``scenario``, ...). Terminal detection runs on the SSE ``event:``
+/// name suffix so we don't need to deserialize the payload.
+pub(crate) fn cmd_watch_run(
+    client: &GlowClient,
+    artifact_api_path: &str,
+    run_id: &str,
+    group_id: Option<&str>,
+    mode: OutputMode,
+) -> Result<()> {
+    use colored::Colorize;
+
+    let response = client.watch_run(artifact_api_path, run_id, group_id)?;
+
+    // Track whether we saw a terminal event so the exit code can
+    // reflect it: 0 on success/completed, 1 on failed. Stream-closed
+    // without a terminal event is also success (the API may end the
+    // stream when its dedup/age window expires).
+    let mut terminal_kind: Option<TerminalKind> = None;
+
+    crate::glow::read_sse_events_with_names(response, |event_name, data| {
+        // Print per-frame output. JSON mode: one JSON object per line
+        // (event name + parsed payload). Pretty mode: a colored
+        // header + indented data preview.
+        match mode {
+            OutputMode::Json => {
+                let parsed: serde_json::Value =
+                    serde_json::from_str(data).unwrap_or(serde_json::Value::String(data.to_string()));
+                let frame = serde_json::json!({
+                    "event": event_name,
+                    "data": parsed,
+                });
+                println!("{}", serde_json::to_string(&frame).unwrap_or_default());
+            }
+            OutputMode::Human => {
+                let label = if event_name.is_empty() {
+                    "(event)".dimmed().to_string()
+                } else {
+                    event_name.bold().to_string()
+                };
+                println!("{}", label);
+                // Indent the data payload for readability without
+                // pretty-printing huge nested JSON (one line is plenty
+                // for live tail).
+                println!("  {}", data.dimmed());
+            }
+        }
+
+        // Terminal detection on the event-name suffix. Matches both
+        // the per-modality variants (e.g. ``attempt.generate.audio.complete``)
+        // and the top-level lifecycle (``attempt.generate.completed``).
+        if event_name.ends_with(".completed") || event_name.ends_with(".complete") {
+            terminal_kind = Some(TerminalKind::Completed);
+            return std::ops::ControlFlow::Break(());
+        }
+        if event_name.ends_with(".failed") || event_name.ends_with(".error") {
+            terminal_kind = Some(TerminalKind::Failed);
+            return std::ops::ControlFlow::Break(());
+        }
+        std::ops::ControlFlow::Continue(())
+    })?;
+
+    match terminal_kind {
+        Some(TerminalKind::Completed) => {
+            println!("{} Run completed.", "✓".green());
+            Ok(())
+        }
+        Some(TerminalKind::Failed) => {
+            anyhow::bail!("Run failed (see the last event payload above).");
+        }
+        None => {
+            println!(
+                "{} Stream closed without a terminal lifecycle event.",
+                "·".dimmed()
+            );
+            Ok(())
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum TerminalKind {
+    Completed,
+    Failed,
+}
+
 pub(crate) fn cmd_connect(client: &GlowClient, mode: OutputMode) -> Result<()> {
     use colored::Colorize;
 
