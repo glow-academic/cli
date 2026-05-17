@@ -224,3 +224,119 @@ pub fn cmd_groups_history(
 fn _output_unused_marker(_m: OutputMode, _r: &serde_json::Value) {
     output::print_result(_m, _r, |_| {});
 }
+
+// ── chats live (socket.io REPL) ─────────────────────────────────
+
+/// `glow chats live <chat_id> [--persona <id>]` — opens a socket.io
+/// connection and streams a chat REPL over it. Reads stdin lines on
+/// the main thread, emits ``attempt.chat_message`` per line. Inbound
+/// events are forwarded to a channel by rust_socketio's handler
+/// thread; we drain the channel between user inputs and print frames.
+///
+/// **Untested against a live server** — see comment in src/glow/ws.rs.
+/// The WS layer compiles, the REPL loop is structurally sound, but no
+/// smoke-test against a running glow-academic-api has been run.
+pub fn cmd_chats_live(
+    client: &GlowClient,
+    base_url: &str,
+    bearer: Option<&str>,
+    chat_id: &str,
+    persona_id: Option<&str>,
+    _mode: OutputMode,
+) -> Result<()> {
+    use colored::Colorize;
+    use std::io::{BufRead, Write};
+    use std::time::Duration;
+
+    // ``client`` parameter is reserved for future fall-back HTTP
+    // dispatch (e.g. surface chat history before opening the live
+    // stream); we accept it now so the dispatcher signature doesn't
+    // churn later.
+    let _ = client;
+
+    eprintln!("{} connecting socket.io to {} …", "·".dimmed(), base_url);
+    let sock = crate::glow::ws::GlowSocket::connect(base_url, bearer)
+        .with_context(|| format!("Failed to open socket.io to {}", base_url))?;
+
+    eprintln!(
+        "{} chat REPL: type a message + Enter to send. Ctrl-D / Ctrl-C to quit.",
+        "·".dimmed()
+    );
+
+    let stdin = std::io::stdin();
+    let mut stdout = std::io::stdout();
+
+    loop {
+        // Drain any pending inbound events first (non-blocking) so
+        // the user sees responses to the previous message before
+        // their next prompt.
+        while let Some((name, payload)) =
+            crate::glow::ws::try_recv_with_timeout(&sock.events, Duration::from_millis(50))
+        {
+            println!(
+                "{}: {}",
+                name.green().bold(),
+                serde_json::to_string(&payload).unwrap_or_default().dimmed(),
+            );
+        }
+
+        // Prompt for the next user message.
+        print!("{} ", ">".bold());
+        stdout.flush().ok();
+        let mut line = String::new();
+        let n = stdin
+            .lock()
+            .read_line(&mut line)
+            .context("Failed to read stdin")?;
+        if n == 0 {
+            // EOF — clean disconnect.
+            break;
+        }
+        let text = line.trim().to_string();
+        if text.is_empty() {
+            continue;
+        }
+        if text == ":quit" || text == ":q" {
+            break;
+        }
+
+        // Build the chat_message payload. Plural ``audios_id`` is
+        // intentionally absent — voice is on the deferred Phase 5
+        // sub-task. ``persona_id`` is forwarded when supplied so
+        // the user can attribute messages on multi-persona chats.
+        let mut payload = json!({ "chat_id": chat_id, "text": text });
+        if let Some(p) = persona_id {
+            payload["persona_id"] = json!(p);
+        }
+
+        if let Err(e) = sock.emit("attempt.chat_message", payload) {
+            eprintln!("{} emit failed: {}", "·".red(), e);
+        }
+    }
+
+    eprintln!("{} closing chat REPL", "·".dimmed());
+    sock.disconnect().ok();
+    Ok(())
+}
+
+/// Placeholder for the voice REPL. Prints a clear deferral message
+/// with the suggested next-step so the user knows the WS scaffold
+/// is ready and what remains gated on their go-ahead.
+pub fn cmd_chats_voice_placeholder(chat_id: &str) -> Result<()> {
+    use colored::Colorize;
+    eprintln!(
+        "{} ``glow chats voice {}`` is deferred.",
+        "·".yellow().bold(),
+        chat_id,
+    );
+    eprintln!("  The Phase-5 voice REPL needs ``cpal`` (mic capture) +");
+    eprintln!("  ``rodio`` (playback) — both pull native deps (CoreAudio /");
+    eprintln!("  ALSA / WASAPI). The goal command explicitly gates these on");
+    eprintln!("  user confirmation, so the WS layer is in place but this");
+    eprintln!("  command is a no-op until that gate clears.");
+    eprintln!();
+    eprintln!("  Path forward: confirm the deps, then add the mic→upload→");
+    eprintln!("  emit→playback loop on top of ``glow::ws::GlowSocket`` —");
+    eprintln!("  the wire-up is straightforward once the deps land.");
+    Ok(())
+}

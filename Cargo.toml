@@ -34,6 +34,12 @@ pbkdf2 = { version = "0.12", features = ["simple"] }
 sha2 = "0.10"
 base64 = "0.22"
 
+# WebSocket / socket.io client (Phase 5). Pure-Rust, no native deps —
+# safe to add without the audio-libs gate the goal command specified.
+# Voice (cpal/rodio) is deferred for explicit user go-ahead per the
+# original constraint.
+rust_socketio = "0.6"
+
 [dev-dependencies]
 mockito = "1"
 assert_cmd = "2"

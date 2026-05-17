@@ -5,6 +5,7 @@
 
 pub mod api;
 pub mod types;
+pub mod ws;
 
 use anyhow::{Context, Result};
 use reqwest::blocking;
