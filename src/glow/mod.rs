@@ -53,6 +53,35 @@ impl GlowClient {
         req
     }
 
+    // ── Server-side logout ────────────────────────────────────
+    //
+    // The API exposes ``GET /logout`` as an OIDC end_session_endpoint
+    // — it writes a ``logouts_entry`` row when the caller includes a
+    // bearer token, then redirects to Keycloak's logout for the
+    // browser. For CLI use we fire the request best-effort (don't
+    // follow the redirect, don't fail the local clear if this fails)
+    // so the server-side session state matches the client's intent.
+
+    /// Best-effort server-side logout. Returns ``Ok(())`` on any
+    /// outcome (including network failure) so the caller can always
+    /// proceed to clear the local token store.
+    pub fn logout_server_side(&self) -> Result<()> {
+        let url = self.url("/logout");
+        // Build a request that does NOT follow redirects — we don't
+        // want to chase Keycloak's logout redirect target from a CLI
+        // context. The 302 is treated as success here.
+        let client = blocking::Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
+            .build()
+            .unwrap_or_else(|_| blocking::Client::new());
+        let mut req = client.get(&url);
+        if let Some(ref t) = self.token {
+            req = req.header("Authorization", format!("Bearer {}", t));
+        }
+        let _ = req.send(); // swallow errors — best-effort
+        Ok(())
+    }
+
     // ── Health ────────────────────────────────────────────────
 
     pub fn health(&self) -> Result<types::HealthResponse> {

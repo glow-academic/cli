@@ -55,10 +55,30 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Authenticate with Glow instance (OAuth)
-    Login,
+    /// Authenticate with Glow instance.
+    ///
+    /// Default: opens a browser for the OAuth redirect flow.
+    /// With ``--token``: skip the redirect and store a JWT directly
+    /// (service-account / programmatic / CI use cases).
+    Login {
+        /// Pre-issued JWT to store as the access token. When set, the
+        /// OAuth redirect flow is skipped and the token is persisted
+        /// keyed on the instance URL. No refresh_token is recorded —
+        /// the server enforces expiry via the token's own ``exp`` claim.
+        #[arg(long)]
+        token: Option<String>,
 
-    /// Remove stored authentication token for Glow instance
+        /// OAuth client ID. Defaults to the value from
+        /// ``--client-id`` / ``$GLOW_CLIENT_ID`` / config / "glow-cli".
+        /// Ignored when ``--token`` is set.
+        #[arg(long = "client-id")]
+        client_id: Option<String>,
+    },
+
+    /// Sign out: fire ``GET /logout`` server-side (writes a
+    /// ``logouts_entry`` row so the next request mints a fresh
+    /// session) and then clear the local stored token. The
+    /// server-side call is best-effort — local clear always runs.
     Logout,
 
     /// Check Glow instance health
@@ -424,11 +444,63 @@ pub fn run() -> Result<()> {
 
     match cli.command {
         // ── Top-level Glow instance commands ─────────────────
-        Commands::Login => {
-            println!("TODO: instance login");
+        Commands::Login { token, client_id } => {
+            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
+            if let Some(t) = token {
+                // Service-account / programmatic flow: bypass the
+                // OAuth redirect, store the JWT directly. The server
+                // enforces expiry via the token's own ``exp`` claim;
+                // we can't refresh without a refresh_token, so the
+                // caller is responsible for rotation.
+                let stored = auth::StoredToken {
+                    access_token: t,
+                    id_token: None,
+                    token_type: "Bearer".to_string(),
+                    expires_in: None,        // unknown — server enforces via JWT exp
+                    issued_at: 0,            // unknown — server enforces via JWT exp
+                    refresh_token: None,
+                    token_endpoint: None,
+                };
+                auth::save_token(&glow_url, stored)?;
+                use colored::Colorize;
+                println!(
+                    "{} Token stored for {}",
+                    "✓".green(),
+                    glow_url.bold()
+                );
+            } else {
+                // OAuth redirect flow.
+                let cid = client_id
+                    .or(cli.client_id.clone())
+                    .unwrap_or_else(|| "glow-cli".to_string());
+                let _ = auth::login(&glow_url, &cid)?;
+                use colored::Colorize;
+                println!(
+                    "{} Signed in to {}",
+                    "✓".green(),
+                    glow_url.bold()
+                );
+            }
         }
         Commands::Logout => {
-            println!("TODO: instance logout");
+            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
+            // Best-effort server-side hit first so the API gets a
+            // logouts_entry row before the local token disappears.
+            // GlowClient loads the bearer from the local store at
+            // construction, so this fires with the right header.
+            let client = glow::GlowClient::new(&glow_url);
+            let _ = client.logout_server_side();
+            let removed = auth::remove_token(&glow_url)?;
+            use colored::Colorize;
+            if removed {
+                println!("{} Signed out of {}", "✓".green(), glow_url.bold());
+            } else {
+                println!(
+                    "{} No stored token for {} — local store unchanged",
+                    "·".dimmed(),
+                    glow_url.bold(),
+                );
+            }
         }
         Commands::Health => {
             let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
