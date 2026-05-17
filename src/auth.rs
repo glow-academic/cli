@@ -157,8 +157,10 @@ fn refresh_access_token(
     Ok(stored)
 }
 
-/// Save a token for a specific server URL
-fn save_token(server_url: &str, token: StoredToken) -> Result<()> {
+/// Save a token for a specific server URL. Public so the ``--token``
+/// (service-account / programmatic) login flow can persist a JWT
+/// without going through the OAuth redirect dance.
+pub fn save_token(server_url: &str, token: StoredToken) -> Result<()> {
     let path = tokens_path();
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)

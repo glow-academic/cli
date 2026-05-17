@@ -1,8 +1,39 @@
-// Auto-generated from GLOW API OpenAPI spec v2.6.0
+// Auto-generated from GLOW API OpenAPI spec v2.15.38
 // Do not edit manually — regenerated on each API release.
-// Schemas: 1206
+// Schemas: 1377
 
 use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ActivityHistoryResponse {
+    #[serde(default)]
+    pub items: Option<Vec<SessionListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+    #[serde(default)]
+    pub page: Option<i64>,
+    #[serde(default)]
+    pub page_size: Option<i64>,
+    #[serde(default)]
+    pub total_pages: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ActivityProblemItem {
+    pub problem_id: String,
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    pub created_at: String,
+    #[serde(default)]
+    pub profile_id: Option<String>,
+    #[serde(default)]
+    pub profile_name: Option<String>,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub resolved: Option<bool>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActivityRequest {
@@ -13,19 +44,23 @@ pub struct ActivityRequest {
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub roles: Option<Vec<String>>,
+    pub role_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub summary_profile_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActivityResources {
     #[serde(default)]
-    pub profiles: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub profiles: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ActivityResponseInput {
+pub struct ActivityResponse {
     #[serde(default)]
     pub sessions_count: Option<i64>,
     #[serde(default)]
@@ -37,83 +72,47 @@ pub struct ActivityResponseInput {
     #[serde(default)]
     pub profile_summary: Option<Vec<ProfileSummaryItem>>,
     #[serde(default)]
-    pub resources: Option<ActivityResources>,
-    #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsInput>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ActivityResponseOutput {
-    #[serde(default)]
-    pub sessions_count: Option<i64>,
-    #[serde(default)]
-    pub active_profiles_count: Option<i64>,
-    #[serde(default)]
-    pub logins_count: Option<i64>,
-    #[serde(default)]
-    pub emulations_count: Option<i64>,
-    #[serde(default)]
-    pub profile_summary: Option<Vec<ProfileSummaryItem>>,
+    pub problems: Option<Vec<ActivityProblemItem>>,
     #[serde(default)]
     pub resources: Option<ActivityResources>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsOutput>,
+    pub analytics: Option<AnalyticsFacets>,
+    #[serde(default)]
+    pub history: Option<ActivityHistoryResponse>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentDepartmentSection {
+pub struct AgentDepartmentResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub department_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentDescriptionSection {
+pub struct AgentDescriptionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentDraftFormState {
-    pub flag_ids: Vec<String>,
-    pub department_ids: Vec<String>,
-    pub model_ids: Vec<String>,
-    pub tool_ids: Vec<String>,
-    pub reasoning_level_ids: Vec<String>,
-    pub temperature_level_ids: Vec<String>,
-    pub voice_ids: Vec<String>,
-    pub rubric_ids: Vec<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -123,161 +122,148 @@ pub struct AgentFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct AgentFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentFlagSection {
+pub struct AgentInstructionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub template: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<AgentFlagConfig>>,
-    #[serde(default)]
-    pub resources: Option<Vec<AgentFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentInstructionSection {
+pub struct AgentModelResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub value: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub provider_id: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub resource: Option<serde_json::Value>,
+    pub temperature_level_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub reasoning_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentModelSection {
+pub struct AgentNameResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentNameSection {
+pub struct AgentPromptResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub system_prompt: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub resource: Option<serde_json::Value>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentPromptSection {
+pub struct AgentQualityResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub quality: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentQualitySection {
+pub struct AgentReasoningLevelResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub reasoning_level: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentReasoningLevelSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -291,83 +277,95 @@ pub struct AgentResultItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentRubricSection {
+pub struct AgentRubricResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub total_points: Option<i64>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub pass_points: Option<i64>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub simulation_rubric: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub video_rubric: Option<bool>,
+    #[serde(default)]
+    pub standard_group_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentTemperatureLevelSection {
+pub struct AgentTemperatureLevelResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub temperature: Option<f64>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentToolSection {
+pub struct AgentToolResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub permission_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub args_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub args_output_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub instruction_id: Option<String>,
+    #[serde(default)]
+    pub agent_id: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentVoiceSection {
+pub struct AgentVoiceResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub voice: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -393,31 +391,14 @@ pub struct AnalysisEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AnalyticsFacetsInput {
+pub struct AnalyticsFacets {
     pub fields: AnalyticsFilterFields,
     #[serde(default)]
     pub department_options: Option<Vec<AnalyticsFilterOption>>,
     #[serde(default)]
     pub cohort_options: Option<Vec<AnalyticsFilterOption>>,
     #[serde(default)]
-    pub role_options: Option<Vec<String>>,
-    #[serde(default)]
-    pub attempt_options: Option<Vec<String>>,
-    #[serde(default)]
-    pub date_range_earliest: Option<String>,
-    #[serde(default)]
-    pub date_range_latest: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AnalyticsFacetsOutput {
-    pub fields: AnalyticsFilterFields,
-    #[serde(default)]
-    pub department_options: Option<Vec<AnalyticsFilterOption>>,
-    #[serde(default)]
-    pub cohort_options: Option<Vec<AnalyticsFilterOption>>,
-    #[serde(default)]
-    pub role_options: Option<Vec<String>>,
+    pub role_options: Option<Vec<AnalyticsRoleOption>>,
     #[serde(default)]
     pub attempt_options: Option<Vec<String>>,
     #[serde(default)]
@@ -452,6 +433,21 @@ pub struct AnalyticsFilterFields {
 pub struct AnalyticsFilterOption {
     pub value: String,
     pub label: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AnalyticsRoleOption {
+    pub value: String,
+    pub label: String,
+    pub id: String,
+    pub name: String,
+    pub level: i64,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub icon_id: Option<String>,
+    #[serde(default)]
+    pub color_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -499,24 +495,42 @@ pub struct ArchiveTestsResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ArtifactSessionGroupInput {
-    pub group_id: String,
+pub struct ArtifactGenerateRequest {
     #[serde(default)]
-    pub group_name: Option<String>,
+    pub instructions: Option<Vec<String>>,
     #[serde(default)]
-    pub first_run_at: Option<String>,
+    pub config: Option<GenerateConfig>,
     #[serde(default)]
-    pub last_run_at: Option<String>,
+    pub modalities: Option<Vec<String>>,
     #[serde(default)]
-    pub run_count: Option<i64>,
+    pub audios_id: Option<String>,
     #[serde(default)]
-    pub total_tokens: Option<i64>,
+    pub conversation_id: Option<String>,
     #[serde(default)]
-    pub total_cost: Option<serde_json::Value>,
+    pub trace_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+    #[serde(default)]
+    pub wait_for_complete: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ArtifactSessionGroupOutput {
+pub struct ArtifactGenerateResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub run_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub eval: Option<EvalSetup>,
+    #[serde(default)]
+    pub produced_media: Option<Vec<ProducedMedia>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ArtifactSessionGroup {
     pub group_id: String,
     #[serde(default)]
     pub group_name: Option<String>,
@@ -533,81 +547,17 @@ pub struct ArtifactSessionGroupOutput {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ArtifactTypeItem {
-    pub name: String,
-    pub operation: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptAssistantCompleteEvent {
-    pub chat_id: String,
-    pub message_id: String,
-    #[serde(default)]
-    pub content: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptAssistantHintsEvent {
-    pub chat_id: String,
-    pub hints: Vec<std::collections::HashMap<String, serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptAssistantProgressEvent {
-    pub chat_id: String,
-    pub content_type: String,
-    #[serde(default)]
-    pub content: Option<String>,
-    #[serde(default)]
-    pub audio: Option<serde_json::Value>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptAssistantStartEvent {
-    pub chat_id: String,
-    pub message_id: String,
-    pub created_at: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptAudioEndedEvent {
-    pub chat_id: String,
-    pub success: bool,
-    #[serde(default)]
-    pub message: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptAudioReadyEvent {
-    pub chat_id: String,
-    pub success: bool,
-    #[serde(default)]
-    pub message: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptAudioStartPayload {
-    pub chat_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptAudioStopPayload {
-    pub chat_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptChatEndedEvent {
-    pub chat_id: String,
-    #[serde(default)]
-    pub is_attempt_finished: Option<bool>,
-    #[serde(default)]
-    pub grade_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptChatStartedEvent {
+pub struct AttemptCompleteRequest {
     pub attempt_id: String,
-    pub chat_id: String,
+    #[serde(default)]
+    pub message: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AttemptCompleteResponse {
+    pub success: bool,
+    pub completion_id: String,
+    pub attempt_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -622,6 +572,8 @@ pub struct AttemptData {
     #[serde(default)]
     pub profile_name: Option<String>,
     #[serde(default)]
+    pub user_persona_id: Option<String>,
+    #[serde(default)]
     pub department_id: Option<String>,
     #[serde(default)]
     pub cohort_id: Option<String>,
@@ -630,229 +582,35 @@ pub struct AttemptData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptEndAllPayload {
-    pub attempt_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptEndPayload {
-    pub attempt_id: String,
-    pub chat_id: String,
-    #[serde(default)]
-    pub grade: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptEndedEvent {
-    pub attempt_id: String,
-    pub success: bool,
-    #[serde(default)]
-    pub all_scenarios_complete: Option<bool>,
-    #[serde(default)]
-    pub message: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptEntriesInput {
+pub struct AttemptEntries {
     #[serde(default)]
     pub attempt: Option<Vec<GetAttemptResponse>>,
     #[serde(default)]
-    pub attempt_chat: Option<Vec<ChatDataInput>>,
+    pub attempt_chat: Option<Vec<ChatData>>,
     #[serde(default)]
-    pub attempt_message: Option<Vec<MessageDataInput>>,
+    pub attempt_message: Option<Vec<MessageData>>,
     #[serde(default)]
-    pub runs: Option<GetRunListViewResponseInput>,
+    pub runs: Option<GetRunListViewResponse>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptEntriesOutput {
+pub struct AttemptOptionValue {
+    pub option_text: String,
     #[serde(default)]
-    pub attempt: Option<Vec<GetAttemptResponse>>,
-    #[serde(default)]
-    pub attempt_chat: Option<Vec<ChatDataOutput>>,
-    #[serde(default)]
-    pub attempt_message: Option<Vec<MessageDataOutput>>,
-    #[serde(default)]
-    pub runs: Option<GetRunListViewResponseOutput>,
+    pub is_correct: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptErrorEvent {
-    pub message: String,
+pub struct AttemptQuestionValue {
+    pub question_text: String,
     #[serde(default)]
-    pub chat_id: Option<String>,
-    #[serde(rename = "type")]
+    pub allow_multiple: Option<bool>,
     #[serde(default)]
-    pub r#type: Option<String>,
+    pub options: Option<Vec<AttemptOptionValue>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptGradeAnalysisEntry {
-    pub content: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptGradeCompleteEvent {
-    pub chat_id: String,
-    #[serde(default)]
-    pub grade_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptGradeFeedbackEntry {
-    pub feedback: String,
-    #[serde(default)]
-    pub total: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptGradeHighlightEntry {
-    pub section: String,
-    #[serde(default)]
-    pub strength_id: Option<String>,
-    #[serde(default)]
-    pub idx: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptGradeImprovementEntry {
-    pub name: String,
-    pub description: String,
-    #[serde(default)]
-    pub message_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptGradePayload {
-    pub attempt_id: String,
-    #[serde(default)]
-    pub chat_id: Option<String>,
-    #[serde(default)]
-    pub resource_types: Option<Vec<String>>,
-    #[serde(default)]
-    pub user_instructions: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptGradeProgressEvent {
-    pub chat_id: String,
-    #[serde(default)]
-    pub grade_id: Option<String>,
-    #[serde(default)]
-    pub resource_type: Option<String>,
-    #[serde(default)]
-    pub entry: Option<std::collections::HashMap<String, serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptGradeReplacementEntry {
-    pub section: String,
-    pub replace: String,
-    #[serde(default)]
-    pub improvement_id: Option<String>,
-    #[serde(default)]
-    pub idx: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptGradeStartEvent {
-    pub chat_id: String,
-    #[serde(default)]
-    pub grade_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptGradeStrengthEntry {
-    pub name: String,
-    pub description: String,
-    #[serde(default)]
-    pub message_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptJoinPayload {
-    pub chat_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptJoinRequest {
-    pub sid: String,
-    pub chat_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptJoinResponse {
-    pub success: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptJoinedEvent {
-    pub chat_id: String,
-    pub success: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptLeavePayload {
-    pub chat_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptLeaveRequest {
-    pub sid: String,
-    pub chat_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptLeaveResponse {
-    pub success: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptMessagePayload {
-    pub attempt_id: String,
-    pub chat_id: String,
-    pub message: String,
-    #[serde(default)]
-    pub parent_message_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptNextPayload {
-    pub attempt_id: String,
-    #[serde(default)]
-    pub draft_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptResourcesInput {
-    #[serde(default)]
-    pub scenarios: Option<std::collections::HashMap<String, ScenarioEntry>>,
-    #[serde(default)]
-    pub personas: Option<std::collections::HashMap<String, PersonaEntry>>,
-    #[serde(default)]
-    pub documents: Option<std::collections::HashMap<String, DocumentEntry>>,
-    #[serde(default)]
-    pub images: Option<std::collections::HashMap<String, ImageEntry>>,
-    #[serde(default)]
-    pub videos: Option<std::collections::HashMap<String, VideoEntry>>,
-    #[serde(default)]
-    pub objectives: Option<std::collections::HashMap<String, ObjectiveEntry>>,
-    #[serde(default)]
-    pub questions: Option<std::collections::HashMap<String, QuestionEntry>>,
-    #[serde(default)]
-    pub options: Option<std::collections::HashMap<String, OptionEntry>>,
-    #[serde(default)]
-    pub problem_statements: Option<std::collections::HashMap<String, ProblemStatementEntry>>,
-    #[serde(default)]
-    pub rubrics: Option<std::collections::HashMap<String, RubricEntry>>,
-    #[serde(default)]
-    pub standard_groups: Option<std::collections::HashMap<String, StandardGroupEntry>>,
-    #[serde(default)]
-    pub standards: Option<std::collections::HashMap<String, StandardEntry>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptResourcesOutput {
+pub struct AttemptResources {
     #[serde(default)]
     pub scenarios: Option<std::collections::HashMap<String, ScenarioEntry>>,
     #[serde(default)]
@@ -887,18 +645,7 @@ pub struct AttemptResponsePayload {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptResponseResultEvent {
-    pub success: bool,
-    #[serde(default)]
-    pub message: Option<String>,
-    #[serde(default)]
-    pub is_correct: Option<bool>,
-    #[serde(default)]
-    pub response_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptStartPayload {
+pub struct AttemptStartRequest {
     #[serde(default)]
     pub home_id: Option<String>,
     #[serde(default)]
@@ -908,101 +655,39 @@ pub struct AttemptStartPayload {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptStartedEvent {
+pub struct AttemptStartResponse {
     pub attempt_id: String,
-    pub chat_entry_id: String,
+    pub chat_id: String,
+    #[serde(default)]
+    pub department_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptStopPayload {
-    pub chat_id: String,
+pub struct AttemptStopRequest {
+    pub group_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptStoppedEvent {
-    pub chat_id: String,
+pub struct AttemptStopResponse {
     pub success: bool,
-    #[serde(default)]
-    pub message: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptUsePreviousPayload {
-    pub attempt_id: String,
-    pub previous_chat_map: std::collections::HashMap<String, String>,
+pub struct AudioDownloadAttemptApiRequest {
+    pub audio_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptUserCompleteEvent {
-    pub chat_id: String,
-    pub message_id: String,
-    pub content: String,
-    pub created_at: String,
-    #[serde(default)]
-    pub item_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptUserDeltaEvent {
-    pub chat_id: String,
-    pub item_id: String,
-    pub transcript: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptUserProgressEvent {
-    pub chat_id: String,
-    pub transcript: String,
-    #[serde(default)]
-    pub item_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AttemptUserStartEvent {
-    pub chat_id: String,
-    pub message_id: String,
-    pub created_at: String,
-    #[serde(default)]
-    pub item_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AudioFramePayload {
-    pub chat_id: String,
-    #[serde(default)]
-    pub upload_id: Option<String>,
-    #[serde(default)]
-    pub audio: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AudioFrameResponse {
-    pub accepted: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AudioMutePayload {
-    pub chat_id: String,
-    #[serde(default)]
-    pub muted: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AudioMuteResponse {
-    pub accepted: bool,
+pub struct AudioDownloadGroupApiRequest {
+    pub audio_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AudioStartInternalResult {
     pub chat_id: String,
-    pub run_id: String,
-    pub group_id: String,
     pub attempt_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AudioStartPayload {
-    pub chat_id: String,
+    pub conversation_id: String,
+    pub group_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1013,42 +698,44 @@ pub struct AudioStopInternalResult {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AudioStopPayload {
-    pub chat_id: String,
+pub struct AudioUploadAttemptApiResponse {
+    pub audio_id: String,
+    pub audios_id: String,
+    pub upload_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthDescriptionSection {
+pub struct AuthDepartmentResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub department_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthDraftFormState {
-    pub department_ids: Vec<String>,
-    pub protocol_ids: Vec<String>,
-    pub slug_ids: Vec<String>,
-    pub item_ids: Vec<String>,
+pub struct AuthDescriptionResource {
     #[serde(default)]
-    pub name_id: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub description_id: Option<String>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1058,47 +745,36 @@ pub struct AuthFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct AuthFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthFlagSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<AuthFlagConfig>>,
-    #[serde(default)]
-    pub resources: Option<Vec<AuthFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthItemResource {
     #[serde(default)]
-    pub auth_item_id: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
@@ -1106,75 +782,47 @@ pub struct AuthItemResource {
     #[serde(default)]
     pub position: Option<i64>,
     #[serde(default)]
-    pub active: Option<bool>,
-    #[serde(default)]
-    pub value_masked: Option<String>,
-    #[serde(default)]
-    pub key_id: Option<String>,
-    #[serde(default)]
     pub encrypted: Option<bool>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthItemSection {
+pub struct AuthNameResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<AuthItemResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<AuthItemResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthNameSection {
+pub struct AuthProtocolResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub value: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthProtocolSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1188,32 +836,23 @@ pub struct AuthResultItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthSlugSection {
+pub struct AuthSlugResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub value: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AvailableContinuationOptionsInput {
-    pub options: Vec<ContinuationOption>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AvailableContinuationOptionsOutput {
+pub struct AvailableContinuationOptions {
     pub options: Vec<ContinuationOption>,
 }
 
@@ -1261,29 +900,43 @@ pub struct BenchmarkEvalOperational {
 pub struct BenchmarkHistoryItem {
     pub test_id: String,
     #[serde(default)]
+    pub date: Option<String>,
+    #[serde(default)]
+    pub profile_id: Option<String>,
+    #[serde(default)]
+    pub profile_name: Option<String>,
+    #[serde(default)]
     pub eval_id: Option<String>,
     #[serde(default)]
     pub eval_name: Option<String>,
     #[serde(default)]
-    pub eval_description: Option<String>,
+    pub rubric_id: Option<String>,
     #[serde(default)]
-    pub created_at: Option<String>,
+    pub rubric_name: Option<String>,
     #[serde(default)]
-    pub archived: Option<bool>,
+    pub num_models: Option<i64>,
+    #[serde(default)]
+    pub num_models_completed: Option<i64>,
+    #[serde(default)]
+    pub model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_names: Option<Vec<String>>,
+    #[serde(default)]
+    pub score: Option<i64>,
+    #[serde(default)]
+    pub score_status: Option<String>,
+    #[serde(default)]
+    pub pass_pct: Option<i64>,
+    #[serde(default)]
+    pub show_view: Option<bool>,
+    #[serde(default)]
+    pub show_continue: Option<bool>,
+    #[serde(default)]
+    pub is_archived: Option<bool>,
     #[serde(default)]
     pub infinite_mode: Option<bool>,
     #[serde(default)]
-    pub total_invocations: Option<i64>,
-    #[serde(default)]
-    pub completed_invocations: Option<i64>,
-    #[serde(default)]
-    pub pending_invocations: Option<i64>,
-    #[serde(default)]
-    pub best_score: Option<f64>,
-    #[serde(default)]
-    pub has_passed: Option<bool>,
-    #[serde(default)]
-    pub status: Option<String>,
+    pub department_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1298,6 +951,12 @@ pub struct BenchmarkHistoryResponse {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub eval_options: Option<Vec<FilterOption>>,
+    #[serde(default)]
+    pub model_options: Option<Vec<FilterOption>>,
+    #[serde(default)]
+    pub profile_options: Option<Vec<FilterOption>>,
+    #[serde(default)]
+    pub rubric_options: Option<Vec<FilterOption>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1325,7 +984,7 @@ pub struct BenchmarkRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BenchmarkResponseInput {
+pub struct BenchmarkResponse {
     #[serde(default)]
     pub evals: Option<Vec<BenchmarkEvalOperational>>,
     #[serde(default)]
@@ -1339,104 +998,293 @@ pub struct BenchmarkResponseInput {
     #[serde(default)]
     pub history: Option<BenchmarkHistoryResponse>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsInput>,
+    pub analytics: Option<AnalyticsFacets>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BenchmarkResponseOutput {
+pub struct Body_parse_agent_csv_agent_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_auth_csv_auth_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_cohort_csv_cohort_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_department_csv_department_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_document_csv_document_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_eval_csv_eval_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_field_csv_field_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_model_csv_model_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_parameter_csv_parameter_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_persona_csv_persona_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_profile_csv_profile_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_provider_csv_provider_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_rubric_csv_rubric_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_scenario_csv_scenario_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_setting_csv_setting_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_simulation_csv_simulation_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_parse_tool_csv_tool_csv_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_upload_audio_attempt_audio_upload_post {
     #[serde(default)]
-    pub evals: Option<Vec<BenchmarkEvalOperational>>,
+    pub file: Option<String>,
     #[serde(default)]
-    pub departments: Option<Vec<BenchmarkDepartmentItem>>,
+    pub length_seconds: Option<i64>,
     #[serde(default)]
-    pub department_options: Option<Vec<FilterOption>>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub date_range_earliest: Option<String>,
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_upload_file_document_file_upload_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_upload_image_scenario_image_upload_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_upload_text_document_text_upload_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_upload_video_scenario_video_upload_post {
+    pub file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadAgentApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadAttemptApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadAuthApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadCohortApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadDepartmentApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadDocumentApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadEvalApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadFieldApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadGroupApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadModelApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadParameterApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadPersonaApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadProfileApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadProviderApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadRubricApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadScenarioApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadSettingApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadSimulationApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadTestApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallDownloadToolApiRequest {
+    pub call_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CallerPermissions {
+    pub can_create: bool,
+    pub can_draft: bool,
+    pub can_duplicate: bool,
     #[serde(default)]
-    pub date_range_latest: Option<String>,
+    pub has_access: Option<bool>,
     #[serde(default)]
-    pub history: Option<BenchmarkHistoryResponse>,
+    pub can_edit: Option<bool>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsOutput>,
+    pub can_delete: Option<bool>,
+    #[serde(default)]
+    pub disabled_reason: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_agent_csv_agents_csv_post {
-    pub file: String,
+pub struct ChatAnalysesRequest {
+    pub chat_id: String,
+    pub analyses: Vec<ChatAnalysisItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_cohort_csv_cohorts_csv_post {
-    pub file: String,
+pub struct ChatAnalysesResponse {
+    pub success: bool,
+    pub analysis_ids: Vec<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_department_csv_departments_csv_post {
-    pub file: String,
+pub struct ChatAnalysisItem {
+    pub content: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_document_csv_documents_csv_post {
-    pub file: String,
+pub struct ChatAudioRequest {
+    pub chat_id: String,
+    pub message_id: String,
+    pub audios_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_eval_csv_evals_csv_post {
-    pub file: String,
+pub struct ChatAudioResponse {
+    pub success: bool,
+    pub attempt_audio_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_field_csv_fields_csv_post {
-    pub file: String,
+pub struct ChatCompleteRequest {
+    pub chat_id: String,
+    #[serde(default)]
+    pub message: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_model_csv_models_csv_post {
-    pub file: String,
+pub struct ChatCompleteResponse {
+    pub success: bool,
+    pub completion_id: String,
+    pub chat_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_parameter_csv_parameters_csv_post {
-    pub file: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_persona_csv_personas_csv_post {
-    pub file: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_provider_csv_providers_csv_post {
-    pub file: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_rubric_csv_rubrics_csv_post {
-    pub file: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_scenario_csv_scenarios_csv_post {
-    pub file: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_setting_csv_settings_csv_post {
-    pub file: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_simulation_csv_simulations_csv_post {
-    pub file: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Body_parse_tool_csv_tools_csv_post {
-    pub file: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatDataInput {
+pub struct ChatData {
     pub id: String,
     #[serde(default)]
     pub created_at: Option<String>,
@@ -1462,6 +1310,24 @@ pub struct ChatDataInput {
     pub text_enabled: Option<bool>,
     #[serde(default)]
     pub audio_enabled: Option<bool>,
+    #[serde(default)]
+    pub hints_enabled: Option<bool>,
+    #[serde(default)]
+    pub analyses_enabled: Option<bool>,
+    #[serde(default)]
+    pub strengths_enabled: Option<bool>,
+    #[serde(default)]
+    pub improvements_enabled: Option<bool>,
+    #[serde(default)]
+    pub problem_statement_enabled: Option<bool>,
+    #[serde(default)]
+    pub objectives_enabled: Option<bool>,
+    #[serde(default)]
+    pub video_enabled: Option<bool>,
+    #[serde(default)]
+    pub images_enabled: Option<bool>,
+    #[serde(default)]
+    pub questions_enabled: Option<bool>,
     #[serde(default)]
     pub grading_state: Option<GradingStateData>,
     #[serde(default)]
@@ -1495,322 +1361,447 @@ pub struct ChatDataInput {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatDataOutput {
-    pub id: String,
+pub struct ChatDepartmentResource {
     #[serde(default)]
-    pub created_at: Option<String>,
+    pub department_id: Option<String>,
     #[serde(default)]
-    pub completed: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub is_current: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub position: Option<i64>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub grade: Option<GradeData>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub feedbacks: Option<Vec<FeedbackEntry>>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub analyses: Option<Vec<AnalysisEntry>>,
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatDescriptionResource {
     #[serde(default)]
-    pub show_problem_statement: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub show_objectives: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub copy_paste_allowed: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub text_enabled: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub audio_enabled: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub grading_state: Option<GradingStateData>,
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatDocumentResource {
     #[serde(default)]
-    pub dynamic_rubric: Option<DynamicRubricData>,
+    pub document_id: Option<String>,
     #[serde(default)]
-    pub scenario_id: Option<String>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub problem_statement_id: Option<String>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub objective_ids: Option<Vec<String>>,
+    pub file_id: Option<String>,
     #[serde(default)]
-    pub persona_ids: Option<Vec<String>>,
+    pub text_id: Option<String>,
     #[serde(default)]
     pub image_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub video_ids: Option<Vec<String>>,
+    pub template: Option<bool>,
     #[serde(default)]
-    pub question_ids: Option<Vec<String>>,
+    pub parameter_field_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub option_ids: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub responses: Option<Vec<QuizResponse>>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub document_ids: Option<Vec<String>>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub rubric_id: Option<String>,
-    #[serde(default)]
-    pub standard_group_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub standard_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatDepartmentSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatDescriptionSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatDocumentSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatDraftFormState {
     #[serde(default)]
-    pub name_ids: Option<Vec<String>>,
+    pub name_id: Option<String>,
     #[serde(default)]
-    pub description_ids: Option<Vec<String>>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub flag_ids: Option<Vec<String>>,
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub problem_statement_id: Option<String>,
+    #[serde(default)]
+    pub problem_statement: Option<String>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub persona_ids: Option<Vec<String>>,
-    #[serde(default)]
     pub document_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub objective_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub option_ids: Option<Vec<String>>,
     #[serde(default)]
     pub parameter_field_ids: Option<Vec<String>>,
     #[serde(default)]
     pub parameter_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub scenario_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub field_ids: Option<Vec<String>>,
+    pub persona_ids: Option<Vec<String>>,
     #[serde(default)]
     pub question_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub option_ids: Option<Vec<String>>,
+    pub scenario_ids: Option<Vec<String>>,
     #[serde(default)]
     pub video_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub image_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub problem_statement_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub objective_ids: Option<Vec<String>>,
+    pub pending_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatFieldSection {
+pub struct ChatFeedbackItem {
+    pub feedback: String,
     #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub total: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatFlagSection {
+pub struct ChatFeedbackRequest {
+    pub chat_id: String,
+    pub feedbacks: Vec<ChatFeedbackItem>,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatImageSection {
+pub struct ChatFeedbackResponse {
+    pub success: bool,
+    pub feedback_ids: Vec<String>,
     #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatNameSection {
+pub struct ChatFieldResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub field_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub value: Option<String>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub conditional_parameter_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatObjectiveSection {
+pub struct ChatFlagResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
+    #[serde(rename = "type")]
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub r#type: Option<String>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub icon: Option<String>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub value: Option<bool>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatOptionSection {
+pub struct ChatHighlightItem {
+    pub section: String,
     #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub idx: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatParameterFieldSection {
+pub struct ChatHintItem {
+    pub hint: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub message_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub idx: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatPersonaSection {
+pub struct ChatHintsRequest {
+    pub chat_id: String,
+    pub hints: Vec<ChatHintItem>,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatProblemStatementSection {
+pub struct ChatHintsResponse {
+    pub success: bool,
+    pub hint_ids: Vec<String>,
     #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatQuestionSection {
+pub struct ChatImageResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub image_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatScenarioSection {
+pub struct ChatImprovementItem {
+    pub name: String,
+    pub description: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub message_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub replacements: Option<Vec<ChatReplacementItem>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatImprovementsRequest {
+    pub chat_id: String,
+    pub improvements: Vec<ChatImprovementItem>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatImprovementsResponse {
+    pub success: bool,
+    pub improvement_ids: Vec<String>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatMessageRequest {
+    pub chat_id: String,
+    pub text: String,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub persona_id: Option<String>,
+    #[serde(default)]
+    pub parent_message_id: Option<String>,
+    #[serde(default)]
+    pub auto_link_parent: Option<bool>,
+    #[serde(default)]
+    pub audios_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatMessageResponse {
+    pub success: bool,
+    pub message_id: String,
+    pub content_ids: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatNameResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatObjectiveResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub objective: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatOptionResource {
+    #[serde(default)]
+    pub option_id: Option<String>,
+    #[serde(default)]
+    pub option_text: Option<String>,
+    #[serde(default)]
+    pub question_id: Option<String>,
+    #[serde(default)]
+    pub is_correct: Option<bool>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatParameterFieldResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub field_id: Option<String>,
+    #[serde(default)]
+    pub parameter_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub parameter_name: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatPersonaResource {
+    #[serde(default)]
+    pub persona_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
+    pub color: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatProblemStatementResource {
+    #[serde(default)]
+    pub problem_statement_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub problem_statement: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatQuestionResource {
+    #[serde(default)]
+    pub question_id: Option<String>,
+    #[serde(default)]
+    pub question_text: Option<String>,
+    #[serde(default)]
+    pub allow_multiple: Option<bool>,
+    #[serde(default)]
+    pub time: Option<i64>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatReplacementItem {
+    pub section: String,
+    pub replace: String,
+    #[serde(default)]
+    pub idx: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatScenarioResource {
+    #[serde(default)]
+    pub scenario_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatSilenceRequest {
+    pub chat_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1865,19 +1856,70 @@ pub struct ChatSimulationOperational {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatVideoSection {
+pub struct ChatSpeakRequest {
+    pub audio: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub conversation_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub chat_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatSpeakResponse {
+    pub accepted: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatStrengthItem {
+    pub name: String,
+    pub description: String,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub message_id: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub highlights: Option<Vec<ChatHighlightItem>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatStrengthsRequest {
+    pub chat_id: String,
+    pub strengths: Vec<ChatStrengthItem>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatStrengthsResponse {
+    pub success: bool,
+    pub strength_ids: Vec<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatVideoResource {
+    #[serde(default)]
+    pub video_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub length_seconds: Option<i64>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatVoiceRequest {
+    pub chat_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1890,26 +1932,12 @@ pub struct CohortDepartment {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortDepartmentSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<CohortDepartment>>,
-    #[serde(default)]
-    pub resources: Option<Vec<CohortDepartment>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1920,48 +1948,12 @@ pub struct CohortDescriptionResource {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortDescriptionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<CohortDescriptionResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<CohortDescriptionResource>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortDraftFormState {
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub simulation_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub simulation_position_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub simulation_availability_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub profile_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub profile_persona_ids: Option<Vec<String>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1971,43 +1963,30 @@ pub struct CohortFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortFlagConfig {
+pub struct CohortFlagResource {
     #[serde(default)]
-    pub key: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub label: Option<String>,
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortFlagSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<CohortFlagConfig>,
-    #[serde(default)]
-    pub resources: Option<Vec<CohortFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2018,26 +1997,46 @@ pub struct CohortNameResource {
     pub name: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortNameSection {
+pub struct CohortPersonaResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub color: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub resource: Option<CohortNameResource>,
+    pub instructions: Option<String>,
     #[serde(default)]
-    pub resources: Option<Vec<CohortNameResource>>,
+    pub examples: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub mcp: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2052,6 +2051,12 @@ pub struct CohortProfile {
     pub generated: Option<bool>,
     #[serde(default)]
     pub mcp: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2066,46 +2071,12 @@ pub struct CohortProfilePersona {
     pub generated: Option<bool>,
     #[serde(default)]
     pub mcp: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortProfilePersonaSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<CohortProfilePersona>>,
-    #[serde(default)]
-    pub resources: Option<Vec<CohortProfilePersona>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortProfileSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<CohortProfile>>,
-    #[serde(default)]
-    pub resources: Option<Vec<CohortProfile>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2128,6 +2099,12 @@ pub struct CohortSimulation {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2145,30 +2122,18 @@ pub struct CohortSimulationAvailability {
     pub generated: Option<bool>,
     #[serde(default)]
     pub mcp: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortSimulationAvailabilitySection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<CohortSimulationAvailability>>,
-    #[serde(default)]
-    pub resources: Option<Vec<CohortSimulationAvailability>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CohortSimulationPosition {
+    #[serde(default)]
+    pub id: Option<String>,
     #[serde(default)]
     pub simulation_id: Option<String>,
     #[serde(default)]
@@ -2177,46 +2142,12 @@ pub struct CohortSimulationPosition {
     pub generated: Option<bool>,
     #[serde(default)]
     pub mcp: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortSimulationPositionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<CohortSimulationPosition>>,
-    #[serde(default)]
-    pub resources: Option<Vec<CohortSimulationPosition>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CohortSimulationSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<CohortSimulation>>,
-    #[serde(default)]
-    pub resources: Option<Vec<CohortSimulation>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2228,52 +2159,27 @@ pub struct ColumnInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ComposedDocsResponseInput {
+pub struct ComposedContextResponse {
     pub name: String,
     #[serde(rename = "type")]
     pub r#type: String,
     pub description: String,
-    pub entries: Vec<DocsResponseInput>,
-    pub resources: Vec<DocsResponseInput>,
-    pub permissions: Vec<OperationInfo>,
+    pub entries: Vec<DocsResponse>,
+    pub resources: Vec<DocsResponse>,
+    pub permission_docs: Vec<OperationInfo>,
     pub api_operations: Vec<OperationInfo>,
+    pub profile: ProfileSummary,
+    pub caller_permissions: CallerPermissions,
     #[serde(default)]
-    pub artifact: Option<DocsResponseInput>,
+    pub artifact: Option<DocsResponse>,
     #[serde(default)]
     pub page_metadata: Option<DocsApiResponse>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ComposedDocsResponseOutput {
-    pub name: String,
-    #[serde(rename = "type")]
-    pub r#type: String,
-    pub description: String,
-    pub entries: Vec<DocsResponseOutput>,
-    pub resources: Vec<DocsResponseOutput>,
-    pub permissions: Vec<OperationInfo>,
-    pub api_operations: Vec<OperationInfo>,
     #[serde(default)]
-    pub artifact: Option<DocsResponseOutput>,
-    #[serde(default)]
-    pub page_metadata: Option<DocsApiResponse>,
+    pub prompts: Option<OperationPrompts>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ConnectResponse {
-    pub sid: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ConnectionConfirmedPayload {
-    pub sid: String,
-    pub profile_id: Option<String>,
-    pub guest_id: Option<String>,
-    pub server_time: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ContentEntryOutput {
+pub struct ContentEntry {
     #[serde(default)]
     pub content: Option<String>,
     #[serde(default)]
@@ -2298,22 +2204,25 @@ pub struct ContinuationOption {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateAgentApiRequest {
     pub agents: Vec<CreateAgentItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateAgentApiResponseInput {
+pub struct CreateAgentApiResponse {
     pub results: Vec<AgentResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateAgentApiResponseOutput {
-    pub results: Vec<AgentResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateAgentItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2329,7 +2238,9 @@ pub struct CreateAgentItem {
     #[serde(default)]
     pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub model_ids: Option<Vec<String>>,
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub model_id: Option<String>,
     #[serde(default)]
     pub reasoning_level_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2340,27 +2251,122 @@ pub struct CreateAgentItem {
     pub voice_ids: Option<Vec<String>>,
     #[serde(default)]
     pub agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub prompt_id: Option<String>,
+    #[serde(default)]
+    pub instruction_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateArgInput {
+    pub name: String,
+    pub field_type: String,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub required: Option<bool>,
+    #[serde(default)]
+    pub default_value: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateArgPositionInput {
+    pub args_id: String,
+    pub value: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateArgsOutputInput {
+    pub args_id: String,
+    pub name: String,
+    #[serde(default)]
+    pub template: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateAttemptChatApiRequest {
+    pub attempt_id: String,
+    pub chat_id: String,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub problem_statement_id: Option<String>,
+    #[serde(default)]
+    pub problem_statement: Option<String>,
+    #[serde(default)]
+    pub video_id: Option<String>,
+    #[serde(default)]
+    pub image_id: Option<String>,
+    #[serde(default)]
+    pub personas_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub personas: Option<Vec<String>>,
+    #[serde(default)]
+    pub documents_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub documents: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_fields_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_fields: Option<Vec<String>>,
+    #[serde(default)]
+    pub objectives_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub objectives: Option<Vec<String>>,
+    #[serde(default)]
+    pub questions_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub questions: Option<Vec<AttemptQuestionValue>>,
+    #[serde(default)]
+    pub options_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub previous_attempt_chat_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateAttemptChatApiResponse {
+    pub attempt_chat_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateAuthApiRequest {
-    pub auths: Vec<CreateAuthItem>,
+    #[serde(default)]
+    pub auths: Option<Vec<CreateAuthItem>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateAuthApiResponseInput {
+pub struct CreateAuthApiResponse {
     pub results: Vec<AuthResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateAuthApiResponseOutput {
-    pub results: Vec<AuthResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub auths: Option<Vec<ListAuthApiAuth>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateAuthItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2374,9 +2380,9 @@ pub struct CreateAuthItem {
     #[serde(default)]
     pub slug: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2394,22 +2400,25 @@ pub struct CreateAuthItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateCohortApiRequest {
     pub cohorts: Vec<CreateCohortItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateCohortApiResponseInput {
+pub struct CreateCohortApiResponse {
     pub results: Vec<CohortResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateCohortApiResponseOutput {
-    pub results: Vec<CohortResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateCohortItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2419,7 +2428,9 @@ pub struct CreateCohortItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2433,8 +2444,6 @@ pub struct CreateCohortItem {
     #[serde(default)]
     pub profile_persona_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub is_inactive: Option<bool>,
-    #[serde(default)]
     pub departments: Option<Vec<String>>,
     #[serde(default)]
     pub simulations: Option<Vec<String>>,
@@ -2445,22 +2454,27 @@ pub struct CreateCohortItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDepartmentApiRequest {
     pub departments: Vec<CreateDepartmentItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateDepartmentApiResponseInput {
+pub struct CreateDepartmentApiResponse {
     pub results: Vec<DepartmentResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateDepartmentApiResponseOutput {
-    pub results: Vec<DepartmentResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub departments: Option<Vec<ListDepartmentApiDepartment>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDepartmentItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2470,9 +2484,9 @@ pub struct CreateDepartmentItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub active: Option<bool>,
     #[serde(default)]
     pub settings_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2482,22 +2496,25 @@ pub struct CreateDepartmentItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDocumentApiRequest {
     pub documents: Vec<CreateDocumentItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateDocumentApiResponseInput {
+pub struct CreateDocumentApiResponse {
     pub results: Vec<DocumentResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateDocumentApiResponseOutput {
-    pub results: Vec<DocumentResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDocumentItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2507,42 +2524,51 @@ pub struct CreateDocumentItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub is_inactive: Option<bool>,
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
     pub departments: Option<Vec<String>>,
     #[serde(default)]
-    pub field_ids: Option<Vec<String>>,
+    pub parameter_field_ids: Option<Vec<String>>,
     #[serde(default)]
     pub upload_ids: Option<Vec<String>>,
     #[serde(default)]
     pub image_ids: Option<Vec<String>>,
     #[serde(default)]
     pub text_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub file_id: Option<String>,
+    #[serde(default)]
+    pub text_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateEvalApiRequest {
     pub evals: Vec<CreateEvalItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateEvalApiResponseInput {
+pub struct CreateEvalApiResponse {
     pub results: Vec<EvalResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateEvalApiResponseOutput {
-    pub results: Vec<EvalResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub evals: Option<Vec<ListEvalApiEval>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateEvalItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2565,27 +2591,45 @@ pub struct CreateEvalItem {
     pub model_rubric_ids: Option<Vec<String>>,
     #[serde(default)]
     pub model_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateFeedbackApiRequest {
+    pub grade_id: String,
+    pub tool_call_id: String,
+    pub standard_group_id: String,
+    #[serde(default)]
+    pub score: Option<i64>,
+    #[serde(default)]
+    pub feedback: Option<String>,
+    #[serde(default)]
+    pub run_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateFieldApiRequest {
     pub fields: Vec<CreateFieldItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateFieldApiResponseInput {
+pub struct CreateFieldApiResponse {
     pub results: Vec<FieldResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateFieldApiResponseOutput {
-    pub results: Vec<FieldResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateFieldItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2595,7 +2639,9 @@ pub struct CreateFieldItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2607,18 +2653,67 @@ pub struct CreateFieldItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateGradeApiRequest {
+    pub invocation_id: String,
+    #[serde(default)]
+    pub run_id: Option<String>,
+    #[serde(default)]
+    pub score: Option<i64>,
+    #[serde(default)]
+    pub full: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateInvocationApiRequest {
+    pub test_id: String,
+    #[serde(default)]
+    pub invocation_id: Option<String>,
+    #[serde(default)]
+    pub title: Option<String>,
+    #[serde(default)]
+    pub use_custom: Option<bool>,
+    #[serde(default)]
+    pub position: Option<i64>,
+    #[serde(default)]
+    pub agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub reasoning_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub temperature_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub modality_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateInvocationApiResponse {
+    pub invocation_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateModelApiRequest {
-    pub models: Vec<CreateModelItem>,
+    #[serde(default)]
+    pub models: Option<Vec<CreateModelItem>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateModelApiResponseInput {
+pub struct CreateModelApiResponse {
     pub results: Vec<ModelResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateModelApiResponseOutput {
-    pub results: Vec<ModelResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub models: Option<Vec<ListModelApiModel>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2626,9 +2721,17 @@ pub struct CreateModelItem {
     #[serde(default)]
     pub id: Option<String>,
     #[serde(default)]
+    pub resource_id: Option<String>,
+    #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub value: Option<String>,
+    #[serde(default)]
+    pub provider_id: Option<String>,
     #[serde(default)]
     pub description_id: Option<String>,
     #[serde(default)]
@@ -2644,15 +2747,11 @@ pub struct CreateModelItem {
     #[serde(default)]
     pub pricing_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub provider_ids: Option<Vec<String>>,
-    #[serde(default)]
     pub quality_ids: Option<Vec<String>>,
     #[serde(default)]
     pub reasoning_level_ids: Option<Vec<String>>,
     #[serde(default)]
     pub temperature_level_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub value_ids: Option<Vec<String>>,
     #[serde(default)]
     pub voice_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2662,22 +2761,27 @@ pub struct CreateModelItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateParameterApiRequest {
     pub parameters: Vec<CreateParameterItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateParameterApiResponseInput {
+pub struct CreateParameterApiResponse {
     pub results: Vec<ParameterResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateParameterApiResponseOutput {
-    pub results: Vec<ParameterResultItem>,
+    #[serde(default)]
+    pub parameters: Option<Vec<ListParameterApiParameter>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateParameterItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2694,27 +2798,41 @@ pub struct CreateParameterItem {
     pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
     pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub persona_parameter: Option<bool>,
+    #[serde(default)]
+    pub document_parameter: Option<bool>,
+    #[serde(default)]
+    pub scenario_parameter: Option<bool>,
+    #[serde(default)]
+    pub video_parameter: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreatePersonaApiRequest {
-    pub personas: Vec<CreatePersonaItem>,
+    #[serde(default)]
+    pub personas: Option<Vec<CreatePersonaItem>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreatePersonaApiResponseInput {
+pub struct CreatePersonaApiResponse {
     pub results: Vec<PersonaResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreatePersonaApiResponseOutput {
-    pub results: Vec<PersonaResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub personas: Option<Vec<ListPersonaApiPersona>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreatePersonaItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2736,9 +2854,9 @@ pub struct CreatePersonaItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2758,32 +2876,21 @@ pub struct CreatePersonaItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateProblemRequest {
-    #[serde(rename = "type")]
-    pub r#type: String,
-    pub message: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateProblemResponse {
-    pub problem_id: String,
-    pub success: bool,
-    pub message: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateProfileApiRequest {
     pub profiles: Vec<CreateProfileItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateProfileApiResponseInput {
+pub struct CreateProfileApiResponse {
     pub results: Vec<ProfileResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateProfileApiResponseOutput {
-    pub results: Vec<ProfileResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub profiles: Option<Vec<ListProfilesApiProfile>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2791,13 +2898,15 @@ pub struct CreateProfileItem {
     #[serde(default)]
     pub id: Option<String>,
     #[serde(default)]
+    pub resource_id: Option<String>,
+    #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
-    pub request_limit_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2805,28 +2914,44 @@ pub struct CreateProfileItem {
     #[serde(default)]
     pub email_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub role_ids: Option<Vec<String>>,
+    pub role_id: Option<String>,
+    #[serde(default)]
+    pub primary_department_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreatePromptInput {
+    pub system_prompt: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateProviderApiRequest {
     pub providers: Vec<CreateProviderItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateProviderApiResponseInput {
+pub struct CreateProviderApiResponse {
     pub results: Vec<ProviderResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateProviderApiResponseOutput {
-    pub results: Vec<ProviderResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub providers: Option<Vec<ListProviderApiProvider>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateProviderItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2836,9 +2961,9 @@ pub struct CreateProviderItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2848,28 +2973,39 @@ pub struct CreateProviderItem {
     #[serde(default)]
     pub key_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub value_ids: Option<Vec<String>>,
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub endpoint: Option<String>,
+    #[serde(default)]
+    pub key: Option<String>,
+    #[serde(default)]
+    pub value: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateRubricApiRequest {
     pub rubrics: Vec<CreateRubricItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateRubricApiResponseInput {
+pub struct CreateRubricApiResponse {
     pub results: Vec<RubricResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateRubricApiResponseOutput {
-    pub results: Vec<RubricResultItem>,
+    #[serde(default)]
+    pub rubrics: Option<Vec<ListRubricApiRubric>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateRubricItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2879,15 +3015,21 @@ pub struct CreateRubricItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub simulation_rubric: Option<bool>,
+    #[serde(default)]
+    pub video_rubric: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
     pub departments: Option<Vec<String>>,
     #[serde(default)]
-    pub point_ids: Option<Vec<String>>,
+    pub pass_points_id: Option<String>,
+    #[serde(default)]
+    pub pass_points: Option<i64>,
     #[serde(default)]
     pub standard_group_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2897,22 +3039,27 @@ pub struct CreateRubricItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateScenarioApiRequest {
     pub scenarios: Vec<CreateScenarioItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateScenarioApiResponseInput {
+pub struct CreateScenarioApiResponse {
     pub results: Vec<ScenarioResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateScenarioApiResponseOutput {
-    pub results: Vec<ScenarioResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub scenarios: Option<Vec<ListScenarioApiScenario>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateScenarioItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -2926,17 +3073,7 @@ pub struct CreateScenarioItem {
     #[serde(default)]
     pub problem_statement: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
-    #[serde(default)]
-    pub objectives_enabled_flag_id: Option<String>,
-    #[serde(default)]
-    pub images_enabled_flag_id: Option<String>,
-    #[serde(default)]
-    pub video_enabled_flag_id: Option<String>,
-    #[serde(default)]
-    pub questions_enabled_flag_id: Option<String>,
-    #[serde(default)]
-    pub problem_statement_enabled_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -2957,8 +3094,6 @@ pub struct CreateScenarioItem {
     pub question_ids: Option<Vec<String>>,
     #[serde(default)]
     pub option_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub active_flag: Option<bool>,
     #[serde(default)]
     pub departments: Option<Vec<String>>,
     #[serde(default)]
@@ -2982,22 +3117,27 @@ pub struct CreateScenarioItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateSettingApiRequest {
     pub settings: Vec<CreateSettingItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateSettingApiResponseInput {
+pub struct CreateSettingApiResponse {
     pub results: Vec<SettingResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateSettingApiResponseOutput {
-    pub results: Vec<SettingResultItem>,
+    #[serde(default)]
+    pub settings: Option<Vec<ListSettingApiSetting>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateSettingItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -3006,6 +3146,8 @@ pub struct CreateSettingItem {
     pub description_id: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
     pub active_flag_id: Option<String>,
     #[serde(default)]
@@ -3017,9 +3159,13 @@ pub struct CreateSettingItem {
     #[serde(default)]
     pub color_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub profile_ids: Option<Vec<String>>,
+    pub logins_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub auth_ids: Option<Vec<String>>,
+    pub system_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub mcp_id: Option<String>,
+    #[serde(default)]
+    pub threshold_ids: Option<Vec<String>>,
     #[serde(default)]
     pub provider_key_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -3027,9 +3173,9 @@ pub struct CreateSettingItem {
     #[serde(default)]
     pub auth_item_value_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub system_ids: Option<Vec<String>>,
+    pub auth_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub threshold_ids: Option<Vec<String>>,
+    pub provider_ids: Option<Vec<String>>,
     #[serde(default)]
     pub setting_resource_ids: Option<Vec<String>>,
 }
@@ -3037,22 +3183,25 @@ pub struct CreateSettingItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateSimulationApiRequest {
     pub simulations: Vec<CreateSimulationItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateSimulationApiResponseInput {
+pub struct CreateSimulationApiResponse {
     pub results: Vec<SimulationResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateSimulationApiResponseOutput {
-    pub results: Vec<SimulationResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateSimulationItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -3076,10 +3225,6 @@ pub struct CreateSimulationItem {
     #[serde(default)]
     pub scenario_time_limit_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub is_inactive: Option<bool>,
-    #[serde(default)]
-    pub is_practice: Option<bool>,
-    #[serde(default)]
     pub departments: Option<Vec<String>>,
     #[serde(default)]
     pub scenarios: Option<Vec<String>>,
@@ -3088,22 +3233,27 @@ pub struct CreateSimulationItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateToolApiRequest {
     pub tools: Vec<CreateToolItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateToolApiResponseInput {
+pub struct CreateToolApiResponse {
     pub results: Vec<ToolResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CreateToolApiResponseOutput {
-    pub results: Vec<ToolResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub tools: Option<Vec<ListToolApiTool>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateToolItem {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub resource_id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -3123,63 +3273,23 @@ pub struct CreateToolItem {
     #[serde(default)]
     pub args_outputs_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub artifact_ids: Option<Vec<String>>,
+    pub permission_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub operation_ids: Option<Vec<String>>,
+    pub instruction_id: Option<String>,
     #[serde(default)]
     pub tool_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashboardBundleResponseInput {
+pub struct DashboardBundleResponse {
     #[serde(default)]
-    pub header_metrics: Option<DashboardHeaderMetricsInput>,
+    pub header_metrics: Option<DashboardHeaderMetrics>,
     #[serde(default)]
-    pub primary_metrics: Option<DashboardPrimaryMetricsInput>,
+    pub primary_metrics: Option<DashboardPrimaryMetrics>,
     #[serde(default)]
-    pub secondary_metrics: Option<DashboardSecondaryMetricsInput>,
+    pub secondary_metrics: Option<DashboardSecondaryMetrics>,
     #[serde(default)]
-    pub footer_metrics: Option<DashboardFooterMetricsInput>,
-    #[serde(default)]
-    pub simulations: Option<Vec<DashboardSimulationMeta>>,
-    #[serde(default)]
-    pub scenarios: Option<Vec<DashboardScenarioMeta>>,
-    #[serde(default)]
-    pub rubrics: Option<Vec<DashboardRubricMeta>>,
-    #[serde(default)]
-    pub parameters: Option<Vec<DashboardParameterMeta>>,
-    #[serde(default)]
-    pub fields: Option<Vec<DashboardFieldMeta>>,
-    #[serde(default)]
-    pub thresholds: Option<DashboardThresholds>,
-    #[serde(default)]
-    pub insights: Option<DashboardInsights>,
-    #[serde(default)]
-    pub simulation_options: Option<Vec<FilterOption>>,
-    #[serde(default)]
-    pub profile_name: Option<String>,
-    #[serde(default)]
-    pub profile_emails: Option<Vec<String>>,
-    #[serde(default)]
-    pub profile_primary_email: Option<String>,
-    #[serde(default)]
-    pub profile_role: Option<String>,
-    #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsInput>,
-    #[serde(default)]
-    pub history: Option<HistoryResponse>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashboardBundleResponseOutput {
-    #[serde(default)]
-    pub header_metrics: Option<DashboardHeaderMetricsOutput>,
-    #[serde(default)]
-    pub primary_metrics: Option<DashboardPrimaryMetricsOutput>,
-    #[serde(default)]
-    pub secondary_metrics: Option<DashboardSecondaryMetricsOutput>,
-    #[serde(default)]
-    pub footer_metrics: Option<DashboardFooterMetricsOutput>,
+    pub footer_metrics: Option<DashboardFooterMetrics>,
     #[serde(default)]
     pub simulations: Option<Vec<DashboardSimulationMeta>>,
     #[serde(default)]
@@ -3205,7 +3315,7 @@ pub struct DashboardBundleResponseOutput {
     #[serde(default)]
     pub profile_role: Option<String>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsOutput>,
+    pub analytics: Option<AnalyticsFacets>,
     #[serde(default)]
     pub history: Option<HistoryResponse>,
 }
@@ -3225,19 +3335,7 @@ pub struct DashboardFieldMeta {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashboardFooterMetricsInput {
-    #[serde(default)]
-    pub scenario_performance: Option<FooterScenarioPerformance>,
-    #[serde(default)]
-    pub scenario_stats: Option<FooterScenarioStats>,
-    #[serde(default)]
-    pub scenario_simulation_performance: Option<FooterScenarioSimulationPerformance>,
-    #[serde(default)]
-    pub scenario_composition: Option<FooterScenarioComposition>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashboardFooterMetricsOutput {
+pub struct DashboardFooterMetrics {
     #[serde(default)]
     pub scenario_performance: Option<FooterScenarioPerformance>,
     #[serde(default)]
@@ -3263,31 +3361,7 @@ pub struct DashboardHeaderMetric {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashboardHeaderMetricsInput {
-    #[serde(default)]
-    pub average_score: Option<DashboardHeaderMetric>,
-    #[serde(default)]
-    pub completion_percentage: Option<DashboardHeaderMetric>,
-    #[serde(default)]
-    pub first_attempt_pass_rate: Option<DashboardHeaderMetric>,
-    #[serde(default)]
-    pub highest_score: Option<DashboardHeaderMetric>,
-    #[serde(default)]
-    pub messages_per_session: Option<DashboardHeaderMetric>,
-    #[serde(default)]
-    pub persona_response_times: Option<DashboardHeaderMetric>,
-    #[serde(default)]
-    pub session_efficiency: Option<DashboardHeaderMetric>,
-    #[serde(default)]
-    pub stagnation_rate: Option<DashboardHeaderMetric>,
-    #[serde(default)]
-    pub time_spent: Option<DashboardHeaderMetric>,
-    #[serde(default)]
-    pub total_attempts: Option<DashboardHeaderMetric>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashboardHeaderMetricsOutput {
+pub struct DashboardHeaderMetrics {
     #[serde(default)]
     pub average_score: Option<DashboardHeaderMetric>,
     #[serde(default)]
@@ -3357,23 +3431,13 @@ pub struct DashboardParameterMeta {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashboardPrimaryMetricsInput {
+pub struct DashboardPrimaryMetrics {
     #[serde(default)]
-    pub rubric_heatmap: Option<PrimaryRubricHeatmapInput>,
-    #[serde(default)]
-    pub rubric_trend: Option<PrimaryRubricTrend>,
-    #[serde(default)]
-    pub skill_performance: Option<SecondarySkillPerformanceInput>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashboardPrimaryMetricsOutput {
-    #[serde(default)]
-    pub rubric_heatmap: Option<PrimaryRubricHeatmapOutput>,
+    pub rubric_heatmap: Option<PrimaryRubricHeatmap>,
     #[serde(default)]
     pub rubric_trend: Option<PrimaryRubricTrend>,
     #[serde(default)]
-    pub skill_performance: Option<SecondarySkillPerformanceOutput>,
+    pub skill_performance: Option<SecondarySkillPerformance>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3389,7 +3453,7 @@ pub struct DashboardRequest {
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub roles: Option<Vec<String>>,
+    pub role_ids: Option<Vec<String>>,
     #[serde(default)]
     pub simulation_filters: Option<Vec<String>>,
     #[serde(default)]
@@ -3416,28 +3480,6 @@ pub struct DashboardRequest {
     pub scenario_ids: Option<Vec<String>>,
     #[serde(default)]
     pub scenario_search: Option<String>,
-    #[serde(default)]
-    pub history_practice: Option<bool>,
-    #[serde(default)]
-    pub history_scenario_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub history_infinite_mode: Option<bool>,
-    #[serde(default)]
-    pub history_show_archived: Option<bool>,
-    #[serde(default)]
-    pub history_sort_by: Option<String>,
-    #[serde(default)]
-    pub history_sort_order: Option<String>,
-    #[serde(default)]
-    pub history_page: Option<i64>,
-    #[serde(default)]
-    pub history_page_size: Option<i64>,
-    #[serde(default)]
-    pub history_simulation_search: Option<String>,
-    #[serde(default)]
-    pub history_scenario_search: Option<String>,
-    #[serde(default)]
-    pub history_profile_search: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3461,19 +3503,9 @@ pub struct DashboardScenarioMeta {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashboardSecondaryMetricsInput {
+pub struct DashboardSecondaryMetrics {
     #[serde(default)]
-    pub persona_performance: Option<PrimaryPersonaPerformanceInput>,
-    #[serde(default)]
-    pub cohort_performance: Option<SecondaryCohortPerformance>,
-    #[serde(default)]
-    pub attempt_improvement: Option<SecondaryAttemptImprovement>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DashboardSecondaryMetricsOutput {
-    #[serde(default)]
-    pub persona_performance: Option<PrimaryPersonaPerformanceOutput>,
+    pub persona_performance: Option<PrimaryPersonaPerformance>,
     #[serde(default)]
     pub cohort_performance: Option<SecondaryCohortPerformance>,
     #[serde(default)]
@@ -3515,6 +3547,22 @@ pub struct DashboardTrendPoint {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DecryptInvocationKeyApiRequest {
+    pub invocation_id: String,
+    pub key_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DecryptInvocationKeyApiResponse {
+    #[serde(default)]
+    pub key: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DecryptProviderKeyApiRequest {
     pub provider_id: String,
     pub key_id: String,
@@ -3548,12 +3596,39 @@ pub struct DecryptSettingKeyApiResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteAgentApiRequest {
-    pub agent_ids: Vec<String>,
+    #[serde(default)]
+    pub agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_tool_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub model_search: Option<String>,
+    #[serde(default)]
+    pub tool_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteAgentApiResponse {
     pub results: Vec<DeleteAgentResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3565,29 +3640,76 @@ pub struct DeleteAgentResult {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteAuthApiRequest {
-    pub auth_ids: Vec<String>,
+    #[serde(default)]
+    pub auth_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteAuthApiResponse {
     pub results: Vec<DeleteAuthResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteAuthResult {
     pub success: bool,
-    pub auth_id: String,
     pub message: String,
+    #[serde(default)]
+    pub auth_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteCohortApiRequest {
-    pub cohort_ids: Vec<String>,
+    #[serde(default)]
+    pub cohort_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_profile_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub profile_search: Option<String>,
+    #[serde(default)]
+    pub simulation_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteCohortApiResponse {
     pub results: Vec<DeleteCohortResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3599,182 +3721,468 @@ pub struct DeleteCohortResult {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteDepartmentApiRequest {
-    pub department_ids: Vec<String>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteDepartmentApiResponse {
     pub results: Vec<DeleteDepartmentResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteDepartmentResult {
     pub success: bool,
-    pub department_id: String,
     pub message: String,
+    #[serde(default)]
+    pub department_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteDocumentApiRequest {
-    pub document_ids: Vec<String>,
+    #[serde(default)]
+    pub document_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub field_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteDocumentApiResponse {
     pub results: Vec<DeleteDocumentResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteDocumentResult {
     pub success: bool,
-    pub document_id: String,
     pub message: String,
+    #[serde(default)]
+    pub document_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteEvalApiRequest {
-    pub eval_ids: Vec<String>,
+    #[serde(default)]
+    pub eval_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteEvalApiResponse {
     pub results: Vec<DeleteEvalResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteEvalResult {
     pub success: bool,
-    pub eval_id: String,
     pub message: String,
+    #[serde(default)]
+    pub eval_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteFieldApiRequest {
-    pub field_ids: Vec<String>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_search: Option<String>,
+    #[serde(default)]
+    pub persona_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteFieldApiResponse {
     pub results: Vec<DeleteFieldResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteFieldResult {
     pub success: bool,
-    pub field_id: String,
     pub message: String,
+    #[serde(default)]
+    pub field_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteModelApiRequest {
-    pub model_ids: Vec<String>,
+    #[serde(default)]
+    pub model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub agent_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteModelApiResponse {
     pub results: Vec<DeleteModelResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteModelResult {
     pub success: bool,
-    pub model_id: String,
     pub message: String,
+    #[serde(default)]
+    pub model_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteParameterApiRequest {
-    pub parameter_ids: Vec<String>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub field_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteParameterApiResponse {
     pub results: Vec<DeleteParameterResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteParameterResult {
     pub success: bool,
-    pub parameter_id: String,
     pub message: String,
+    #[serde(default)]
+    pub parameter_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeletePersonaApiRequest {
-    pub persona_ids: Vec<String>,
+    #[serde(default)]
+    pub ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub field_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub color_search: Option<String>,
+    #[serde(default)]
+    pub icon_search: Option<String>,
+    #[serde(default)]
+    pub voice_search: Option<String>,
+    #[serde(default)]
+    pub instruction_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeletePersonaApiResponse {
     pub results: Vec<DeletePersonaResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeletePersonaResult {
     pub success: bool,
-    pub persona_id: String,
+    pub id: String,
     pub message: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteProfileApiRequest {
-    pub profile_ids: Vec<String>,
+    #[serde(default)]
+    pub profile_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub cohort_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub role_filter: Option<String>,
+    #[serde(default)]
+    pub cohort_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub role_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteProfileApiResponse {
     pub results: Vec<DeleteProfileResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteProfileResult {
     pub success: bool,
-    pub profile_id: String,
     pub message: String,
+    #[serde(default)]
+    pub profile_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteProviderApiRequest {
-    pub provider_ids: Vec<String>,
+    #[serde(default)]
+    pub provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_status: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub model_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteProviderApiResponse {
     pub results: Vec<DeleteProviderResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteProviderResult {
     pub success: bool,
-    pub provider_id: String,
     pub message: String,
+    #[serde(default)]
+    pub provider_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteRubricApiRequest {
-    pub rubric_ids: Vec<String>,
+    #[serde(default)]
+    pub rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub simulation_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteRubricApiResponse {
     pub results: Vec<DeleteRubricResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteRubricResult {
     pub success: bool,
-    pub rubric_id: String,
     pub message: String,
+    #[serde(default)]
+    pub rubric_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteScenarioApiRequest {
-    pub scenario_ids: Vec<String>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub persona_search: Option<String>,
+    #[serde(default)]
+    pub simulation_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteScenarioApiResponse {
     pub results: Vec<DeleteScenarioResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3789,29 +4197,90 @@ pub struct DeleteScenarioResult {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteSettingApiRequest {
-    pub setting_ids: Vec<String>,
+    #[serde(default)]
+    pub setting_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub system_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub provider_search: Option<String>,
+    #[serde(default)]
+    pub auth_search: Option<String>,
+    #[serde(default)]
+    pub system_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteSettingApiResponse {
     pub results: Vec<DeleteSettingResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteSettingResult {
     pub success: bool,
-    pub setting_id: String,
     pub message: String,
+    #[serde(default)]
+    pub setting_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteSimulationApiRequest {
-    pub simulation_ids: Vec<String>,
+    #[serde(default)]
+    pub simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_cohort_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub cohort_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteSimulationApiResponse {
     pub results: Vec<DeleteSimulationResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3823,50 +4292,61 @@ pub struct DeleteSimulationResult {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteToolApiRequest {
-    pub tool_ids: Vec<String>,
+    #[serde(default)]
+    pub tool_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_creatable: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub agent_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteToolApiResponse {
     pub results: Vec<DeleteToolResult>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteToolResult {
     pub success: bool,
-    pub tool_id: String,
     pub message: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DepartmentDescriptionSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DepartmentDraftFormState {
-    pub setting_ids: Vec<String>,
+pub struct DepartmentDescriptionResource {
     #[serde(default)]
-    pub name_id: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub description_id: Option<String>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3876,61 +4356,46 @@ pub struct DepartmentFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DepartmentFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct DepartmentFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DepartmentFlagSection {
+pub struct DepartmentNameResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<DepartmentFlagConfig>>,
-    #[serde(default)]
-    pub resources: Option<Vec<DepartmentFlagConfig>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DepartmentNameSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3944,39 +4409,41 @@ pub struct DepartmentResultItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DepartmentSettingSection {
+pub struct DepartmentSettingResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub provider_key_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub auth_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub system_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DisconnectRequest {
-    pub sid: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DisconnectResponse {
-    pub success: bool,
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub mcp: Option<bool>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocsApiRequest {
     #[serde(default)]
     pub entity_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3987,19 +4454,7 @@ pub struct DocsApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocsResponseInput {
-    pub name: String,
-    #[serde(rename = "type")]
-    pub r#type: String,
-    pub description: String,
-    pub tables: Vec<TableInfo>,
-    pub operations: Vec<OperationInfo>,
-    #[serde(default)]
-    pub materialized_view: Option<MvInfo>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocsResponseOutput {
+pub struct DocsResponse {
     pub name: String,
     #[serde(rename = "type")]
     pub r#type: String,
@@ -4013,33 +4468,19 @@ pub struct DocsResponseOutput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocumentDepartmentResource {
     #[serde(default)]
-    pub id: Option<String>,
+    pub department_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentDepartmentSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<DocumentDepartmentResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<DocumentDepartmentResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4050,41 +4491,12 @@ pub struct DocumentDescriptionResource {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentDescriptionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<DocumentDescriptionResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<DocumentDescriptionResource>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentDraftFormState {
-    pub flag_ids: Vec<String>,
-    pub department_ids: Vec<String>,
-    pub file_ids: Vec<String>,
-    pub image_ids: Vec<String>,
-    pub text_ids: Vec<String>,
-    pub parameter_field_ids: Vec<String>,
-    pub parameter_ids: Vec<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4092,7 +4504,9 @@ pub struct DocumentEntry {
     #[serde(default)]
     pub document_id: Option<String>,
     #[serde(default)]
-    pub upload_id: Option<String>,
+    pub text_id: Option<String>,
+    #[serde(default)]
+    pub file_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
@@ -4108,67 +4522,52 @@ pub struct DocumentFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentFieldSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<DocumentParameterFieldResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<DocumentParameterFieldResource>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocumentFileResource {
     #[serde(default)]
     pub id: Option<String>,
     #[serde(default)]
+    pub files_id: Option<String>,
+    #[serde(default)]
+    pub file_path: Option<String>,
+    #[serde(default)]
+    pub mime_type: Option<String>,
+    #[serde(default)]
+    pub size: Option<i64>,
+    #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct DocumentFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
+    pub icon_id: Option<String>,
     #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentFlagSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<DocumentFlagConfig>>,
-    #[serde(default)]
-    pub resources: Option<Vec<DocumentFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4176,27 +4575,25 @@ pub struct DocumentImageResource {
     #[serde(default)]
     pub id: Option<String>,
     #[serde(default)]
+    pub image_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub file_path: Option<String>,
+    #[serde(default)]
+    pub mime_type: Option<String>,
+    #[serde(default)]
+    pub size: Option<i64>,
+    #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentImageSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<DocumentImageResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<DocumentImageResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4207,26 +4604,12 @@ pub struct DocumentNameResource {
     pub name: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentNameSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<DocumentNameResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<DocumentNameResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4242,27 +4625,47 @@ pub struct DocumentParameterFieldResource {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
+    pub conditional_parameter_id: Option<String>,
+    #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentParameterSection {
+pub struct DocumentParameterResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub parameter_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub value: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub persona_parameter: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<GetParameterResponse>>,
+    pub document_parameter: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<GetParameterResponse>>,
+    pub scenario_parameter: Option<bool>,
+    #[serde(default)]
+    pub video_parameter: Option<bool>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4280,47 +4683,21 @@ pub struct DocumentTextResource {
     #[serde(default)]
     pub id: Option<String>,
     #[serde(default)]
+    pub texts_id: Option<String>,
+    #[serde(default)]
+    pub file_path: Option<String>,
+    #[serde(default)]
+    pub mime_type: Option<String>,
+    #[serde(default)]
+    pub content: Option<String>,
+    #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentTextSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<DocumentTextResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<DocumentTextResource>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentUploadSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<DocumentFileResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<DocumentFileResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4329,33 +4706,17 @@ pub struct DraftFileValue {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DraftFormState {
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub instructions_id: Option<String>,
-    #[serde(default)]
-    pub color_id: Option<String>,
-    #[serde(default)]
-    pub icon_id: Option<String>,
-    #[serde(default)]
-    pub active_flag_id: Option<String>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub example_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub parameter_field_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub voice_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DraftProfilePersonaValue {
     pub profile_id: String,
     pub persona_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DraftScenarioFlagDenormValue {
+    pub scenario_id: String,
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub value: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4406,6 +4767,10 @@ pub struct DraftTextValue {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateAgentApiRequest {
     pub agent_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4413,11 +4778,17 @@ pub struct DuplicateAgentApiResponse {
     pub success: bool,
     pub agent_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateAuthApiRequest {
     pub auth_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4425,11 +4796,19 @@ pub struct DuplicateAuthApiResponse {
     pub success: bool,
     pub auth_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub auths: Option<Vec<ListAuthApiAuth>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateCohortApiRequest {
     pub cohort_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4437,11 +4816,17 @@ pub struct DuplicateCohortApiResponse {
     pub success: bool,
     pub cohort_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateDepartmentApiRequest {
     pub department_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4449,11 +4834,19 @@ pub struct DuplicateDepartmentApiResponse {
     pub success: bool,
     pub department_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub departments: Option<Vec<ListDepartmentApiDepartment>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateDocumentApiRequest {
     pub document_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4461,11 +4854,17 @@ pub struct DuplicateDocumentApiResponse {
     pub success: bool,
     pub document_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateEvalApiRequest {
     pub eval_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4473,11 +4872,19 @@ pub struct DuplicateEvalApiResponse {
     pub success: bool,
     pub eval_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub evals: Option<Vec<ListEvalApiEval>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateFieldApiRequest {
     pub field_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4485,11 +4892,17 @@ pub struct DuplicateFieldApiResponse {
     pub success: bool,
     pub field_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateModelApiRequest {
     pub model_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4497,11 +4910,19 @@ pub struct DuplicateModelApiResponse {
     pub success: bool,
     pub model_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub models: Option<Vec<ListModelApiModel>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateParameterApiRequest {
     pub parameter_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4509,23 +4930,40 @@ pub struct DuplicateParameterApiResponse {
     pub success: bool,
     pub parameter_id: String,
     pub message: String,
+    #[serde(default)]
+    pub parameters: Option<Vec<ListParameterApiParameter>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicatePersonaApiRequest {
-    pub persona_id: String,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicatePersonaApiResponse {
     pub success: bool,
-    pub persona_id: String,
+    pub id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub personas: Option<Vec<ListPersonaApiPersona>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateProfileApiRequest {
     pub target_profile_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4533,11 +4971,22 @@ pub struct DuplicateProfileApiResponse {
     pub success: bool,
     pub profile_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub profiles: Option<Vec<ListProfilesApiProfile>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateProviderApiRequest {
-    pub provider_id: String,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub provider_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4545,11 +4994,19 @@ pub struct DuplicateProviderApiResponse {
     pub success: bool,
     pub provider_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub providers: Option<Vec<ListProviderApiProvider>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateRubricApiRequest {
     pub rubric_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4557,11 +5014,19 @@ pub struct DuplicateRubricApiResponse {
     pub success: bool,
     pub rubric_id: String,
     pub message: String,
+    #[serde(default)]
+    pub rubrics: Option<Vec<ListRubricApiRubric>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateScenarioApiRequest {
     pub scenario_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4569,11 +5034,19 @@ pub struct DuplicateScenarioApiResponse {
     pub success: bool,
     pub scenario_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub scenarios: Option<Vec<ListScenarioApiScenario>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateSettingApiRequest {
     pub setting_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4581,11 +5054,19 @@ pub struct DuplicateSettingApiResponse {
     pub success: bool,
     pub setting_id: String,
     pub message: String,
+    #[serde(default)]
+    pub settings: Option<Vec<ListSettingApiSetting>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateSimulationApiRequest {
     pub simulation_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4593,11 +5074,17 @@ pub struct DuplicateSimulationApiResponse {
     pub success: bool,
     pub simulation_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DuplicateToolApiRequest {
     pub tool_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4605,6 +5092,10 @@ pub struct DuplicateToolApiResponse {
     pub success: bool,
     pub tool_id: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub tools: Option<Vec<ListToolApiTool>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4644,138 +5135,37 @@ pub struct EmulateProfileApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EndAllAttemptApiResponse {
-    pub attempt_id: String,
-    pub success: bool,
+pub struct EvalDepartmentResource {
     #[serde(default)]
-    pub all_scenarios_complete: Option<bool>,
+    pub department_id: Option<String>,
     #[serde(default)]
-    pub message: Option<String>,
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EndAttemptApiRequest {
-    pub attempt_id: String,
-    pub chat_id: String,
+pub struct EvalDescriptionResource {
     #[serde(default)]
-    pub grade: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub score: Option<i64>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub passed: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub time_taken: Option<i64>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub feedbacks: Option<Vec<AttemptGradeFeedbackEntry>>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub strengths: Option<Vec<AttemptGradeStrengthEntry>>,
-    #[serde(default)]
-    pub improvements: Option<Vec<AttemptGradeImprovementEntry>>,
-    #[serde(default)]
-    pub analyses: Option<Vec<AttemptGradeAnalysisEntry>>,
-    #[serde(default)]
-    pub highlights: Option<Vec<AttemptGradeHighlightEntry>>,
-    #[serde(default)]
-    pub replacements: Option<Vec<AttemptGradeReplacementEntry>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EndAttemptApiResponse {
-    pub chat_id: String,
-    #[serde(default)]
-    pub is_attempt_finished: Option<bool>,
-    #[serde(default)]
-    pub grade_id: Option<String>,
-    #[serde(default)]
-    pub score: Option<i64>,
-    #[serde(default)]
-    pub passed: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EndTestApiRequest {
-    pub test_id: String,
-    pub test_invocation_id: String,
-    pub run_id: String,
-    #[serde(default)]
-    pub grade: Option<bool>,
-    #[serde(default)]
-    pub score: Option<f64>,
-    #[serde(default)]
-    pub passed: Option<bool>,
-    #[serde(default)]
-    pub feedback: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EndTestApiResponse {
-    pub invocation_id: String,
-    #[serde(default)]
-    pub grade_id: Option<String>,
-    #[serde(default)]
-    pub score: Option<f64>,
-    #[serde(default)]
-    pub passed: Option<bool>,
-    #[serde(default)]
-    pub feedback: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EntryTypeItem {
-    pub name: String,
-    pub operation: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalDepartmentSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalDescriptionSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalDraftFormState {
-    pub flag_ids: Vec<String>,
-    pub department_ids: Vec<String>,
-    pub model_ids: Vec<String>,
-    pub rubric_ids: Vec<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4785,141 +5175,158 @@ pub struct EvalFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct EvalFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalFlagSection {
+pub struct EvalModelFlagOptionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub model_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub flag_id: Option<String>,
+    #[serde(rename = "type")]
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub r#type: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub value: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub resource: Option<EvalFlagConfig>,
-    #[serde(default)]
-    pub resources: Option<Vec<EvalFlagConfig>>,
+    pub icon: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalModelFlagSection {
+pub struct EvalModelFlagResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub model_id: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub flag_id: Option<String>,
+    #[serde(rename = "type")]
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub r#type: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub value: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub icon: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalModelPositionSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+pub struct EvalModelFlagValue {
+    pub model_id: String,
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub value: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalModelRubricSection {
+pub struct EvalModelPositionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub model_id: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub value: Option<serde_json::Value>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalModelSection {
+pub struct EvalModelResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub modality_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalNameSection {
+pub struct EvalModelRubricResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub model_id: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub rubric_id: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub resource: Option<serde_json::Value>,
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EvalNameResource {
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4933,11 +5340,19 @@ pub struct EvalResultItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportActivityApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
+pub struct EvalRubricResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EvalSetup {
+    pub test_id: String,
+    pub invocations: Vec<InvocationSlot>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4948,22 +5363,35 @@ pub struct ExportAgentApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportAgentApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportAttemptApiRequest {
-    pub attempt_id: String,
+    #[serde(default)]
+    pub view: Option<String>,
+    #[serde(default)]
+    pub attempt_id: Option<String>,
+    #[serde(default)]
+    pub record_id: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub mode: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportAttemptApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -4982,43 +5410,15 @@ pub struct ExportAuthApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportBenchmarkApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportChatApiRequest {
-    pub chat_entry_id: String,
+pub struct ExportCohortApiRequest {
     #[serde(default)]
-    pub attempt_id: Option<String>,
-    #[serde(default)]
-    pub draft_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportChatApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
+    pub cohort_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportCohortApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportDashboardApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5030,9 +5430,8 @@ pub struct ExportDepartmentApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportDepartmentApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5058,9 +5457,8 @@ pub struct ExportEvalApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportEvalApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5072,46 +5470,8 @@ pub struct ExportFieldApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportFieldApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportGroupApiRequest {
-    pub group_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportGroupApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportHealthApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportHomeApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportLeaderboardApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5123,9 +5483,8 @@ pub struct ExportModelApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportModelApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5137,9 +5496,8 @@ pub struct ExportParameterApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportParameterApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5147,6 +5505,8 @@ pub struct ExportParameterApiResponse {
 pub struct ExportPersonaApiRequest {
     #[serde(default)]
     pub persona_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
     #[serde(default)]
     pub search: Option<String>,
     #[serde(default)]
@@ -5159,25 +5519,8 @@ pub struct ExportPersonaApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportPersonaApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportPracticeApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportPricingApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5203,44 +5546,22 @@ pub struct ExportProviderApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportProviderApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportRecordApiRequest {
-    pub target_profile_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportRecordApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportReportsApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportRubricApiRequest {
+    pub rubric_id: String,
     #[serde(default)]
-    pub rubric_id: Option<String>,
+    pub chat_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportRubricApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5267,19 +5588,6 @@ pub struct ExportScenarioApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportSessionApiRequest {
-    pub target_session_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ExportSessionApiResponse {
-    pub content: String,
-    pub file_name: String,
-    pub mime_type: String,
-    pub row_count: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportSettingApiRequest {
     #[serde(default)]
     pub setting_id: Option<String>,
@@ -5287,9 +5595,8 @@ pub struct ExportSettingApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportSettingApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5309,22 +5616,47 @@ pub struct ExportSimulationApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportSimulationApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
+    pub row_count: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExportSystemApiRequest {
+    pub view: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub mode: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExportSystemApiResponse {
+    pub file_id: String,
+    pub file_name: String,
     pub row_count: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportTestApiRequest {
-    pub test_id: String,
+    #[serde(default)]
+    pub view: Option<String>,
+    #[serde(default)]
+    pub test_id: Option<String>,
+    #[serde(default)]
+    pub invocation_id: Option<String>,
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub mode: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportTestApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5336,9 +5668,8 @@ pub struct ExportToolApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportToolApiResponse {
-    pub content: String,
+    pub file_id: String,
     pub file_name: String,
-    pub mime_type: String,
     pub row_count: i64,
 }
 
@@ -5357,75 +5688,55 @@ pub struct FeedbackEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FieldConditionalParameterSection {
+pub struct FieldConditionalParameterResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub parameter_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<GetParameterResponse>>,
-    #[serde(default)]
-    pub resources: Option<Vec<GetParameterResponse>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FieldDepartmentSection {
+pub struct FieldDepartmentResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub department_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FieldDescriptionSection {
+pub struct FieldDescriptionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FieldDraftFormState {
-    pub department_ids: Vec<String>,
-    pub conditional_parameter_ids: Vec<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5435,61 +5746,46 @@ pub struct FieldFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FieldFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct FieldFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FieldFlagSection {
+pub struct FieldNameResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<FieldFlagConfig>,
-    #[serde(default)]
-    pub resources: Option<Vec<FieldFlagConfig>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FieldNameSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5500,6 +5796,131 @@ pub struct FieldResultItem {
     pub field_id: Option<String>,
     #[serde(default)]
     pub errors: Option<Vec<FieldFieldError>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadAgentApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadAttemptApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadAuthApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadCohortApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadDepartmentApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadDocumentApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadEvalApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadFieldApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadGroupApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadModelApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadParameterApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadPersonaApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadProfileApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadProviderApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadRubricApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadScenarioApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadSettingApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadSimulationApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadTestApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileDownloadToolApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FilePreviewAttemptApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FilePreviewDocumentApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FilePreviewGroupApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FilePreviewScenarioApiRequest {
+    pub file_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FileUploadDocumentApiResponse {
+    pub file_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5662,135 +6083,759 @@ pub struct FooterScenarioStats {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerateApiResponse {
-    pub group_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GeneratePayload {
-    pub artifact_types: Vec<ArtifactTypeItem>,
-    pub resource_types: Vec<ResourceTypeItem>,
+pub struct GenerateConfig {
     #[serde(default)]
-    pub artifact_id: Option<serde_json::Value>,
+    pub operations: Option<Vec<String>>,
     #[serde(default)]
-    pub draft_id: Option<serde_json::Value>,
+    pub dangerous: Option<bool>,
     #[serde(default)]
-    pub entry_types: Option<Vec<EntryTypeItem>>,
-    #[serde(default)]
-    pub user_instructions: Option<Vec<String>>,
-    #[serde(default)]
-    pub save: Option<bool>,
-    #[serde(default)]
-    pub run_id: Option<String>,
+    pub params: Option<std::collections::HashMap<String, serde_json::Value>>,
     #[serde(default)]
     pub group_id: Option<String>,
-    #[serde(default)]
-    pub modality: Option<String>,
-    #[serde(default)]
-    pub extra_messages: Option<Vec<std::collections::HashMap<String, String>>>,
-    #[serde(default)]
-    pub metadata: Option<std::collections::HashMap<String, serde_json::Value>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerationCompleteEvent {
-    pub artifact_type: String,
+pub struct GenerationsAgentApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsAgentApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsAgentListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsAgentListItem {
     pub group_id: String,
-    pub run_id: String,
     #[serde(default)]
-    pub success: Option<bool>,
+    pub session_id: Option<String>,
     #[serde(default)]
-    pub message: Option<String>,
+    pub group_name: Option<String>,
     #[serde(default)]
-    pub artifact_id: Option<String>,
+    pub created_at: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerationErrorEvent {
-    pub artifact_type: String,
-    pub message: String,
+pub struct GenerationsAttemptApiRequest {
     #[serde(default)]
-    pub group_id: Option<String>,
+    pub search: Option<String>,
     #[serde(default)]
-    pub resource_type: Option<String>,
+    pub date_from: Option<String>,
     #[serde(default)]
-    pub resource_types: Option<Vec<String>>,
+    pub date_to: Option<String>,
     #[serde(default)]
-    pub resource_id: Option<String>,
+    pub page_limit: Option<i64>,
     #[serde(default)]
-    pub run_id: Option<String>,
-    #[serde(default)]
-    pub success: Option<bool>,
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerationMediaCompleteEvent {
-    pub modality: String,
-    pub artifact_type: String,
+pub struct GenerationsAttemptApiResponse {
     #[serde(default)]
-    pub group_id: Option<String>,
+    pub actor_name: Option<String>,
     #[serde(default)]
-    pub run_id: Option<String>,
+    pub items: Option<Vec<GenerationsAttemptListItem>>,
     #[serde(default)]
-    pub resource_type: Option<String>,
-    #[serde(default)]
-    pub resource_id: Option<String>,
-    #[serde(default)]
-    pub file_path: Option<String>,
-    #[serde(default)]
-    pub mime_type: Option<String>,
-    #[serde(default)]
-    pub file_size: Option<i64>,
-    #[serde(default)]
-    pub upload_id: Option<String>,
+    pub total_count: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerationMediaProgressEvent {
-    pub modality: String,
-    pub artifact_type: String,
-    pub status: String,
-    pub message: String,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub run_id: Option<String>,
-    #[serde(default)]
-    pub resource_type: Option<String>,
-    #[serde(default)]
-    pub resource_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerationProgressEvent {
-    pub artifact_type: String,
+pub struct GenerationsAttemptListItem {
     pub group_id: String,
-    pub run_id: String,
-    pub completed_resources: i64,
-    pub total_resources: i64,
-    pub percentage: i64,
-    pub last_completed_resource: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerationSavedEvent {
-    pub artifact_type: String,
-    pub group_id: String,
-    pub run_id: String,
+pub struct GenerationsAuthApiRequest {
     #[serde(default)]
-    pub artifact_id: Option<String>,
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsAuthApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsAuthListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsAuthListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsCohortApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsCohortApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsCohortListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsCohortListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsDepartmentApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsDepartmentApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsDepartmentListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsDepartmentListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsDocumentApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsDocumentApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsDocumentListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsDocumentListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsEvalApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsEvalApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsEvalListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsEvalListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsFieldApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsFieldApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsFieldListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsFieldListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsModelApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsModelApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsModelListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsModelListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsParameterApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsParameterApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsParameterListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsParameterListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsPersonaApiRequest {
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsPersonaApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsPersonaListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsPersonaListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsProfileApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsProfileApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsProfileListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsProfileListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsProviderApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsProviderApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsProviderListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsProviderListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsRubricApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsRubricApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsRubricListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsRubricListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsScenarioApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsScenarioApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsScenarioListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsScenarioListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsSettingApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsSettingApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsSettingListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsSettingListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsSimulationApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsSimulationApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsSimulationListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsSimulationListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsSystemApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsSystemApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsSystemListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsSystemListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsTestApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsTestApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsTestListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsTestListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsToolApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsToolApiResponse {
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub items: Option<Vec<GenerationsToolListItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenerationsToolListItem {
+    pub group_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub group_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetAgentApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub agent_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub models: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub prompts: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub instructions: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub tools: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub temperature_levels: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub reasoning_levels: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub voices: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub qualities: Option<App__infra__agent__types__SectionFilter>,
+    #[serde(default)]
+    pub rubrics: Option<App__infra__agent__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetAgentApiResponseInput {
+pub struct GetAgentApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -5800,96 +6845,54 @@ pub struct GetAgentApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub agent_id: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
     pub general_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<AgentNameSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub descriptions: Option<AgentDescriptionSection>,
+    pub names: Option<Vec<AgentNameResource>>,
     #[serde(default)]
-    pub models: Option<AgentModelSection>,
+    pub descriptions: Option<Vec<AgentDescriptionResource>>,
     #[serde(default)]
-    pub prompts: Option<AgentPromptSection>,
+    pub models: Option<Vec<AgentModelResource>>,
     #[serde(default)]
-    pub instructions: Option<AgentInstructionSection>,
+    pub prompts: Option<Vec<AgentPromptResource>>,
     #[serde(default)]
-    pub flags: Option<AgentFlagSection>,
+    pub instructions: Option<Vec<AgentInstructionResource>>,
     #[serde(default)]
-    pub departments: Option<AgentDepartmentSection>,
+    pub flags: Option<Vec<AgentFlagResource>>,
     #[serde(default)]
-    pub tools: Option<AgentToolSection>,
+    pub departments: Option<Vec<AgentDepartmentResource>>,
     #[serde(default)]
-    pub temperature_levels: Option<AgentTemperatureLevelSection>,
+    pub tools: Option<Vec<AgentToolResource>>,
     #[serde(default)]
-    pub reasoning_levels: Option<AgentReasoningLevelSection>,
+    pub temperature_levels: Option<Vec<AgentTemperatureLevelResource>>,
     #[serde(default)]
-    pub voices: Option<AgentVoiceSection>,
+    pub reasoning_levels: Option<Vec<AgentReasoningLevelResource>>,
     #[serde(default)]
-    pub qualities: Option<AgentQualitySection>,
+    pub voices: Option<Vec<AgentVoiceResource>>,
     #[serde(default)]
-    pub rubrics: Option<AgentRubricSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetAgentApiResponseOutput {
+    pub qualities: Option<Vec<AgentQualityResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub agent_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub general_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<AgentNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<AgentDescriptionSection>,
-    #[serde(default)]
-    pub models: Option<AgentModelSection>,
-    #[serde(default)]
-    pub prompts: Option<AgentPromptSection>,
-    #[serde(default)]
-    pub instructions: Option<AgentInstructionSection>,
-    #[serde(default)]
-    pub flags: Option<AgentFlagSection>,
-    #[serde(default)]
-    pub departments: Option<AgentDepartmentSection>,
-    #[serde(default)]
-    pub tools: Option<AgentToolSection>,
-    #[serde(default)]
-    pub temperature_levels: Option<AgentTemperatureLevelSection>,
-    #[serde(default)]
-    pub reasoning_levels: Option<AgentReasoningLevelSection>,
-    #[serde(default)]
-    pub voices: Option<AgentVoiceSection>,
-    #[serde(default)]
-    pub qualities: Option<AgentQualitySection>,
-    #[serde(default)]
-    pub rubrics: Option<AgentRubricSection>,
+    pub rubrics: Option<Vec<AgentRubricResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetAgentDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub name_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -5903,7 +6906,57 @@ pub struct GetAgentDraftResponse {
     pub voice_ids: Vec<String>,
     pub quality_ids: Vec<String>,
     #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
     pub rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub prompt_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub instruction_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_tool_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_reasoning_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_temperature_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_prompt_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_instruction_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_agent_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetAgentDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5918,7 +6971,7 @@ pub struct GetAttemptDetailRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetAttemptDetailResponseInput {
+pub struct GetAttemptDetailResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -5952,7 +7005,7 @@ pub struct GetAttemptDetailResponseInput {
     #[serde(default)]
     pub has_messages: Option<bool>,
     #[serde(default)]
-    pub available_continuation_options: Option<AvailableContinuationOptionsInput>,
+    pub available_continuation_options: Option<AvailableContinuationOptions>,
     #[serde(default)]
     pub rubric_structure: Option<RubricStructureData>,
     #[serde(default)]
@@ -5960,57 +7013,11 @@ pub struct GetAttemptDetailResponseInput {
     #[serde(default)]
     pub chat_entry_id: Option<String>,
     #[serde(default)]
-    pub resources: Option<AttemptResourcesInput>,
+    pub next_chat_entry_id: Option<String>,
     #[serde(default)]
-    pub entries: Option<AttemptEntriesInput>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetAttemptDetailResponseOutput {
+    pub resources: Option<AttemptResources>,
     #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub attempt_exists: Option<bool>,
-    #[serde(default)]
-    pub access_denied: Option<bool>,
-    #[serde(default)]
-    pub attempt: Option<AttemptData>,
-    #[serde(default)]
-    pub simulation: Option<SimulationData>,
-    #[serde(default)]
-    pub timer: Option<TimerData>,
-    #[serde(default)]
-    pub aggregated_results: Option<AggregatedResults>,
-    #[serde(default)]
-    pub current_chat_index: Option<i64>,
-    #[serde(default)]
-    pub expected_chat_count: Option<i64>,
-    #[serde(default)]
-    pub is_active: Option<bool>,
-    #[serde(default)]
-    pub is_lobby: Option<bool>,
-    #[serde(default)]
-    pub show_results: Option<bool>,
-    #[serde(default)]
-    pub should_show_controls: Option<bool>,
-    #[serde(default)]
-    pub is_own_attempt: Option<bool>,
-    #[serde(default)]
-    pub current_chat_id: Option<String>,
-    #[serde(default)]
-    pub has_messages: Option<bool>,
-    #[serde(default)]
-    pub available_continuation_options: Option<AvailableContinuationOptionsOutput>,
-    #[serde(default)]
-    pub rubric_structure: Option<RubricStructureData>,
-    #[serde(default)]
-    pub training_id: Option<String>,
-    #[serde(default)]
-    pub chat_entry_id: Option<String>,
-    #[serde(default)]
-    pub resources: Option<AttemptResourcesOutput>,
-    #[serde(default)]
-    pub entries: Option<AttemptEntriesOutput>,
+    pub entries: Option<AttemptEntries>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6026,22 +7033,45 @@ pub struct GetAttemptResponse {
     pub attempt_created_at: String,
     pub infinite_mode: bool,
     pub num_chats: i64,
-    pub is_archived: bool,
     pub scenario_ids: Vec<String>,
     pub chat_entry_id: Option<String>,
     pub attempt_chat_id: Option<String>,
+    #[serde(default)]
+    pub role_id: Option<String>,
+    #[serde(default)]
+    pub is_archived: Option<bool>,
+    #[serde(default)]
+    pub is_completed: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetAuthApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub auth_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__auth__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__auth__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__auth__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__auth__types__SectionFilter>,
+    #[serde(default)]
+    pub protocols: Option<App__infra__auth__types__SectionFilter>,
+    #[serde(default)]
+    pub slugs: Option<App__infra__auth__types__SectionFilter>,
+    #[serde(default)]
+    pub items: Option<App__infra__auth__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetAuthApiResponseInput {
+pub struct GetAuthApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -6051,64 +7081,38 @@ pub struct GetAuthApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<AuthNameSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub descriptions: Option<AuthDescriptionSection>,
+    pub names: Option<Vec<AuthNameResource>>,
     #[serde(default)]
-    pub flags: Option<AuthFlagSection>,
+    pub descriptions: Option<Vec<AuthDescriptionResource>>,
     #[serde(default)]
-    pub protocols: Option<AuthProtocolSection>,
+    pub flags: Option<Vec<AuthFlagResource>>,
     #[serde(default)]
-    pub slugs: Option<AuthSlugSection>,
+    pub departments: Option<Vec<AuthDepartmentResource>>,
     #[serde(default)]
-    pub items: Option<AuthItemSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetAuthApiResponseOutput {
+    pub protocols: Option<Vec<AuthProtocolResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
+    pub slugs: Option<Vec<AuthSlugResource>>,
     #[serde(default)]
-    pub auth_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<AuthNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<AuthDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<AuthFlagSection>,
-    #[serde(default)]
-    pub protocols: Option<AuthProtocolSection>,
-    #[serde(default)]
-    pub slugs: Option<AuthSlugSection>,
-    #[serde(default)]
-    pub items: Option<AuthItemSection>,
+    pub items: Option<Vec<AuthItemResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetAuthDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -6118,6 +7122,36 @@ pub struct GetAuthDraftResponse {
     pub profile_ids: Vec<String>,
     pub protocol_ids: Vec<String>,
     pub slug_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_item_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_protocol_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_slug_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetAuthDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6129,12 +7163,10 @@ pub struct GetAuthDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetChatDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -6153,6 +7185,54 @@ pub struct GetChatDraftResponse {
     pub question_ids: Vec<String>,
     pub scenario_ids: Vec<String>,
     pub video_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_document_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_objective_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_option_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_problem_statement_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_question_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_video_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetChatDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6163,77 +7243,162 @@ pub struct GetChatDraftsApiResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetChatRequest {
-    pub chat_entry_id: String,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub chat_entry_id: Option<String>,
     #[serde(default)]
     pub attempt_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
     #[serde(default)]
-    pub description_search: Option<String>,
+    pub snapshot_key: Option<String>,
     #[serde(default)]
-    pub persona_search: Option<String>,
+    pub names: Option<App__infra__attempt__chat__types__SectionFilter>,
     #[serde(default)]
-    pub document_search: Option<String>,
+    pub descriptions: Option<App__infra__attempt__chat__types__SectionFilter>,
     #[serde(default)]
-    pub problem_statement_search: Option<String>,
+    pub flags: Option<App__infra__attempt__chat__types__SectionFilter>,
     #[serde(default)]
-    pub image_search: Option<String>,
+    pub departments: Option<App__infra__attempt__chat__types__SectionFilter>,
     #[serde(default)]
-    pub video_search: Option<String>,
+    pub personas: Option<App__infra__attempt__chat__types__SectionFilter>,
     #[serde(default)]
-    pub question_search: Option<String>,
+    pub documents: Option<App__infra__attempt__chat__types__SectionFilter>,
     #[serde(default)]
-    pub option_search: Option<String>,
+    pub parameter_fields: Option<App__infra__attempt__chat__types__SectionFilter>,
     #[serde(default)]
-    pub persona_show_selected: Option<bool>,
+    pub scenarios: Option<App__infra__attempt__chat__types__SectionFilter>,
     #[serde(default)]
-    pub document_show_selected: Option<bool>,
+    pub fields: Option<App__infra__attempt__chat__types__SectionFilter>,
+    #[serde(default)]
+    pub questions: Option<App__infra__attempt__chat__types__SectionFilter>,
+    #[serde(default)]
+    pub options: Option<App__infra__attempt__chat__types__SectionFilter>,
+    #[serde(default)]
+    pub videos: Option<App__infra__attempt__chat__types__SectionFilter>,
+    #[serde(default)]
+    pub images: Option<App__infra__attempt__chat__types__SectionFilter>,
+    #[serde(default)]
+    pub problem_statements: Option<App__infra__attempt__chat__types__SectionFilter>,
+    #[serde(default)]
+    pub objectives: Option<App__infra__attempt__chat__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetChatResponse {
-    pub chat_entry_id: String,
-    pub group_id: String,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub chat_exists: Option<bool>,
+    #[serde(default)]
+    pub can_edit: Option<bool>,
+    #[serde(default)]
+    pub disabled_reason: Option<String>,
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
+    #[serde(default)]
+    pub profile_has_access: Option<bool>,
+    #[serde(default)]
+    pub simulation_name: Option<String>,
+    #[serde(default)]
+    pub chat_entry_id: Option<String>,
     #[serde(default)]
     pub attempt_id: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
+    pub names: Option<Vec<ChatNameResource>>,
     #[serde(default)]
-    pub names: Option<ChatNameSection>,
+    pub descriptions: Option<Vec<ChatDescriptionResource>>,
     #[serde(default)]
-    pub descriptions: Option<ChatDescriptionSection>,
+    pub flags: Option<Vec<ChatFlagResource>>,
     #[serde(default)]
-    pub flags: Option<ChatFlagSection>,
+    pub departments: Option<Vec<ChatDepartmentResource>>,
     #[serde(default)]
-    pub departments: Option<ChatDepartmentSection>,
+    pub personas: Option<Vec<ChatPersonaResource>>,
     #[serde(default)]
-    pub personas: Option<ChatPersonaSection>,
+    pub documents: Option<Vec<ChatDocumentResource>>,
     #[serde(default)]
-    pub documents: Option<ChatDocumentSection>,
+    pub parameter_fields: Option<Vec<ChatParameterFieldResource>>,
     #[serde(default)]
-    pub parameter_fields: Option<ChatParameterFieldSection>,
+    pub scenarios: Option<Vec<ChatScenarioResource>>,
     #[serde(default)]
-    pub scenarios: Option<ChatScenarioSection>,
+    pub fields: Option<Vec<ChatFieldResource>>,
     #[serde(default)]
-    pub fields: Option<ChatFieldSection>,
+    pub questions: Option<Vec<ChatQuestionResource>>,
     #[serde(default)]
-    pub questions: Option<ChatQuestionSection>,
+    pub options: Option<Vec<ChatOptionResource>>,
     #[serde(default)]
-    pub options: Option<ChatOptionSection>,
+    pub videos: Option<Vec<ChatVideoResource>>,
     #[serde(default)]
-    pub videos: Option<ChatVideoSection>,
+    pub images: Option<Vec<ChatImageResource>>,
     #[serde(default)]
-    pub images: Option<ChatImageSection>,
+    pub problem_statements: Option<Vec<ChatProblemStatementResource>>,
     #[serde(default)]
-    pub problem_statements: Option<ChatProblemStatementSection>,
+    pub objectives: Option<Vec<ChatObjectiveResource>>,
     #[serde(default)]
-    pub objectives: Option<ChatObjectiveSection>,
+    pub name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub document_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub question_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub option_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub video_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub problem_statement_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub objective_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetCohortApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub cohort_id: Option<String>,
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__cohort__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__cohort__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__cohort__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__cohort__types__SectionFilter>,
+    #[serde(default)]
+    pub simulations: Option<App__infra__cohort__types__SectionFilter>,
+    #[serde(default)]
+    pub simulation_positions: Option<App__infra__cohort__types__SectionFilter>,
+    #[serde(default)]
+    pub simulation_availability: Option<App__infra__cohort__types__SectionFilter>,
+    #[serde(default)]
+    pub profiles: Option<App__infra__cohort__types__SectionFilter>,
+    #[serde(default)]
+    pub profile_personas: Option<App__infra__cohort__types__SectionFilter>,
+    #[serde(default)]
+    pub personas: Option<App__infra__cohort__types__SectionFilter>,
     #[serde(default)]
     pub descriptions_search: Option<String>,
     #[serde(default)]
@@ -6244,12 +7409,10 @@ pub struct GetCohortApiRequest {
     pub profile_search: Option<String>,
     #[serde(default)]
     pub profile_show_selected: Option<bool>,
-    #[serde(default)]
-    pub draft_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetCohortApiResponseInput {
+pub struct GetCohortApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -6259,88 +7422,48 @@ pub struct GetCohortApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
+    #[serde(default)]
+    pub names: Option<Vec<CohortNameResource>>,
+    #[serde(default)]
+    pub descriptions: Option<Vec<CohortDescriptionResource>>,
+    #[serde(default)]
+    pub flags: Option<Vec<CohortFlagResource>>,
+    #[serde(default)]
+    pub departments: Option<Vec<CohortDepartment>>,
+    #[serde(default)]
+    pub simulations: Option<Vec<CohortSimulation>>,
+    #[serde(default)]
+    pub simulation_positions: Option<Vec<CohortSimulationPosition>>,
+    #[serde(default)]
+    pub simulation_availability: Option<Vec<CohortSimulationAvailability>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<CohortProfile>>,
+    #[serde(default)]
+    pub profile_personas: Option<Vec<CohortProfilePersona>>,
+    #[serde(default)]
+    pub personas: Option<Vec<CohortPersonaResource>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
     pub simulations_step_show_ai_generate: Option<bool>,
     #[serde(default)]
     pub profiles_step_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<CohortNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<CohortDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<CohortFlagSection>,
-    #[serde(default)]
-    pub departments: Option<CohortDepartmentSection>,
-    #[serde(default)]
-    pub simulations: Option<CohortSimulationSection>,
-    #[serde(default)]
-    pub simulation_positions: Option<CohortSimulationPositionSection>,
-    #[serde(default)]
-    pub simulation_availability: Option<CohortSimulationAvailabilitySection>,
-    #[serde(default)]
-    pub profiles: Option<CohortProfileSection>,
-    #[serde(default)]
-    pub profile_personas: Option<CohortProfilePersonaSection>,
-    #[serde(default)]
-    pub personas: Option<Vec<GetPersonaResponse>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetCohortApiResponseOutput {
-    #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub cohort_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub simulations_step_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub profiles_step_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<CohortNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<CohortDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<CohortFlagSection>,
-    #[serde(default)]
-    pub departments: Option<CohortDepartmentSection>,
-    #[serde(default)]
-    pub simulations: Option<CohortSimulationSection>,
-    #[serde(default)]
-    pub simulation_positions: Option<CohortSimulationPositionSection>,
-    #[serde(default)]
-    pub simulation_availability: Option<CohortSimulationAvailabilitySection>,
-    #[serde(default)]
-    pub profiles: Option<CohortProfileSection>,
-    #[serde(default)]
-    pub profile_personas: Option<CohortProfilePersonaSection>,
-    #[serde(default)]
-    pub personas: Option<Vec<GetPersonaResponse>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetCohortDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -6351,6 +7474,40 @@ pub struct GetCohortDraftResponse {
     pub simulation_availability_ids: Vec<String>,
     pub simulation_position_ids: Vec<String>,
     pub simulation_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_profile_persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_profile_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_simulation_availability_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_simulation_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_simulation_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetCohortDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6362,13 +7519,25 @@ pub struct GetCohortDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetDepartmentApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub department_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__department__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__department__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__department__types__SectionFilter>,
+    #[serde(default)]
+    pub settings: Option<App__infra__department__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetDepartmentApiResponseInput {
+pub struct GetDepartmentApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -6378,62 +7547,62 @@ pub struct GetDepartmentApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<DepartmentNameSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub descriptions: Option<DepartmentDescriptionSection>,
+    pub names: Option<Vec<DepartmentNameResource>>,
     #[serde(default)]
-    pub flags: Option<DepartmentFlagSection>,
+    pub descriptions: Option<Vec<DepartmentDescriptionResource>>,
     #[serde(default)]
-    pub settings: Option<DepartmentSettingSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetDepartmentApiResponseOutput {
+    pub flags: Option<Vec<DepartmentFlagResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub department_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<DepartmentNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<DepartmentDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<DepartmentFlagSection>,
-    #[serde(default)]
-    pub settings: Option<DepartmentSettingSection>,
+    pub settings: Option<Vec<DepartmentSettingResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetDepartmentDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub description_ids: Vec<String>,
     pub flag_ids: Vec<String>,
     pub name_ids: Vec<String>,
     pub profile_ids: Vec<String>,
     pub setting_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_setting_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetDepartmentDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6445,13 +7614,39 @@ pub struct GetDepartmentDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetDocumentApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub document_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__document__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__document__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__document__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__document__types__SectionFilter>,
+    #[serde(default)]
+    pub parameter_fields: Option<App__infra__document__types__SectionFilter>,
+    #[serde(default)]
+    pub parameters: Option<App__infra__document__types__SectionFilter>,
+    #[serde(default)]
+    pub files: Option<App__infra__document__types__SectionFilter>,
+    #[serde(default)]
+    pub images: Option<App__infra__document__types__SectionFilter>,
+    #[serde(default)]
+    pub texts: Option<App__infra__document__types__SectionFilter>,
+    #[serde(default)]
+    pub fields: Option<App__infra__document__types__SectionFilter>,
+    #[serde(default)]
+    pub uploads: Option<App__infra__document__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetDocumentApiResponseInput {
+pub struct GetDocumentApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -6461,80 +7656,44 @@ pub struct GetDocumentApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
     pub content_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<DocumentNameSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub descriptions: Option<DocumentDescriptionSection>,
+    pub names: Option<Vec<DocumentNameResource>>,
     #[serde(default)]
-    pub flags: Option<DocumentFlagSection>,
+    pub descriptions: Option<Vec<DocumentDescriptionResource>>,
     #[serde(default)]
-    pub departments: Option<DocumentDepartmentSection>,
+    pub flags: Option<Vec<DocumentFlagResource>>,
     #[serde(default)]
-    pub fields: Option<DocumentFieldSection>,
+    pub departments: Option<Vec<DocumentDepartmentResource>>,
     #[serde(default)]
-    pub parameters: Option<DocumentParameterSection>,
+    pub parameter_fields: Option<Vec<DocumentParameterFieldResource>>,
     #[serde(default)]
-    pub uploads: Option<DocumentUploadSection>,
+    pub parameters: Option<Vec<DocumentParameterResource>>,
     #[serde(default)]
-    pub images: Option<DocumentImageSection>,
+    pub files: Option<Vec<DocumentFileResource>>,
     #[serde(default)]
-    pub texts: Option<DocumentTextSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetDocumentApiResponseOutput {
+    pub images: Option<Vec<DocumentImageResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub document_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub content_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<DocumentNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<DocumentDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<DocumentFlagSection>,
-    #[serde(default)]
-    pub departments: Option<DocumentDepartmentSection>,
-    #[serde(default)]
-    pub fields: Option<DocumentFieldSection>,
-    #[serde(default)]
-    pub parameters: Option<DocumentParameterSection>,
-    #[serde(default)]
-    pub uploads: Option<DocumentUploadSection>,
-    #[serde(default)]
-    pub images: Option<DocumentImageSection>,
-    #[serde(default)]
-    pub texts: Option<DocumentTextSection>,
+    pub texts: Option<Vec<DocumentTextResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetDocumentDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -6546,6 +7705,40 @@ pub struct GetDocumentDraftResponse {
     pub parameter_ids: Vec<String>,
     pub profile_ids: Vec<String>,
     pub text_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_file_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_text_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetDocumentDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6557,13 +7750,33 @@ pub struct GetDocumentDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetEvalApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub eval_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__eval__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__eval__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__eval__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__eval__types__SectionFilter>,
+    #[serde(default)]
+    pub models: Option<App__infra__eval__types__SectionFilter>,
+    #[serde(default)]
+    pub model_flags: Option<App__infra__eval__types__SectionFilter>,
+    #[serde(default)]
+    pub model_rubrics: Option<App__infra__eval__types__SectionFilter>,
+    #[serde(default)]
+    pub model_positions: Option<App__infra__eval__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetEvalApiResponseInput {
+pub struct GetEvalApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -6573,84 +7786,46 @@ pub struct GetEvalApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
     pub model_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<EvalNameSection>,
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub descriptions: Option<EvalDescriptionSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flags: Option<EvalFlagSection>,
+    pub names: Option<Vec<EvalNameResource>>,
     #[serde(default)]
-    pub dynamic_flags: Option<EvalFlagSection>,
+    pub descriptions: Option<Vec<EvalDescriptionResource>>,
     #[serde(default)]
-    pub groups_flags: Option<EvalFlagSection>,
+    pub flags: Option<Vec<EvalFlagResource>>,
     #[serde(default)]
-    pub departments: Option<EvalDepartmentSection>,
+    pub departments: Option<Vec<EvalDepartmentResource>>,
     #[serde(default)]
-    pub models: Option<EvalModelSection>,
+    pub models: Option<Vec<EvalModelResource>>,
     #[serde(default)]
-    pub model_flags: Option<EvalModelFlagSection>,
+    pub model_flags: Option<Vec<EvalModelFlagResource>>,
     #[serde(default)]
-    pub model_rubrics: Option<EvalModelRubricSection>,
+    pub model_flag_options: Option<Vec<EvalModelFlagOptionResource>>,
     #[serde(default)]
-    pub model_positions: Option<EvalModelPositionSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetEvalApiResponseOutput {
+    pub model_rubrics: Option<Vec<EvalModelRubricResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
+    pub model_positions: Option<Vec<EvalModelPositionResource>>,
     #[serde(default)]
-    pub eval_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub model_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<EvalNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<EvalDescriptionSection>,
-    #[serde(default)]
-    pub active_flags: Option<EvalFlagSection>,
-    #[serde(default)]
-    pub dynamic_flags: Option<EvalFlagSection>,
-    #[serde(default)]
-    pub groups_flags: Option<EvalFlagSection>,
-    #[serde(default)]
-    pub departments: Option<EvalDepartmentSection>,
-    #[serde(default)]
-    pub models: Option<EvalModelSection>,
-    #[serde(default)]
-    pub model_flags: Option<EvalModelFlagSection>,
-    #[serde(default)]
-    pub model_rubrics: Option<EvalModelRubricSection>,
-    #[serde(default)]
-    pub model_positions: Option<EvalModelPositionSection>,
+    pub rubrics: Option<Vec<EvalRubricResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetEvalDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -6659,6 +7834,46 @@ pub struct GetEvalDraftResponse {
     pub name_ids: Vec<String>,
     pub profile_ids: Vec<String>,
     pub rubric_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub model_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_model_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_model_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_model_rubric_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetEvalDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6670,9 +7885,23 @@ pub struct GetEvalDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetFieldApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub field_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__field__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__field__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__field__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__field__types__SectionFilter>,
+    #[serde(default)]
+    pub conditional_parameters: Option<App__infra__field__types__SectionFilter>,
     #[serde(default)]
     pub descriptions_search: Option<String>,
     #[serde(default)]
@@ -6682,7 +7911,7 @@ pub struct GetFieldApiRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetFieldApiResponseInput {
+pub struct GetFieldApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -6692,60 +7921,34 @@ pub struct GetFieldApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<FieldNameSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub descriptions: Option<FieldDescriptionSection>,
+    pub names: Option<Vec<FieldNameResource>>,
     #[serde(default)]
-    pub flags: Option<FieldFlagSection>,
+    pub descriptions: Option<Vec<FieldDescriptionResource>>,
     #[serde(default)]
-    pub departments: Option<FieldDepartmentSection>,
+    pub flags: Option<Vec<FieldFlagResource>>,
     #[serde(default)]
-    pub conditional_parameters: Option<FieldConditionalParameterSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetFieldApiResponseOutput {
+    pub departments: Option<Vec<FieldDepartmentResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub field_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<FieldNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<FieldDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<FieldFlagSection>,
-    #[serde(default)]
-    pub departments: Option<FieldDepartmentSection>,
-    #[serde(default)]
-    pub conditional_parameters: Option<FieldConditionalParameterSection>,
+    pub conditional_parameters: Option<Vec<FieldConditionalParameterResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetFieldDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub conditional_parameter_ids: Vec<String>,
     pub department_ids: Vec<String>,
@@ -6753,6 +7956,32 @@ pub struct GetFieldDraftResponse {
     pub flag_ids: Vec<String>,
     pub name_ids: Vec<String>,
     pub profile_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_conditional_parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetFieldDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6776,55 +8005,6 @@ pub struct GetFieldResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetGroupDetailRequest {
-    pub group_id: String,
-    #[serde(default)]
-    pub message_limit: Option<i64>,
-    #[serde(default)]
-    pub message_offset: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetGroupDetailResponseInput {
-    #[serde(default)]
-    pub group_exists: Option<bool>,
-    #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub group_name: Option<String>,
-    #[serde(default)]
-    pub total_message_count: Option<i64>,
-    #[serde(default)]
-    pub runs: Option<Vec<GroupDetailRunWithMessagesInput>>,
-    #[serde(default)]
-    pub models: Option<Vec<GroupDetailResourceItem>>,
-    #[serde(default)]
-    pub agents: Option<Vec<GroupDetailResourceItem>>,
-    #[serde(default)]
-    pub profiles: Option<Vec<GroupDetailResourceItem>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetGroupDetailResponseOutput {
-    #[serde(default)]
-    pub group_exists: Option<bool>,
-    #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub group_name: Option<String>,
-    #[serde(default)]
-    pub total_message_count: Option<i64>,
-    #[serde(default)]
-    pub runs: Option<Vec<GroupDetailRunWithMessagesOutput>>,
-    #[serde(default)]
-    pub models: Option<Vec<GroupDetailResourceItem>>,
-    #[serde(default)]
-    pub agents: Option<Vec<GroupDetailResourceItem>>,
-    #[serde(default)]
-    pub profiles: Option<Vec<GroupDetailResourceItem>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetHealthResponse {
     pub date_hour: String,
     pub service: String,
@@ -6840,7 +8020,7 @@ pub struct GetHealthResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetHomeResponseInput {
+pub struct GetHomeResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -6852,23 +8032,135 @@ pub struct GetHomeResponseInput {
     #[serde(default)]
     pub standards: Option<Vec<StandardMapping>>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsInput>,
+    pub analytics: Option<AnalyticsFacets>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetHomeResponseOutput {
+pub struct GetInvocationApiRequest {
     #[serde(default)]
-    pub actor_name: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub items: Option<Vec<ChatSimulationOperational>>,
+    pub invocation_id: Option<String>,
     #[serde(default)]
-    pub rubrics: Option<Vec<RubricMapping>>,
+    pub benchmark_bundle_entry_id: Option<String>,
     #[serde(default)]
-    pub standard_groups: Option<Vec<StandardGroupMapping>>,
+    pub test_id: Option<String>,
     #[serde(default)]
-    pub standards: Option<Vec<StandardMapping>>,
+    pub draft_id: Option<String>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsOutput>,
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub values: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub keys: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub endpoints: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub modalities: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub temperature_levels: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub pricing: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub reasoning_levels: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub qualities: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub voices: Option<App__infra__invocation__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions_search: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetInvocationDraftResponse {
+    pub id: String,
+    pub created_at: String,
+    pub generated: bool,
+    pub mcp: bool,
+    pub active: bool,
+    pub session_id: String,
+    pub department_ids: Vec<String>,
+    pub description_ids: Vec<String>,
+    pub flag_ids: Vec<String>,
+    pub key_ids: Vec<String>,
+    pub model_flag_ids: Vec<String>,
+    pub model_position_ids: Vec<String>,
+    pub model_rubric_ids: Vec<String>,
+    pub name_ids: Vec<String>,
+    pub profile_ids: Vec<String>,
+    pub reasoning_level_ids: Vec<String>,
+    pub temperature_level_ids: Vec<String>,
+    pub voice_ids: Vec<String>,
+    pub pricing_ids: Vec<String>,
+    pub endpoint_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_model_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_model_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_model_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_reasoning_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_temperature_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_value_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_pricing_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_endpoint_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetInvocationDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetInvocationDraftsApiResponse {
+    #[serde(default)]
+    pub entries: Option<Vec<GetInvocationDraftResponse>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6891,13 +8183,41 @@ pub struct GetMetricsSearchResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetModelApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub model_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub values: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub providers: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub modalities: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub temperature_levels: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub pricing: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub reasoning_levels: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub qualities: Option<App__infra__model__types__SectionFilter>,
+    #[serde(default)]
+    pub voices: Option<App__infra__model__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetModelApiResponseInput {
+pub struct GetModelApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -6907,9 +8227,13 @@ pub struct GetModelApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub model_id: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
@@ -6917,86 +8241,40 @@ pub struct GetModelApiResponseInput {
     #[serde(default)]
     pub features_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<ModelNameSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub descriptions: Option<ModelDescriptionSection>,
+    pub names: Option<Vec<ModelNameResource>>,
     #[serde(default)]
-    pub values: Option<ModelValueSection>,
+    pub descriptions: Option<Vec<ModelDescriptionResource>>,
     #[serde(default)]
-    pub providers: Option<ModelProviderSection>,
+    pub values: Option<Vec<ModelValueResource>>,
     #[serde(default)]
-    pub flags: Option<ModelFlagSection>,
+    pub providers: Option<Vec<ModelProviderResource>>,
     #[serde(default)]
-    pub departments: Option<ModelDepartmentSection>,
+    pub flags: Option<Vec<ModelFlagResource>>,
     #[serde(default)]
-    pub modalities: Option<ModelModalitySection>,
+    pub departments: Option<Vec<ModelDepartmentResource>>,
     #[serde(default)]
-    pub temperature_levels: Option<ModelTemperatureLevelSection>,
+    pub modalities: Option<Vec<ModelModalityResource>>,
     #[serde(default)]
-    pub pricing: Option<ModelPricingSection>,
+    pub temperature_levels: Option<Vec<ModelTemperatureLevelResource>>,
     #[serde(default)]
-    pub reasoning_levels: Option<ModelReasoningLevelSection>,
+    pub pricing: Option<Vec<ModelPricingResource>>,
     #[serde(default)]
-    pub qualities: Option<ModelQualitySection>,
+    pub reasoning_levels: Option<Vec<ModelReasoningLevelResource>>,
     #[serde(default)]
-    pub voices: Option<ModelVoiceSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetModelApiResponseOutput {
+    pub qualities: Option<Vec<ModelQualityResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub model_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub provider_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub features_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<ModelNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<ModelDescriptionSection>,
-    #[serde(default)]
-    pub values: Option<ModelValueSection>,
-    #[serde(default)]
-    pub providers: Option<ModelProviderSection>,
-    #[serde(default)]
-    pub flags: Option<ModelFlagSection>,
-    #[serde(default)]
-    pub departments: Option<ModelDepartmentSection>,
-    #[serde(default)]
-    pub modalities: Option<ModelModalitySection>,
-    #[serde(default)]
-    pub temperature_levels: Option<ModelTemperatureLevelSection>,
-    #[serde(default)]
-    pub pricing: Option<ModelPricingSection>,
-    #[serde(default)]
-    pub reasoning_levels: Option<ModelReasoningLevelSection>,
-    #[serde(default)]
-    pub qualities: Option<ModelQualitySection>,
-    #[serde(default)]
-    pub voices: Option<ModelVoiceSection>,
+    pub voices: Option<Vec<ModelVoiceResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetModelDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -7009,8 +8287,49 @@ pub struct GetModelDraftResponse {
     pub quality_ids: Vec<String>,
     pub reasoning_level_ids: Vec<String>,
     pub temperature_level_ids: Vec<String>,
-    pub value_ids: Vec<String>,
     pub voice_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_pricing_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_reasoning_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_temperature_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_value_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_voice_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetModelDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7022,13 +8341,29 @@ pub struct GetModelDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetParameterApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub parameter_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__parameter__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__parameter__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__parameter__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__parameter__types__SectionFilter>,
+    #[serde(default)]
+    pub parameter_fields: Option<App__infra__parameter__types__SectionFilter>,
+    #[serde(default)]
+    pub fields: Option<App__infra__parameter__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetParameterApiResponseInput {
+pub struct GetParameterApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -7038,64 +8373,36 @@ pub struct GetParameterApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
     pub fields_step_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<ParameterNameSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub descriptions: Option<ParameterDescriptionSection>,
+    pub names: Option<Vec<ParameterNameResource>>,
     #[serde(default)]
-    pub flags: Option<ParameterFlagSection>,
+    pub descriptions: Option<Vec<ParameterDescriptionResource>>,
     #[serde(default)]
-    pub departments: Option<ParameterDepartmentSection>,
+    pub flags: Option<Vec<ParameterFlagResource>>,
     #[serde(default)]
-    pub fields: Option<ParameterFieldSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetParameterApiResponseOutput {
+    pub departments: Option<Vec<ParameterDepartmentResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub parameter_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub fields_step_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<ParameterNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<ParameterDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<ParameterFlagSection>,
-    #[serde(default)]
-    pub departments: Option<ParameterDepartmentSection>,
-    #[serde(default)]
-    pub fields: Option<ParameterFieldSection>,
+    pub parameter_fields: Option<Vec<ParameterFieldResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetParameterDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -7103,6 +8410,32 @@ pub struct GetParameterDraftResponse {
     pub flag_ids: Vec<String>,
     pub name_ids: Vec<String>,
     pub profile_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetParameterDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7112,51 +8445,35 @@ pub struct GetParameterDraftsApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetParameterResponse {
-    pub id: String,
-    pub name: String,
-    pub description: String,
-    pub value: String,
-    pub department_ids: Vec<String>,
-    pub persona_parameter: bool,
-    pub document_parameter: bool,
-    pub scenario_parameter: bool,
-    pub video_parameter: bool,
-    pub field_ids: Vec<String>,
-    pub created_at: String,
-    pub active: bool,
-    pub generated: bool,
-    pub mcp: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetPersonaApiRequest {
     #[serde(default)]
-    pub persona_id: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
     #[serde(default)]
-    pub color_search: Option<String>,
+    pub snapshot_key: Option<String>,
     #[serde(default)]
-    pub icon_search: Option<String>,
+    pub names: Option<App__infra__persona__types__SectionFilter>,
     #[serde(default)]
-    pub descriptions_search: Option<String>,
+    pub descriptions: Option<App__infra__persona__types__SectionFilter>,
     #[serde(default)]
-    pub instructions_search: Option<String>,
+    pub colors: Option<App__infra__persona__types__SectionFilter>,
     #[serde(default)]
-    pub parameter_field_search: Option<String>,
+    pub icons: Option<App__infra__persona__types__SectionFilter>,
     #[serde(default)]
-    pub parameter_ids: Option<Vec<String>>,
+    pub instructions: Option<App__infra__persona__types__SectionFilter>,
     #[serde(default)]
-    pub color_show_selected: Option<bool>,
+    pub departments: Option<App__infra__persona__types__SectionFilter>,
     #[serde(default)]
-    pub icon_show_selected: Option<bool>,
+    pub examples: Option<App__infra__persona__types__SectionFilter>,
     #[serde(default)]
-    pub parameter_field_show_selected: Option<bool>,
+    pub parameter_fields: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub voices: Option<App__infra__persona__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetPersonaApiResponseInput {
+pub struct GetPersonaApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -7166,85 +8483,33 @@ pub struct GetPersonaApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
     #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
+    pub draft_name: Option<String>,
     #[serde(default)]
-    pub content_show_ai_generate: Option<bool>,
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub parameters_step_show_ai_generate: Option<bool>,
+    pub names: Option<Vec<PersonaNameResource>>,
     #[serde(default)]
-    pub names: Option<PersonaNameSection>,
+    pub descriptions: Option<Vec<PersonaDescriptionResource>>,
     #[serde(default)]
-    pub descriptions: Option<PersonaDescriptionSection>,
+    pub colors: Option<Vec<PersonaColorResource>>,
     #[serde(default)]
-    pub colors: Option<PersonaColorSection>,
+    pub icons: Option<Vec<PersonaIconResource>>,
     #[serde(default)]
-    pub icons: Option<PersonaIconSection>,
+    pub instructions: Option<Vec<PersonaInstructionResource>>,
     #[serde(default)]
-    pub instructions: Option<PersonaInstructionSection>,
+    pub flags: Option<Vec<PersonaFlagResource>>,
     #[serde(default)]
-    pub flags: Option<PersonaFlagSection>,
+    pub departments: Option<Vec<PersonaDepartmentResource>>,
     #[serde(default)]
-    pub departments: Option<PersonaDepartmentSection>,
+    pub parameter_fields: Option<Vec<PersonaParameterFieldResource>>,
     #[serde(default)]
-    pub parameter_fields: Option<PersonaParameterFieldSection>,
+    pub examples: Option<Vec<PersonaExampleResource>>,
     #[serde(default)]
-    pub examples: Option<PersonaExampleSection>,
+    pub parameters: Option<Vec<serde_json::Value>>,
     #[serde(default)]
-    pub parameters: Option<PersonaParameterSection>,
-    #[serde(default)]
-    pub voices: Option<PersonaVoiceSection>,
-    #[serde(default)]
-    pub fields: Option<Vec<GetFieldResponse>>,
-    #[serde(default)]
-    pub resolved_parameter_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetPersonaApiResponseOutput {
-    #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub persona_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub content_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub parameters_step_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<PersonaNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<PersonaDescriptionSection>,
-    #[serde(default)]
-    pub colors: Option<PersonaColorSection>,
-    #[serde(default)]
-    pub icons: Option<PersonaIconSection>,
-    #[serde(default)]
-    pub instructions: Option<PersonaInstructionSection>,
-    #[serde(default)]
-    pub flags: Option<PersonaFlagSection>,
-    #[serde(default)]
-    pub departments: Option<PersonaDepartmentSection>,
-    #[serde(default)]
-    pub parameter_fields: Option<PersonaParameterFieldSection>,
-    #[serde(default)]
-    pub examples: Option<PersonaExampleSection>,
-    #[serde(default)]
-    pub parameters: Option<PersonaParameterSection>,
-    #[serde(default)]
-    pub voices: Option<PersonaVoiceSection>,
+    pub voices: Option<Vec<PersonaVoiceResource>>,
     #[serde(default)]
     pub fields: Option<Vec<GetFieldResponse>>,
     #[serde(default)]
@@ -7254,12 +8519,10 @@ pub struct GetPersonaApiResponseOutput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetPersonaDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub color_ids: Vec<String>,
     pub department_ids: Vec<String>,
@@ -7272,6 +8535,42 @@ pub struct GetPersonaDraftResponse {
     pub parameter_field_ids: Vec<String>,
     pub profile_ids: Vec<String>,
     pub voice_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_color_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_example_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_icon_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_instruction_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_voice_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetPersonaDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7281,24 +8580,7 @@ pub struct GetPersonaDraftsApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetPersonaResponse {
-    pub id: String,
-    pub name: String,
-    pub description: String,
-    pub icon: String,
-    pub color: String,
-    pub department_ids: Vec<String>,
-    pub instructions: String,
-    pub examples: Vec<String>,
-    pub parameter_field_ids: Vec<String>,
-    pub created_at: String,
-    pub active: bool,
-    pub generated: bool,
-    pub mcp: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetPracticeResponseInput {
+pub struct GetPracticeResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -7310,35 +8592,33 @@ pub struct GetPracticeResponseInput {
     #[serde(default)]
     pub standards: Option<Vec<StandardMapping>>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsInput>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetPracticeResponseOutput {
-    #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub items: Option<Vec<ChatSimulationOperational>>,
-    #[serde(default)]
-    pub rubrics: Option<Vec<RubricMapping>>,
-    #[serde(default)]
-    pub standard_groups: Option<Vec<StandardGroupMapping>>,
-    #[serde(default)]
-    pub standards: Option<Vec<StandardMapping>>,
-    #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsOutput>,
+    pub analytics: Option<AnalyticsFacets>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetProfileApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub target_profile_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__profile__types__SectionFilter>,
+    #[serde(default)]
+    pub emails: Option<App__infra__profile__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__profile__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__profile__types__SectionFilter>,
+    #[serde(default)]
+    pub roles: Option<App__infra__profile__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetProfileApiResponseInput {
+pub struct GetProfileApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -7348,94 +8628,81 @@ pub struct GetProfileApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
     #[serde(default)]
     pub profile_id: Option<String>,
     #[serde(default)]
-    pub role: Option<String>,
-    #[serde(default)]
-    pub role_options: Option<Vec<String>>,
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub general_show_ai_generate: Option<bool>,
+    pub contact_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<ProfileNameSection>,
-    #[serde(default)]
-    pub emails: Option<ProfileEmailSection>,
-    #[serde(default)]
-    pub request_limits: Option<ProfileRequestLimitSection>,
-    #[serde(default)]
-    pub flags: Option<ProfileFlagSection>,
-    #[serde(default)]
-    pub departments: Option<ProfileDepartmentSection>,
-    #[serde(default)]
-    pub roles: Option<ProfileRoleSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetProfileApiResponseOutput {
-    #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub profile_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub profile_id: Option<String>,
-    #[serde(default)]
-    pub role: Option<String>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
     pub role_options: Option<Vec<String>>,
     #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
+    pub names: Option<Vec<ProfileNameResource>>,
     #[serde(default)]
-    pub general_show_ai_generate: Option<bool>,
+    pub emails: Option<Vec<ProfileEmailResource>>,
     #[serde(default)]
-    pub names: Option<ProfileNameSection>,
+    pub flags: Option<Vec<ProfileFlagResource>>,
     #[serde(default)]
-    pub emails: Option<ProfileEmailSection>,
+    pub departments: Option<Vec<ProfileDepartmentResource>>,
     #[serde(default)]
-    pub request_limits: Option<ProfileRequestLimitSection>,
+    pub roles: Option<Vec<ProfileRoleResource>>,
     #[serde(default)]
-    pub flags: Option<ProfileFlagSection>,
+    pub permissions: Option<Vec<ProfilePermissionResource>>,
     #[serde(default)]
-    pub departments: Option<ProfileDepartmentSection>,
-    #[serde(default)]
-    pub roles: Option<ProfileRoleSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetProfileContextApiRequest {
-    #[serde(default)]
-    pub department_id: Option<String>,
+    pub request_limits: Option<Vec<ProfileRequestLimitResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetProfileDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub profile_ids: Vec<String>,
     pub department_ids: Vec<String>,
     pub email_ids: Vec<String>,
     pub flag_ids: Vec<String>,
     pub name_ids: Vec<String>,
-    pub request_limit_ids: Vec<String>,
     pub role_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub primary_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_email_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_role_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_primary_department_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetProfileDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7447,13 +8714,31 @@ pub struct GetProfileDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetProviderApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub provider_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__provider__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__provider__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__provider__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__provider__types__SectionFilter>,
+    #[serde(default)]
+    pub values: Option<App__infra__provider__types__SectionFilter>,
+    #[serde(default)]
+    pub endpoints: Option<App__infra__provider__types__SectionFilter>,
+    #[serde(default)]
+    pub keys: Option<App__infra__provider__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetProviderApiResponseInput {
+pub struct GetProviderApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -7463,72 +8748,42 @@ pub struct GetProviderApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub provider_id: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
     pub integrations_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<ProviderNameSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub descriptions: Option<ProviderDescriptionSection>,
+    pub names: Option<Vec<ProviderNameResource>>,
     #[serde(default)]
-    pub flags: Option<ProviderFlagSection>,
+    pub descriptions: Option<Vec<ProviderDescriptionResource>>,
     #[serde(default)]
-    pub departments: Option<ProviderDepartmentSection>,
+    pub flags: Option<Vec<ProviderFlagResource>>,
     #[serde(default)]
-    pub values: Option<ProviderValueSection>,
+    pub departments: Option<Vec<ProviderDepartmentResource>>,
     #[serde(default)]
-    pub endpoints: Option<ProviderEndpointSection>,
+    pub values: Option<Vec<ProviderValueResource>>,
     #[serde(default)]
-    pub keys: Option<ProviderKeySection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetProviderApiResponseOutput {
+    pub endpoints: Option<Vec<ProviderEndpointResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub provider_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub integrations_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<ProviderNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<ProviderDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<ProviderFlagSection>,
-    #[serde(default)]
-    pub departments: Option<ProviderDepartmentSection>,
-    #[serde(default)]
-    pub values: Option<ProviderValueSection>,
-    #[serde(default)]
-    pub endpoints: Option<ProviderEndpointSection>,
-    #[serde(default)]
-    pub keys: Option<ProviderKeySection>,
+    pub keys: Option<Vec<ProviderKeyResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetProviderDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -7537,7 +8792,38 @@ pub struct GetProviderDraftResponse {
     pub key_ids: Vec<String>,
     pub name_ids: Vec<String>,
     pub profile_ids: Vec<String>,
-    pub value_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_endpoint_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_value_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetProviderDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7549,13 +8835,31 @@ pub struct GetProviderDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetRubricApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub rubric_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__rubric__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__rubric__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__rubric__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__rubric__types__SectionFilter>,
+    #[serde(default)]
+    pub points: Option<App__infra__rubric__types__SectionFilter>,
+    #[serde(default)]
+    pub standard_groups: Option<App__infra__rubric__types__SectionFilter>,
+    #[serde(default)]
+    pub standards: Option<App__infra__rubric__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetRubricApiResponseInput {
+pub struct GetRubricApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -7565,72 +8869,40 @@ pub struct GetRubricApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
     pub content_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<RubricNameSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub descriptions: Option<RubricDescriptionSection>,
+    pub names: Option<Vec<RubricNameResource>>,
     #[serde(default)]
-    pub flags: Option<RubricFlagSection>,
+    pub descriptions: Option<Vec<RubricDescriptionResource>>,
     #[serde(default)]
-    pub departments: Option<RubricDepartmentSection>,
+    pub flags: Option<Vec<RubricFlagResource>>,
     #[serde(default)]
-    pub points: Option<RubricPointsSection>,
+    pub departments: Option<Vec<RubricDepartmentResource>>,
     #[serde(default)]
-    pub standard_groups: Option<RubricStandardGroupsSection>,
+    pub points: Option<Vec<RubricPointResource>>,
     #[serde(default)]
-    pub standards: Option<RubricStandardsSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetRubricApiResponseOutput {
+    pub standard_groups: Option<Vec<RubricStandardGroupResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub rubric_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub content_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<RubricNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<RubricDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<RubricFlagSection>,
-    #[serde(default)]
-    pub departments: Option<RubricDepartmentSection>,
-    #[serde(default)]
-    pub points: Option<RubricPointsSection>,
-    #[serde(default)]
-    pub standard_groups: Option<RubricStandardGroupsSection>,
-    #[serde(default)]
-    pub standards: Option<RubricStandardsSection>,
+    pub standards: Option<Vec<RubricStandardResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetRubricDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -7640,6 +8912,36 @@ pub struct GetRubricDraftResponse {
     pub profile_ids: Vec<String>,
     pub standard_group_ids: Vec<String>,
     pub standard_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_point_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_standard_group_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_standard_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetRubricDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7649,15 +8951,7 @@ pub struct GetRubricDraftsApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetRunListViewResponseInput {
-    #[serde(default)]
-    pub items: Option<Vec<RunViewItem>>,
-    #[serde(default)]
-    pub total_count: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetRunListViewResponseOutput {
+pub struct GetRunListViewResponse {
     #[serde(default)]
     pub items: Option<Vec<RunViewItem>>,
     #[serde(default)]
@@ -7667,57 +8961,41 @@ pub struct GetRunListViewResponseOutput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetScenarioApiRequest {
     #[serde(default)]
-    pub scenario_id: Option<String>,
-    #[serde(default)]
-    pub document_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub problem_statement_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub filter_department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub filter_persona_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub filter_document_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub filter_parameter_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub filter_field_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub persona_search: Option<String>,
-    #[serde(default)]
-    pub document_search: Option<String>,
-    #[serde(default)]
-    pub parameter_search: Option<String>,
-    #[serde(default)]
-    pub description_search: Option<String>,
-    #[serde(default)]
-    pub problem_statement_search: Option<String>,
-    #[serde(default)]
-    pub image_search: Option<String>,
-    #[serde(default)]
-    pub video_search: Option<String>,
-    #[serde(default)]
-    pub question_search: Option<String>,
-    #[serde(default)]
-    pub option_search: Option<String>,
-    #[serde(default)]
-    pub persona_show_selected: Option<bool>,
-    #[serde(default)]
-    pub document_show_selected: Option<bool>,
-    #[serde(default)]
-    pub parameter_show_selected: Option<bool>,
-    #[serde(default)]
-    pub field_show_selected_by_param: Option<Vec<ScenarioFieldParamFilter>>,
+    pub id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
     #[serde(default)]
-    pub mcp: Option<bool>,
+    pub names: Option<App__infra__persona__types__SectionFilter>,
     #[serde(default)]
-    pub parameter_ids: Option<Vec<String>>,
+    pub descriptions: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub problem_statements: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub personas: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub documents: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub parameters: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub parameter_fields: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub objectives: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub images: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub videos: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub questions: Option<App__infra__persona__types__SectionFilter>,
+    #[serde(default)]
+    pub options: Option<App__infra__persona__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetScenarioApiResponseInput {
+pub struct GetScenarioApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -7727,104 +9005,50 @@ pub struct GetScenarioApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
     #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
+    pub draft_name: Option<String>,
     #[serde(default)]
-    pub content_show_ai_generate: Option<bool>,
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub resolved_parameter_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub names: Option<ScenarioNameSection>,
+    pub names: Option<Vec<ScenarioNameResource>>,
     #[serde(default)]
-    pub descriptions: Option<ScenarioDescriptionSection>,
+    pub descriptions: Option<Vec<ScenarioDescriptionResource>>,
     #[serde(default)]
-    pub problem_statements: Option<ScenarioProblemStatementSection>,
+    pub problem_statements: Option<Vec<ScenarioProblemStatement>>,
     #[serde(default)]
-    pub flags: Option<ScenarioFlagSection>,
+    pub flags: Option<Vec<ScenarioFlagResource>>,
     #[serde(default)]
-    pub departments: Option<ScenarioDepartmentSection>,
+    pub departments: Option<Vec<ScenarioDepartment>>,
     #[serde(default)]
-    pub personas: Option<ScenarioPersonaSection>,
+    pub personas: Option<Vec<ScenarioPersona>>,
     #[serde(default)]
-    pub documents: Option<ScenarioDocumentSection>,
+    pub documents: Option<Vec<ScenarioDocument>>,
     #[serde(default)]
-    pub parameters: Option<ScenarioParameterSection>,
+    pub parameters: Option<Vec<serde_json::Value>>,
     #[serde(default)]
-    pub parameter_fields: Option<ScenarioParameterFieldSection>,
+    pub parameter_fields: Option<Vec<ScenarioField>>,
     #[serde(default)]
-    pub objectives: Option<ScenarioObjectiveSection>,
+    pub objectives: Option<Vec<ScenarioObjective>>,
     #[serde(default)]
-    pub images: Option<ScenarioImageSection>,
+    pub images: Option<Vec<ScenarioImage>>,
     #[serde(default)]
-    pub videos: Option<ScenarioVideoSection>,
+    pub videos: Option<Vec<ScenarioVideo>>,
     #[serde(default)]
-    pub questions: Option<ScenarioQuestionSection>,
+    pub questions: Option<Vec<ScenarioQuestion>>,
     #[serde(default)]
-    pub options: Option<ScenarioOptionSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetScenarioApiResponseOutput {
-    #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub scenario_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub content_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub resolved_parameter_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub names: Option<ScenarioNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<ScenarioDescriptionSection>,
-    #[serde(default)]
-    pub problem_statements: Option<ScenarioProblemStatementSection>,
-    #[serde(default)]
-    pub flags: Option<ScenarioFlagSection>,
-    #[serde(default)]
-    pub departments: Option<ScenarioDepartmentSection>,
-    #[serde(default)]
-    pub personas: Option<ScenarioPersonaSection>,
-    #[serde(default)]
-    pub documents: Option<ScenarioDocumentSection>,
-    #[serde(default)]
-    pub parameters: Option<ScenarioParameterSection>,
-    #[serde(default)]
-    pub parameter_fields: Option<ScenarioParameterFieldSection>,
-    #[serde(default)]
-    pub objectives: Option<ScenarioObjectiveSection>,
-    #[serde(default)]
-    pub images: Option<ScenarioImageSection>,
-    #[serde(default)]
-    pub videos: Option<ScenarioVideoSection>,
-    #[serde(default)]
-    pub questions: Option<ScenarioQuestionSection>,
-    #[serde(default)]
-    pub options: Option<ScenarioOptionSection>,
+    pub options: Option<Vec<ScenarioOption>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetScenarioDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -7840,6 +9064,48 @@ pub struct GetScenarioDraftResponse {
     pub profile_ids: Vec<String>,
     pub question_ids: Vec<String>,
     pub video_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_problem_statement_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_document_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_objective_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_video_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_question_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_option_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_parameter_field_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetScenarioDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7854,7 +9120,7 @@ pub struct GetSessionDetailRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetSessionDetailResponseInput {
+pub struct GetSessionDetailResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -7870,29 +9136,7 @@ pub struct GetSessionDetailResponseInput {
     #[serde(default)]
     pub active: Option<bool>,
     #[serde(default)]
-    pub groups: Option<Vec<ArtifactSessionGroupInput>>,
-    #[serde(default)]
-    pub timeline: Option<Vec<SessionTimelineItem>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetSessionDetailResponseOutput {
-    #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub session_exists: Option<bool>,
-    #[serde(default)]
-    pub session_id: Option<String>,
-    #[serde(default)]
-    pub profile_id: Option<String>,
-    #[serde(default)]
-    pub profile_name: Option<String>,
-    #[serde(default)]
-    pub session_created_at: Option<String>,
-    #[serde(default)]
-    pub active: Option<bool>,
-    #[serde(default)]
-    pub groups: Option<Vec<ArtifactSessionGroupOutput>>,
+    pub groups: Option<Vec<ArtifactSessionGroup>>,
     #[serde(default)]
     pub timeline: Option<Vec<SessionTimelineItem>>,
 }
@@ -7900,17 +9144,43 @@ pub struct GetSessionDetailResponseOutput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetSettingApiRequest {
     #[serde(default)]
-    pub settings_id: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub color_search: Option<String>,
+    pub setting_id: Option<String>,
+    #[serde(default)]
+    pub settings_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
     #[serde(default)]
-    pub mcp: Option<bool>,
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub colors: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub logins: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub systems: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub mcp: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub thresholds: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub provider_keys: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub auth_item_keys: Option<App__infra__setting__types__SectionFilter>,
+    #[serde(default)]
+    pub auth_item_values: Option<App__infra__setting__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetSettingApiResponseInput {
+pub struct GetSettingApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -7920,76 +9190,72 @@ pub struct GetSettingApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
     #[serde(default)]
-    pub names: Option<SettingNameSection>,
+    pub draft_name: Option<String>,
     #[serde(default)]
-    pub descriptions: Option<SettingDescriptionSection>,
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub colors: Option<SettingColorSection>,
+    pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub flags: Option<SettingFlagSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub departments: Option<SettingDepartmentSection>,
+    pub names: Option<Vec<SettingNameResource>>,
     #[serde(default)]
-    pub profiles: Option<SettingProfileSection>,
+    pub descriptions: Option<Vec<SettingDescriptionResource>>,
     #[serde(default)]
-    pub auths: Option<SettingAuthSection>,
+    pub colors: Option<Vec<SettingColorResource>>,
     #[serde(default)]
-    pub provider_keys: Option<SettingProviderKeySection>,
+    pub flags: Option<Vec<SettingFlagResource>>,
     #[serde(default)]
-    pub auth_item_keys: Option<SettingAuthItemKeySection>,
+    pub departments: Option<Vec<SettingDepartmentResource>>,
     #[serde(default)]
-    pub systems: Option<SettingSystemSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetSettingApiResponseOutput {
+    pub logins: Option<Vec<SettingLoginsResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
+    pub systems: Option<Vec<SettingSystemResource>>,
     #[serde(default)]
-    pub setting_exists: Option<bool>,
+    pub mcp: Option<Vec<SettingMcpResource>>,
     #[serde(default)]
-    pub can_edit: Option<bool>,
+    pub thresholds: Option<Vec<SettingThresholdResource>>,
     #[serde(default)]
-    pub disabled_reason: Option<String>,
+    pub provider_keys: Option<Vec<SettingProviderKeyResource>>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
+    pub auth_item_keys: Option<Vec<SettingAuthItemKeyResource>>,
     #[serde(default)]
-    pub group_id: Option<String>,
+    pub auth_item_values: Option<Vec<SettingAuthItemValueResource>>,
     #[serde(default)]
-    pub names: Option<SettingNameSection>,
+    pub providers: Option<Vec<SettingProviderCatalogResource>>,
     #[serde(default)]
-    pub descriptions: Option<SettingDescriptionSection>,
+    pub keys: Option<Vec<SettingKeyCatalogResource>>,
     #[serde(default)]
-    pub colors: Option<SettingColorSection>,
+    pub items: Option<Vec<SettingItemCatalogResource>>,
     #[serde(default)]
-    pub flags: Option<SettingFlagSection>,
+    pub profiles: Option<Vec<SettingProfileCatalogResource>>,
     #[serde(default)]
-    pub departments: Option<SettingDepartmentSection>,
+    pub auths: Option<Vec<SettingAuthCatalogResource>>,
     #[serde(default)]
-    pub profiles: Option<SettingProfileSection>,
+    pub icons: Option<Vec<SettingIconCatalogResource>>,
     #[serde(default)]
-    pub auths: Option<SettingAuthSection>,
+    pub agents: Option<Vec<SettingAgentCatalogResource>>,
     #[serde(default)]
-    pub provider_keys: Option<SettingProviderKeySection>,
+    pub provider_key_options: Option<Vec<SettingProviderKeyOption>>,
     #[serde(default)]
-    pub auth_item_keys: Option<SettingAuthItemKeySection>,
+    pub auth_item_key_options: Option<Vec<SettingAuthItemKeyOption>>,
     #[serde(default)]
-    pub systems: Option<SettingSystemSection>,
+    pub auth_item_value_options: Option<Vec<SettingAuthItemValueOption>>,
+    #[serde(default)]
+    pub mcp_options: Option<Vec<SettingMcpOption>>,
+    #[serde(default)]
+    pub login_options: Option<Vec<SettingLoginOption>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetSettingDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub agent_ids: Vec<String>,
     pub auth_item_key_ids: Vec<String>,
@@ -8000,9 +9266,57 @@ pub struct GetSettingDraftResponse {
     pub flag_ids: Vec<String>,
     pub item_ids: Vec<String>,
     pub name_ids: Vec<String>,
-    pub profile_ids: Vec<String>,
+    pub provider_ids: Vec<String>,
     pub provider_key_ids: Vec<String>,
     pub threshold_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub mcp_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub logins_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_auth_item_key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_auth_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_color_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_item_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_provider_key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_threshold_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_mcp_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_logins_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetSettingDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8014,17 +9328,41 @@ pub struct GetSettingDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetSimulationApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub simulation_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
     #[serde(default)]
-    pub scenario_search: Option<String>,
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__simulation__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__simulation__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__simulation__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__simulation__types__SectionFilter>,
+    #[serde(default)]
+    pub scenarios: Option<App__infra__simulation__types__SectionFilter>,
+    #[serde(default)]
+    pub scenario_flags: Option<App__infra__simulation__types__SectionFilter>,
+    #[serde(default)]
+    pub scenario_positions: Option<App__infra__simulation__types__SectionFilter>,
+    #[serde(default)]
+    pub scenario_rubrics: Option<App__infra__simulation__types__SectionFilter>,
+    #[serde(default)]
+    pub scenario_time_limits: Option<App__infra__simulation__types__SectionFilter>,
     #[serde(default)]
     pub filter_scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub scenario_show_selected: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetSimulationApiResponseInput {
+pub struct GetSimulationApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -8034,67 +9372,33 @@ pub struct GetSimulationApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub names: Option<SimulationNameSection>,
+    pub names: Option<Vec<SimulationNameResource>>,
     #[serde(default)]
-    pub descriptions: Option<SimulationDescriptionSection>,
+    pub descriptions: Option<Vec<SimulationDescriptionResource>>,
     #[serde(default)]
-    pub flags: Option<SimulationFlagSection>,
+    pub flags: Option<Vec<SimulationFlagResource>>,
     #[serde(default)]
-    pub departments: Option<SimulationDepartmentSection>,
+    pub departments: Option<Vec<SimulationDepartment>>,
     #[serde(default)]
-    pub scenarios: Option<SimulationScenarioSection>,
+    pub scenarios: Option<Vec<SimulationScenario>>,
     #[serde(default)]
-    pub scenario_flags: Option<SimulationScenarioFlagSection>,
+    pub scenario_flags: Option<Vec<SimulationScenarioFlag>>,
     #[serde(default)]
-    pub scenario_positions: Option<SimulationScenarioPositionSection>,
+    pub scenario_flag_options: Option<Vec<SimulationScenarioFlagOption>>,
     #[serde(default)]
-    pub scenario_rubrics: Option<SimulationScenarioRubricSection>,
+    pub scenario_positions: Option<Vec<SimulationScenarioPosition>>,
     #[serde(default)]
-    pub scenario_time_limits: Option<SimulationScenarioTimeLimitSection>,
+    pub scenario_rubrics: Option<Vec<SimulationScenarioRubric>>,
     #[serde(default)]
-    pub rubrics: Option<Vec<SimulationRubric>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetSimulationApiResponseOutput {
-    #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub simulation_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<SimulationNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<SimulationDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<SimulationFlagSection>,
-    #[serde(default)]
-    pub departments: Option<SimulationDepartmentSection>,
-    #[serde(default)]
-    pub scenarios: Option<SimulationScenarioSection>,
-    #[serde(default)]
-    pub scenario_flags: Option<SimulationScenarioFlagSection>,
-    #[serde(default)]
-    pub scenario_positions: Option<SimulationScenarioPositionSection>,
-    #[serde(default)]
-    pub scenario_rubrics: Option<SimulationScenarioRubricSection>,
-    #[serde(default)]
-    pub scenario_time_limits: Option<SimulationScenarioTimeLimitSection>,
+    pub scenario_time_limits: Option<Vec<SimulationScenarioTimeLimit>>,
     #[serde(default)]
     pub rubrics: Option<Vec<SimulationRubric>>,
 }
@@ -8102,12 +9406,10 @@ pub struct GetSimulationApiResponseOutput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetSimulationDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
@@ -8119,6 +9421,40 @@ pub struct GetSimulationDraftResponse {
     pub scenario_rubric_ids: Vec<String>,
     pub scenario_time_limit_ids: Vec<String>,
     pub scenario_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_scenario_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_scenario_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_scenario_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_scenario_time_limit_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_scenario_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetSimulationDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8128,58 +9464,76 @@ pub struct GetSimulationDraftsApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetSuiteRequest {
-    pub test_id: String,
-    #[serde(default)]
-    pub draft_id: Option<String>,
-    #[serde(default)]
-    pub descriptions_search: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetSuiteResponse {
-    pub test_id: String,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub test_id: Option<String>,
+    #[serde(default)]
+    pub invocation_id: Option<String>,
     #[serde(default)]
     pub profile_has_access: Option<bool>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
+    pub can_edit: Option<bool>,
+    #[serde(default)]
+    pub disabled_reason: Option<String>,
     #[serde(default)]
     pub group_id: Option<String>,
     #[serde(default)]
-    pub names: Option<SuiteNameSection>,
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub descriptions: Option<SuiteDescriptionSection>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub values: Option<SuiteValueSection>,
+    pub names: Option<Vec<InvocationNameResource>>,
     #[serde(default)]
-    pub flags: Option<SuiteFlagSection>,
+    pub descriptions: Option<Vec<InvocationDescriptionResource>>,
     #[serde(default)]
-    pub departments: Option<SuiteDepartmentSection>,
+    pub values: Option<Vec<InvocationValueResource>>,
     #[serde(default)]
-    pub keys: Option<SuiteKeySection>,
+    pub flags: Option<Vec<InvocationFlagResource>>,
     #[serde(default)]
-    pub endpoints: Option<SuiteEndpointSection>,
+    pub departments: Option<Vec<InvocationDepartmentResource>>,
     #[serde(default)]
-    pub modalities: Option<SuiteModalitySection>,
+    pub keys: Option<Vec<InvocationKeyResource>>,
     #[serde(default)]
-    pub temperature_levels: Option<SuiteTemperatureLevelSection>,
+    pub endpoints: Option<Vec<InvocationEndpointResource>>,
     #[serde(default)]
-    pub pricing: Option<SuitePricingSection>,
+    pub modalities: Option<Vec<InvocationModalityResource>>,
     #[serde(default)]
-    pub reasoning_levels: Option<SuiteReasoningLevelSection>,
+    pub temperature_levels: Option<Vec<InvocationTemperatureLevelResource>>,
     #[serde(default)]
-    pub qualities: Option<SuiteQualitySection>,
+    pub pricing: Option<Vec<InvocationPricingResource>>,
     #[serde(default)]
-    pub voices: Option<SuiteVoiceSection>,
+    pub reasoning_levels: Option<Vec<InvocationReasoningLevelResource>>,
+    #[serde(default)]
+    pub qualities: Option<Vec<InvocationQualityResource>>,
+    #[serde(default)]
+    pub voices: Option<Vec<InvocationVoiceResource>>,
+    #[serde(default)]
+    pub model_flags: Option<Vec<InvocationModelFlagResource>>,
+    #[serde(default)]
+    pub model_flag_options: Option<Vec<InvocationModelFlagOptionResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetTestArtifactRequest {
     pub test_id: String,
+    #[serde(default)]
+    pub configs_groups_page: Option<i64>,
+    #[serde(default)]
+    pub configs_groups_page_size: Option<i64>,
+    #[serde(default)]
+    pub configs_expanded: Option<Vec<String>>,
+    #[serde(default)]
+    pub configs_expanded_page_size: Option<i64>,
+    #[serde(default)]
+    pub configs_search: Option<String>,
+    #[serde(default)]
+    pub configs_selected: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetTestArtifactResponseInput {
+pub struct GetTestArtifactResponse {
     #[serde(default)]
     pub test: Option<GetTestResponse>,
     #[serde(default)]
@@ -8197,37 +9551,15 @@ pub struct GetTestArtifactResponseInput {
     #[serde(default)]
     pub runs: Option<Vec<TestRunItem>>,
     #[serde(default)]
-    pub status_summary: Option<TestStatusSummary>,
+    pub configs: Option<Vec<TestConfigItem>>,
     #[serde(default)]
-    pub show_controls: Option<bool>,
+    pub configs_groups: Option<Vec<TestConfigGroup>>,
     #[serde(default)]
-    pub current_invocation_id: Option<String>,
+    pub configs_total: Option<i64>,
     #[serde(default)]
-    pub has_runs_or_groups: Option<bool>,
+    pub configs_groups_total: Option<i64>,
     #[serde(default)]
-    pub entries: Option<TestEntries>,
-    #[serde(default)]
-    pub resources: Option<TestResources>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetTestArtifactResponseOutput {
-    #[serde(default)]
-    pub test: Option<GetTestResponse>,
-    #[serde(default)]
-    pub invocations: Option<Vec<GetTestInvocationResponse>>,
-    #[serde(default)]
-    pub status: Option<String>,
-    #[serde(default)]
-    pub eval_name: Option<String>,
-    #[serde(default)]
-    pub eval_description: Option<String>,
-    #[serde(default)]
-    pub rubric_name: Option<String>,
-    #[serde(default)]
-    pub infinite_mode: Option<bool>,
-    #[serde(default)]
-    pub runs: Option<Vec<TestRunItem>>,
+    pub configs_per_group_total: Option<std::collections::HashMap<String, i64>>,
     #[serde(default)]
     pub status_summary: Option<TestStatusSummary>,
     #[serde(default)]
@@ -8236,6 +9568,10 @@ pub struct GetTestArtifactResponseOutput {
     pub current_invocation_id: Option<String>,
     #[serde(default)]
     pub has_runs_or_groups: Option<bool>,
+    #[serde(default)]
+    pub next_invocation_id: Option<String>,
+    #[serde(default)]
+    pub invocation_details: Option<Vec<InvocationDetail>>,
     #[serde(default)]
     pub entries: Option<TestEntries>,
     #[serde(default)]
@@ -8246,18 +9582,21 @@ pub struct GetTestArtifactResponseOutput {
 pub struct GetTestFeedbackResponse {
     pub feedback_id: String,
     pub grade_id: String,
+    pub call_id: String,
+    pub tool_call_id: String,
     pub total: i64,
     pub feedback: String,
     pub total_points: i64,
     pub pass_points: i64,
     pub created_at: String,
+    #[serde(default)]
+    pub standard_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetTestGradeResponse {
     pub id: String,
     pub invocation_id: String,
-    pub run_id: Option<String>,
     pub created_at: String,
     pub updated_at: String,
     pub passed: bool,
@@ -8267,35 +9606,6 @@ pub struct GetTestGradeResponse {
     pub mcp: bool,
     pub active: bool,
     pub call_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetTestInvocationGroupsResponse {
-    pub id: String,
-    pub test_invocation_id: String,
-    pub created_at: String,
-    pub updated_at: String,
-    pub generated: bool,
-    pub mcp: bool,
-    pub active: bool,
-    #[serde(default)]
-    pub agent_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub reasoning_level_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub temperature_level_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub voice_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub prompt_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub instruction_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub tool_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub quality_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub modality_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8320,10 +9630,6 @@ pub struct GetTestInvocationResponse {
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub run_agent_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub group_agent_ids: Option<Vec<String>>,
-    #[serde(default)]
     pub voice_id: Option<String>,
     #[serde(default)]
     pub temperature_level_id: Option<String>,
@@ -8343,7 +9649,22 @@ pub struct GetTestInvocationRunsResponse {
     pub mcp: bool,
     pub active: bool,
     #[serde(default)]
-    pub agent_ids: Option<Vec<String>>,
+    pub test_invocation_traces_id: Option<String>,
+    #[serde(default)]
+    pub run_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetTestInvocationTracesResponse {
+    pub id: String,
+    pub test_invocation_id: String,
+    pub created_at: String,
+    pub updated_at: String,
+    pub generated: bool,
+    pub mcp: bool,
+    pub active: bool,
+    #[serde(default)]
+    pub run_id: Option<String>,
     #[serde(default)]
     pub reasoning_level_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -8365,6 +9686,7 @@ pub struct GetTestInvocationRunsResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetTestResponse {
     pub test_id: String,
+    pub call_id: Option<String>,
     pub eval_id: Option<String>,
     pub profile_id: Option<String>,
     pub department_ids: Vec<String>,
@@ -8380,13 +9702,35 @@ pub struct GetTestResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetToolApiRequest {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub tool_id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub names: Option<App__infra__tool__types__SectionFilter>,
+    #[serde(default)]
+    pub descriptions: Option<App__infra__tool__types__SectionFilter>,
+    #[serde(default)]
+    pub flags: Option<App__infra__tool__types__SectionFilter>,
+    #[serde(default)]
+    pub args: Option<App__infra__tool__types__SectionFilter>,
+    #[serde(default)]
+    pub arg_positions: Option<App__infra__tool__types__SectionFilter>,
+    #[serde(default)]
+    pub args_outputs: Option<App__infra__tool__types__SectionFilter>,
+    #[serde(default)]
+    pub permissions: Option<App__infra__tool__types__SectionFilter>,
+    #[serde(default)]
+    pub instructions: Option<App__infra__tool__types__SectionFilter>,
+    #[serde(default)]
+    pub departments: Option<App__infra__tool__types__SectionFilter>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetToolApiResponseInput {
+pub struct GetToolApiResponse {
     #[serde(default)]
     pub actor_name: Option<String>,
     #[serde(default)]
@@ -8396,101 +9740,110 @@ pub struct GetToolApiResponseInput {
     #[serde(default)]
     pub disabled_reason: Option<String>,
     #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
     pub group_id: Option<String>,
+    #[serde(default)]
+    pub draft_name: Option<String>,
+    #[serde(default)]
+    pub tool_id: Option<String>,
+    #[serde(default)]
+    pub show_ai_generate: Option<bool>,
     #[serde(default)]
     pub basic_show_ai_generate: Option<bool>,
     #[serde(default)]
     pub args_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub arg_positions_show_ai_generate: Option<bool>,
+    pub permissions_show_ai_generate: Option<bool>,
     #[serde(default)]
-    pub args_outputs_show_ai_generate: Option<bool>,
+    pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub names: Option<ToolNameSection>,
+    pub names: Option<Vec<ToolNameResource>>,
     #[serde(default)]
-    pub descriptions: Option<ToolDescriptionSection>,
+    pub descriptions: Option<Vec<ToolDescriptionResource>>,
     #[serde(default)]
-    pub flags: Option<ToolFlagSection>,
+    pub flags: Option<Vec<ToolFlagResource>>,
     #[serde(default)]
-    pub args: Option<ToolArgSection>,
+    pub args: Option<Vec<ToolArgResource>>,
     #[serde(default)]
-    pub arg_positions: Option<ToolArgPositionSection>,
+    pub arg_positions: Option<Vec<ToolArgPositionResource>>,
     #[serde(default)]
-    pub args_outputs: Option<ToolArgOutputSection>,
+    pub args_outputs: Option<Vec<ToolArgOutputResource>>,
     #[serde(default)]
-    pub artifacts: Option<ToolArtifactSection>,
+    pub permissions: Option<Vec<ToolPermissionResource>>,
     #[serde(default)]
-    pub operations: Option<ToolOperationSection>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GetToolApiResponseOutput {
+    pub instructions: Option<Vec<ToolInstructionResource>>,
     #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub tool_exists: Option<bool>,
-    #[serde(default)]
-    pub can_edit: Option<bool>,
-    #[serde(default)]
-    pub disabled_reason: Option<String>,
-    #[serde(default)]
-    pub draft_version: Option<i64>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub basic_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub args_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub arg_positions_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub args_outputs_show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub names: Option<ToolNameSection>,
-    #[serde(default)]
-    pub descriptions: Option<ToolDescriptionSection>,
-    #[serde(default)]
-    pub flags: Option<ToolFlagSection>,
-    #[serde(default)]
-    pub args: Option<ToolArgSection>,
-    #[serde(default)]
-    pub arg_positions: Option<ToolArgPositionSection>,
-    #[serde(default)]
-    pub args_outputs: Option<ToolArgOutputSection>,
-    #[serde(default)]
-    pub artifacts: Option<ToolArtifactSection>,
-    #[serde(default)]
-    pub operations: Option<ToolOperationSection>,
+    pub departments: Option<Vec<ToolDepartmentResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetToolDraftResponse {
     pub id: String,
-    pub version: i64,
     pub created_at: String,
     pub generated: bool,
     pub mcp: bool,
     pub active: bool,
-    pub group_id: String,
     pub session_id: String,
     pub arg_position_ids: Vec<String>,
     pub arg_ids: Vec<String>,
     pub args_output_ids: Vec<String>,
-    pub artifact_ids: Vec<String>,
     pub department_ids: Vec<String>,
     pub description_ids: Vec<String>,
     pub flag_ids: Vec<String>,
     pub name_ids: Vec<String>,
-    pub operation_ids: Vec<String>,
+    pub permission_ids: Vec<String>,
     pub profile_ids: Vec<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub instruction_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_arg_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_arg_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_args_output_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_description_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_name_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_instruction_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_permission_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_agent_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetToolDraftsApiRequest {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub date_from: Option<String>,
+    #[serde(default)]
+    pub date_to: Option<String>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetToolDraftsApiResponse {
     #[serde(default)]
     pub entries: Option<Vec<GetToolDraftResponse>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GradeAttemptApiRequest {
+    pub chat_id: String,
+    pub score: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8502,35 +9855,8 @@ pub struct GradeAttemptApiResponse {
     pub score: Option<i64>,
     #[serde(default)]
     pub passed: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GradeAttemptRequest {
-    pub attempt_id: String,
-    #[serde(default)]
-    pub chat_id: Option<String>,
-    #[serde(default)]
-    pub resource_types: Option<Vec<String>>,
-    #[serde(default)]
-    pub user_instructions: Option<Vec<String>>,
-    #[serde(default)]
-    pub score: Option<i64>,
-    #[serde(default)]
-    pub passed: Option<bool>,
     #[serde(default)]
     pub time_taken: Option<i64>,
-    #[serde(default)]
-    pub feedbacks: Option<Vec<AttemptGradeFeedbackEntry>>,
-    #[serde(default)]
-    pub strengths: Option<Vec<AttemptGradeStrengthEntry>>,
-    #[serde(default)]
-    pub improvements: Option<Vec<AttemptGradeImprovementEntry>>,
-    #[serde(default)]
-    pub analyses: Option<Vec<AttemptGradeAnalysisEntry>>,
-    #[serde(default)]
-    pub highlights: Option<Vec<AttemptGradeHighlightEntry>>,
-    #[serde(default)]
-    pub replacements: Option<Vec<AttemptGradeReplacementEntry>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8560,53 +9886,498 @@ pub struct GradingStateData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GroupDetailCallItem {
+pub struct GroupAgentApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupAgentApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupAttemptApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupAttemptApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupAuthApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupAuthApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupCall {
     pub id: String,
-    pub created_at: String,
+    #[serde(default)]
+    pub tool_name: Option<String>,
     #[serde(default)]
     pub template_name: Option<String>,
     #[serde(default)]
-    pub file_path: Option<String>,
+    pub tool: Option<std::collections::HashMap<String, serde_json::Value>>,
+    #[serde(default)]
+    pub ledger_status: Option<String>,
+    #[serde(default)]
+    pub ledger_operation: Option<String>,
+    #[serde(default)]
+    pub ledger_artifact: Option<String>,
+    #[serde(default)]
+    pub ledger_artifact_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GroupDetailMessageItem {
+pub struct GroupCohortApiRequest {
     #[serde(default)]
-    pub id: Option<String>,
+    pub group_id: Option<String>,
     #[serde(default)]
-    pub role: Option<String>,
-    #[serde(default)]
-    pub text_upload_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub audio_upload_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub image_upload_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub video_upload_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub file_upload_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub call_upload_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub calls: Option<Vec<GroupDetailCallItem>>,
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GroupDetailResourceItem {
+pub struct GroupCohortApiResponse {
+    pub group_id: String,
     #[serde(default)]
-    pub model_id: Option<String>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub agent_id: Option<String>,
+    pub snapshot_key: Option<String>,
     #[serde(default)]
-    pub profile_id: Option<String>,
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupDepartmentApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupDepartmentApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupDocumentApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupDocumentApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupEvalApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupEvalApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupFieldApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupFieldApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupMessage {
+    pub id: String,
+    pub role: String,
+    #[serde(default)]
+    pub created_at: Option<String>,
+    #[serde(default)]
+    pub text_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub audio_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub video_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub file_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub call_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub calls: Option<Vec<GroupCall>>,
+    #[serde(default)]
+    pub reasoning: Option<bool>,
+    #[serde(default)]
+    pub in_context: Option<bool>,
+    #[serde(default)]
+    pub in_context_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupModelApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupModelApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupParameterApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupParameterApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupPersonaApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupPersonaApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupProfileApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupProfileApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupProviderApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupProviderApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupResource {
+    pub id: String,
     #[serde(default)]
     pub name: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GroupDetailRunItem {
+pub struct GroupRubricApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupRubricApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupRun {
     pub id: String,
-    pub created_at: String,
+    #[serde(default)]
+    pub created_at: Option<String>,
     #[serde(default)]
     pub input_tokens: Option<i64>,
     #[serde(default)]
@@ -8621,24 +10392,202 @@ pub struct GroupDetailRunItem {
     pub agent_id: Option<String>,
     #[serde(default)]
     pub profile_id: Option<String>,
+    #[serde(default)]
+    pub previous_context_start_index: Option<i64>,
+    #[serde(default)]
+    pub messages: Option<Vec<GroupMessage>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GroupDetailRunWithMessagesInput {
-    pub run: GroupDetailRunItem,
+pub struct GroupScenarioApiRequest {
     #[serde(default)]
-    pub messages: Option<Vec<GroupDetailMessageItem>>,
+    pub group_id: Option<String>,
     #[serde(default)]
-    pub previous_context_start_index: Option<i64>,
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GroupDetailRunWithMessagesOutput {
-    pub run: GroupDetailRunItem,
+pub struct GroupScenarioApiResponse {
+    pub group_id: String,
     #[serde(default)]
-    pub messages: Option<Vec<GroupDetailMessageItem>>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub previous_context_start_index: Option<i64>,
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupSettingApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupSettingApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupSimulationApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupSimulationApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupSystemApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub include_detail: Option<bool>,
+    #[serde(default)]
+    pub message_limit: Option<i64>,
+    #[serde(default)]
+    pub message_offset: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupSystemApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupTestApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupTestApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupToolApiRequest {
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GroupToolApiResponse {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub runs: Option<Vec<GroupRun>>,
+    #[serde(default)]
+    pub group_exists: Option<bool>,
+    #[serde(default)]
+    pub actor_name: Option<String>,
+    #[serde(default)]
+    pub total_message_count: Option<i64>,
+    #[serde(default)]
+    pub models: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub agents: Option<Vec<GroupResource>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<GroupResource>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8662,23 +10611,13 @@ pub struct HealthRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HealthResponseInput {
+pub struct HealthResponse {
     #[serde(default)]
     pub views: Option<HealthViews>,
     #[serde(default)]
     pub total_count: Option<i64>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsInput>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HealthResponseOutput {
-    #[serde(default)]
-    pub views: Option<HealthViews>,
-    #[serde(default)]
-    pub total_count: Option<i64>,
-    #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsOutput>,
+    pub analytics: Option<AnalyticsFacets>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8698,7 +10637,7 @@ pub struct HighlightEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HintEntryOutput {
+pub struct HintEntry {
     #[serde(default)]
     pub hint: Option<String>,
     #[serde(default)]
@@ -8775,15 +10714,424 @@ pub struct HistoryResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImageDownloadAttemptApiRequest {
+    pub image_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImageDownloadGroupApiRequest {
+    pub image_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImageDownloadScenarioApiRequest {
+    pub image_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImageEntry {
     #[serde(default)]
     pub image_id: Option<String>,
     #[serde(default)]
-    pub upload_id: Option<String>,
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImageUploadScenarioApiResponse {
+    pub image_id: String,
+    pub upload_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImportField {
+    pub key: String,
+    pub label: String,
+    #[serde(default)]
+    pub required: Option<bool>,
+    #[serde(default)]
+    pub multi: Option<bool>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub example: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationDepartmentResource {
+    #[serde(default)]
+    pub department_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationDescriptionResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationDetail {
+    pub invocation_id: String,
+    #[serde(default)]
+    pub rubric_id: Option<String>,
+    #[serde(default)]
+    pub rubric_structure: Option<RubricStructureData>,
+    #[serde(default)]
+    pub primary_run_id: Option<String>,
+    #[serde(default)]
+    pub agent_id: Option<String>,
+    #[serde(default)]
+    pub model_id: Option<String>,
+    #[serde(default)]
+    pub voice_id: Option<String>,
+    #[serde(default)]
+    pub temperature_level_id: Option<String>,
+    #[serde(default)]
+    pub reasoning_level_id: Option<String>,
+    #[serde(default)]
+    pub quality_id: Option<String>,
+    #[serde(default)]
+    pub modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub runs: Option<Vec<InvocationRunDetail>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationEndpointResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub base_url: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub icon_id: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationKeyResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub key_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub key_masked: Option<String>,
+    #[serde(default)]
+    pub masked_key: Option<String>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationModalityResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub modality_id: Option<String>,
+    #[serde(default)]
+    pub modality: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub is_input: Option<bool>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationModelFlagOptionResource {
+    #[serde(default)]
+    pub model_id: Option<String>,
+    #[serde(default)]
+    pub flag_id: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationModelFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub model_id: Option<String>,
+    #[serde(default)]
+    pub flag_id: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationModelFlagValue {
+    pub model_id: String,
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub value: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationNameResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationPricingResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub pricing_id: Option<String>,
+    #[serde(default)]
+    pub pricing_type: Option<String>,
+    #[serde(default)]
+    pub price: Option<f64>,
+    #[serde(default)]
+    pub unit_name: Option<String>,
+    #[serde(default)]
+    pub unit_category: Option<String>,
+    #[serde(default)]
+    pub unit_value: Option<i64>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationQualityResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub quality_id: Option<String>,
+    #[serde(default)]
+    pub quality: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationReasoningLevelResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub reasoning_level: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationRunDetail {
+    pub run_id: String,
+    pub binding_id: String,
+    #[serde(default)]
+    pub grade_id: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+    #[serde(default)]
+    pub completed: Option<bool>,
+    #[serde(default)]
+    pub grade: Option<GradeData>,
+    #[serde(default)]
+    pub grading_state: Option<GradingStateData>,
+    #[serde(default)]
+    pub feedbacks: Option<Vec<FeedbackEntry>>,
+    #[serde(default)]
+    pub analyses: Option<Vec<AnalysisEntry>>,
+    #[serde(default)]
+    pub message_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub call_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationSlot {
+    pub invocation_id: String,
+    pub agent_id: String,
+    #[serde(default)]
+    pub rubric_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationTemperatureLevelResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub temperature: Option<f64>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationValueResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub value: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvocationVoiceResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub voice: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8903,6 +11251,8 @@ pub struct LeaderboardRequest {
     #[serde(default)]
     pub cohort_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
     pub simulation_filters: Option<Vec<String>>,
@@ -8910,6 +11260,16 @@ pub struct LeaderboardRequest {
     pub target_profile_id: Option<String>,
     #[serde(default)]
     pub cohort_id: Option<String>,
+    #[serde(default)]
+    pub simulation_id: Option<String>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub sort_by: Option<String>,
+    #[serde(default)]
+    pub sort_order: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8923,23 +11283,21 @@ pub struct LeaderboardResources {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LeaderboardResponseInput {
+pub struct LeaderboardResponse {
     #[serde(default)]
-    pub sections: Option<LeaderboardSectionsInput>,
-    #[serde(default)]
-    pub resources: Option<LeaderboardResources>,
-    #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsInput>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LeaderboardResponseOutput {
-    #[serde(default)]
-    pub sections: Option<LeaderboardSectionsOutput>,
+    pub sections: Option<LeaderboardSections>,
     #[serde(default)]
     pub resources: Option<LeaderboardResources>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsOutput>,
+    pub analytics: Option<AnalyticsFacets>,
+    #[serde(default)]
+    pub data: Option<Vec<LeaderboardDataRow>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+    #[serde(default)]
+    pub simulation_options: Option<Vec<FilterOption>>,
+    #[serde(default)]
+    pub profile_options: Option<Vec<FilterOption>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8963,23 +11321,7 @@ pub struct LeaderboardSectionStatus {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LeaderboardSectionsInput {
-    #[serde(default)]
-    pub header_metrics: Option<LeaderboardHeaderMetrics>,
-    #[serde(default)]
-    pub rankings: Option<LeaderboardSectionStatus>,
-    #[serde(default)]
-    pub accolades: Option<LeaderboardSectionStatus>,
-    #[serde(default)]
-    pub trends: Option<LeaderboardSectionStatus>,
-    #[serde(default)]
-    pub filters: Option<LeaderboardSectionStatus>,
-    #[serde(default)]
-    pub accolade_winners: Option<LeaderboardAccoladeWinners>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LeaderboardSectionsOutput {
+pub struct LeaderboardSections {
     #[serde(default)]
     pub header_metrics: Option<LeaderboardHeaderMetrics>,
     #[serde(default)]
@@ -9013,7 +11355,7 @@ pub struct ListActivityRequest {
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub roles: Option<Vec<String>>,
+    pub role_ids: Option<Vec<String>>,
     #[serde(default)]
     pub active: Option<bool>,
     #[serde(default)]
@@ -9063,11 +11405,23 @@ pub struct ListAgentApiAgent {
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub is_inactive: Option<bool>,
+    #[serde(default)]
+    pub is_mcp: Option<bool>,
+    #[serde(default)]
     pub can_edit: Option<bool>,
     #[serde(default)]
     pub can_duplicate: Option<bool>,
     #[serde(default)]
     pub can_delete: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9083,7 +11437,11 @@ pub struct ListAgentApiResponse {
     #[serde(default)]
     pub tool_filter: Option<ListFilterSection>,
     #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9099,6 +11457,10 @@ pub struct ListAuthApiAuth {
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub setting_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_item_key_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub is_inactive: Option<bool>,
     #[serde(default)]
     pub can_edit: Option<bool>,
@@ -9106,6 +11468,12 @@ pub struct ListAuthApiAuth {
     pub can_duplicate: Option<bool>,
     #[serde(default)]
     pub can_delete: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9116,6 +11484,12 @@ pub struct ListAuthApiResponse {
     pub auths: Option<Vec<ListAuthApiAuth>>,
     #[serde(default)]
     pub department_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub settings_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub auth_item_keys_filter: Option<ListFilterSection>,
     #[serde(default)]
     pub total_count: Option<i64>,
 }
@@ -9154,6 +11528,12 @@ pub struct ListCohortApiCohort {
     pub can_leave: Option<bool>,
     #[serde(default)]
     pub updated_at: Option<String>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9200,6 +11580,8 @@ pub struct ListCohortApiResponse {
     pub flag_filter: Option<ListFilterSection>,
     #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9215,42 +11597,6 @@ pub struct ListCohortApiSimulation {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ListDashboardRequest {
-    #[serde(default)]
-    pub start_date: Option<String>,
-    #[serde(default)]
-    pub end_date: Option<String>,
-    #[serde(default)]
-    pub cohort_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub target_profile_id: Option<String>,
-    #[serde(default)]
-    pub practice: Option<bool>,
-    #[serde(default)]
-    pub scenario_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub infinite_mode: Option<bool>,
-    #[serde(default)]
-    pub show_archived: Option<bool>,
-    #[serde(default)]
-    pub sort_by: Option<String>,
-    #[serde(default)]
-    pub sort_order: Option<String>,
-    #[serde(default)]
-    pub page: Option<i64>,
-    #[serde(default)]
-    pub page_size: Option<i64>,
-    #[serde(default)]
-    pub simulation_search: Option<String>,
-    #[serde(default)]
-    pub scenario_search: Option<String>,
-    #[serde(default)]
-    pub profile_search: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ListDepartmentApiDepartment {
     #[serde(default)]
     pub department_id: Option<String>,
@@ -9261,6 +11607,12 @@ pub struct ListDepartmentApiDepartment {
     #[serde(default)]
     pub staff_count: Option<i64>,
     #[serde(default)]
+    pub profile_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub setting_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub login_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub is_inactive: Option<bool>,
     #[serde(default)]
     pub can_edit: Option<bool>,
@@ -9270,6 +11622,12 @@ pub struct ListDepartmentApiDepartment {
     pub can_delete: Option<bool>,
     #[serde(default)]
     pub updated_at: Option<String>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9279,7 +11637,17 @@ pub struct ListDepartmentApiResponse {
     #[serde(default)]
     pub departments: Option<Vec<ListDepartmentApiDepartment>>,
     #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub profile_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub settings_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub logins_filter: Option<ListFilterSection>,
+    #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9297,13 +11665,25 @@ pub struct ListDocumentApiDocument {
     #[serde(default)]
     pub field_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub is_inactive: Option<bool>,
+    #[serde(default)]
+    pub is_template: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
+    #[serde(default)]
+    pub extension: Option<String>,
     #[serde(default)]
     pub num_scenarios: Option<i64>,
     #[serde(default)]
     pub active_scenario_count: Option<i64>,
     #[serde(default)]
-    pub upload_id: Option<String>,
+    pub file_id: Option<String>,
     #[serde(default)]
     pub can_edit: Option<bool>,
     #[serde(default)]
@@ -9327,7 +11707,11 @@ pub struct ListDocumentApiResponse {
     #[serde(default)]
     pub department_filter: Option<ListFilterSection>,
     #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9341,11 +11725,21 @@ pub struct ListEvalApiEval {
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub is_inactive: Option<bool>,
     #[serde(default)]
     pub is_dynamic: Option<bool>,
     #[serde(default)]
     pub use_groups: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
     #[serde(default)]
     pub num_runs: Option<i64>,
     #[serde(default)]
@@ -9369,9 +11763,17 @@ pub struct ListEvalApiResponse {
     #[serde(default)]
     pub department_filter: Option<ListFilterSection>,
     #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub model_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub rubric_filter: Option<ListFilterSection>,
+    #[serde(default)]
     pub total_count: Option<i64>,
     #[serde(default)]
     pub user_role: Option<String>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9390,6 +11792,12 @@ pub struct ListFieldApiField {
     pub persona_ids: Option<Vec<String>>,
     #[serde(default)]
     pub is_inactive: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
     #[serde(default)]
     pub can_edit: Option<bool>,
     #[serde(default)]
@@ -9413,7 +11821,11 @@ pub struct ListFieldApiResponse {
     #[serde(default)]
     pub department_filter: Option<ListFilterSection>,
     #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9444,94 +11856,6 @@ pub struct ListFilterSection {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ListHomeRequest {
-    #[serde(default)]
-    pub sort_by: Option<String>,
-    #[serde(default)]
-    pub sort_order: Option<String>,
-    #[serde(default)]
-    pub page: Option<i64>,
-    #[serde(default)]
-    pub page_size: Option<i64>,
-    #[serde(default)]
-    pub simulation_search: Option<String>,
-    #[serde(default)]
-    pub scenario_search: Option<String>,
-    #[serde(default)]
-    pub scenario_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub infinite_mode: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ListHomeResponse {
-    #[serde(default)]
-    pub data: Option<Vec<HistoryItem>>,
-    #[serde(default)]
-    pub total_count: Option<i64>,
-    #[serde(default)]
-    pub page: Option<i64>,
-    #[serde(default)]
-    pub page_size: Option<i64>,
-    #[serde(default)]
-    pub total_pages: Option<i64>,
-    #[serde(default)]
-    pub simulation_options: Option<Vec<FilterOption>>,
-    #[serde(default)]
-    pub scenario_options: Option<Vec<FilterOption>>,
-    #[serde(default)]
-    pub profile_options: Option<Vec<FilterOption>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ListLeaderboardRequest {
-    #[serde(default)]
-    pub start_date: Option<String>,
-    #[serde(default)]
-    pub end_date: Option<String>,
-    #[serde(default)]
-    pub cohort_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub simulation_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub simulation_filters: Option<Vec<String>>,
-    #[serde(default)]
-    pub target_profile_id: Option<String>,
-    #[serde(default)]
-    pub cohort_id: Option<String>,
-    #[serde(default)]
-    pub simulation_id: Option<String>,
-    #[serde(default)]
-    pub scenario_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub search: Option<String>,
-    #[serde(default)]
-    pub sort_by: Option<String>,
-    #[serde(default)]
-    pub sort_order: Option<String>,
-    #[serde(default)]
-    pub page_limit: Option<i64>,
-    #[serde(default)]
-    pub page_offset: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ListLeaderboardResponse {
-    #[serde(default)]
-    pub data: Option<Vec<LeaderboardDataRow>>,
-    #[serde(default)]
-    pub resources: Option<LeaderboardResources>,
-    #[serde(default)]
-    pub total_count: Option<i64>,
-    #[serde(default)]
-    pub simulation_options: Option<Vec<FilterOption>>,
-    #[serde(default)]
-    pub profile_options: Option<Vec<FilterOption>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ListModelApiModel {
     #[serde(default)]
     pub model_id: Option<String>,
@@ -9553,6 +11877,12 @@ pub struct ListModelApiModel {
     pub active: Option<bool>,
     #[serde(default)]
     pub image_model: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
     #[serde(default)]
     pub can_edit: Option<bool>,
     #[serde(default)]
@@ -9576,7 +11906,11 @@ pub struct ListModelApiResponse {
     #[serde(default)]
     pub agent_filter: Option<ListFilterSection>,
     #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9589,6 +11923,8 @@ pub struct ListParameterApiParameter {
     pub description: Option<String>,
     #[serde(default)]
     pub active: Option<bool>,
+    #[serde(default)]
+    pub is_inactive: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -9607,6 +11943,12 @@ pub struct ListParameterApiParameter {
     pub can_delete: Option<bool>,
     #[serde(default)]
     pub updated_at: Option<String>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9622,7 +11964,11 @@ pub struct ListParameterApiResponse {
     #[serde(default)]
     pub department_filter: Option<ListFilterSection>,
     #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9645,6 +11991,12 @@ pub struct ListPersonaApiPersona {
     pub field_ids: Option<Vec<String>>,
     #[serde(default)]
     pub is_inactive: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
     #[serde(default)]
@@ -9684,49 +12036,11 @@ pub struct ListPersonaApiResponse {
     #[serde(default)]
     pub instruction_filter: Option<ListFilterSection>,
     #[serde(default)]
-    pub total_count: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ListPracticeRequest {
-    #[serde(default)]
-    pub sort_by: Option<String>,
-    #[serde(default)]
-    pub sort_order: Option<String>,
-    #[serde(default)]
-    pub page: Option<i64>,
-    #[serde(default)]
-    pub page_size: Option<i64>,
-    #[serde(default)]
-    pub simulation_search: Option<String>,
-    #[serde(default)]
-    pub scenario_search: Option<String>,
-    #[serde(default)]
-    pub show_archived: Option<bool>,
-    #[serde(default)]
-    pub scenario_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub infinite_mode: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ListPracticeResponse {
-    #[serde(default)]
-    pub data: Option<Vec<HistoryItem>>,
+    pub flag_filter: Option<ListFilterSection>,
     #[serde(default)]
     pub total_count: Option<i64>,
     #[serde(default)]
-    pub page: Option<i64>,
-    #[serde(default)]
-    pub page_size: Option<i64>,
-    #[serde(default)]
-    pub total_pages: Option<i64>,
-    #[serde(default)]
-    pub simulation_options: Option<Vec<FilterOption>>,
-    #[serde(default)]
-    pub scenario_options: Option<Vec<FilterOption>>,
-    #[serde(default)]
-    pub profile_options: Option<Vec<FilterOption>>,
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9740,9 +12054,23 @@ pub struct ListPricingRequest {
     #[serde(default)]
     pub date_to: Option<String>,
     #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_id: Option<String>,
+    #[serde(default)]
+    pub model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub profile_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
     pub page: Option<i64>,
     #[serde(default)]
     pub page_size: Option<i64>,
+    #[serde(default)]
+    pub sort_by: Option<String>,
     #[serde(default)]
     pub sort_order: Option<String>,
 }
@@ -9774,19 +12102,33 @@ pub struct ListProfilesApiProfile {
     #[serde(default)]
     pub role: Option<String>,
     #[serde(default)]
+    pub role_name: Option<String>,
+    #[serde(default)]
     pub initials: Option<String>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
     pub primary_department_id: Option<String>,
     #[serde(default)]
-    pub requests_per_day: Option<i64>,
+    pub permission_ids: Option<Vec<String>>,
     #[serde(default)]
     pub can_edit: Option<bool>,
     #[serde(default)]
     pub can_duplicate: Option<bool>,
     #[serde(default)]
     pub can_delete: Option<bool>,
+    #[serde(default)]
+    pub can_emulate: Option<bool>,
+    #[serde(default)]
+    pub is_emulated: Option<bool>,
+    #[serde(default)]
+    pub is_inactive: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9799,6 +12141,10 @@ pub struct ListProfilesApiResponse {
     pub department_filter: Option<ListFilterSection>,
     #[serde(default)]
     pub role_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub permissions_filter: Option<ListFilterSection>,
     #[serde(default)]
     pub total_count: Option<i64>,
 }
@@ -9816,6 +12162,8 @@ pub struct ListProviderApiProvider {
     #[serde(default)]
     pub active: Option<bool>,
     #[serde(default)]
+    pub is_inactive: Option<bool>,
+    #[serde(default)]
     pub updated_at: Option<String>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
@@ -9829,6 +12177,12 @@ pub struct ListProviderApiProvider {
     pub can_delete: Option<bool>,
     #[serde(default)]
     pub can_duplicate: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9844,40 +12198,11 @@ pub struct ListProviderApiResponse {
     #[serde(default)]
     pub status_filter: Option<ListFilterSection>,
     #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
     pub total_count: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ListRecordRequest {
-    pub target_profile_id: String,
     #[serde(default)]
-    pub start_date: Option<String>,
-    #[serde(default)]
-    pub end_date: Option<String>,
-    #[serde(default)]
-    pub cohort_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub practice: Option<bool>,
-    #[serde(default)]
-    pub scenario_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub infinite_mode: Option<bool>,
-    #[serde(default)]
-    pub show_archived: Option<bool>,
-    #[serde(default)]
-    pub sort_by: Option<String>,
-    #[serde(default)]
-    pub sort_order: Option<String>,
-    #[serde(default)]
-    pub page: Option<i64>,
-    #[serde(default)]
-    pub page_size: Option<i64>,
-    #[serde(default)]
-    pub simulation_search: Option<String>,
-    #[serde(default)]
-    pub scenario_search: Option<String>,
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9895,7 +12220,13 @@ pub struct ListRubricApiResponse {
     #[serde(default)]
     pub simulation_filter: Option<ListFilterSection>,
     #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub eval_filter: Option<ListFilterSection>,
+    #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9926,6 +12257,16 @@ pub struct ListRubricApiRubric {
     pub can_duplicate: Option<bool>,
     #[serde(default)]
     pub standard_group_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub eval_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub is_inactive: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10040,6 +12381,8 @@ pub struct ListScenarioApiResponse {
     pub flag_filter: Option<ListFilterSection>,
     #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10078,6 +12421,12 @@ pub struct ListScenarioApiScenario {
     pub can_duplicate: Option<bool>,
     #[serde(default)]
     pub cohort_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
     #[serde(default)]
     pub updated_at: Option<String>,
 }
@@ -10120,6 +12469,16 @@ pub struct ListSettingApiResponse {
     pub settings: Option<Vec<ListSettingApiSetting>>,
     #[serde(default)]
     pub keys: Option<Vec<ListSettingApiKey>>,
+    #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub providers_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub auth_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub systems_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10131,17 +12490,31 @@ pub struct ListSettingApiSetting {
     #[serde(default)]
     pub active: Option<bool>,
     #[serde(default)]
+    pub is_inactive: Option<bool>,
+    #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub system_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub can_edit: Option<bool>,
     #[serde(default)]
     pub can_delete: Option<bool>,
     #[serde(default)]
     pub can_duplicate: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10170,6 +12543,8 @@ pub struct ListSimulationApiResponse {
     pub flag_filter: Option<ListFilterSection>,
     #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10195,7 +12570,11 @@ pub struct ListSimulationApiSimulation {
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub is_inactive: Option<bool>,
+    #[serde(default)]
+    pub is_practice: Option<bool>,
     #[serde(default)]
     pub practice_simulation: Option<bool>,
     #[serde(default)]
@@ -10217,6 +12596,12 @@ pub struct ListSimulationApiSimulation {
     #[serde(default)]
     pub cohort_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
+    #[serde(default)]
     pub updated_at: Option<String>,
 }
 
@@ -10229,11 +12614,17 @@ pub struct ListToolApiResponse {
     #[serde(default)]
     pub department_filter: Option<ListFilterSection>,
     #[serde(default)]
-    pub agent_filter: Option<ListFilterSection>,
-    #[serde(default)]
     pub creatable_filter: Option<ListFilterSection>,
     #[serde(default)]
+    pub agent_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub flag_filter: Option<ListFilterSection>,
+    #[serde(default)]
+    pub permissions_filter: Option<ListFilterSection>,
+    #[serde(default)]
     pub total_count: Option<i64>,
+    #[serde(default)]
+    pub import_fields: Option<Vec<ImportField>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10247,6 +12638,16 @@ pub struct ListToolApiTool {
     #[serde(default)]
     pub active: Option<bool>,
     #[serde(default)]
+    pub is_inactive: Option<bool>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub permission_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub updated_at: Option<String>,
     #[serde(default)]
     pub can_edit: Option<bool>,
@@ -10254,38 +12655,16 @@ pub struct ListToolApiTool {
     pub can_duplicate: Option<bool>,
     #[serde(default)]
     pub can_delete: Option<bool>,
+    #[serde(default)]
+    pub pending_status: Option<String>,
+    #[serde(default)]
+    pub pending_operation: Option<String>,
+    #[serde(default)]
+    pub pending_call_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MessageAttemptApiRequest {
-    pub attempt_id: String,
-    pub chat_id: String,
-    pub message: String,
-    #[serde(default)]
-    pub parent_message_id: Option<String>,
-    #[serde(default)]
-    pub assistant_content: Option<String>,
-    #[serde(default)]
-    pub hints: Option<Vec<app__routes__attempt__message__HintEntry>>,
-    #[serde(default)]
-    pub contents: Option<Vec<app__routes__attempt__message__ContentEntry>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MessageAttemptApiResponse {
-    pub chat_id: String,
-    #[serde(default)]
-    pub user_message_id: Option<String>,
-    #[serde(default)]
-    pub assistant_message_id: Option<String>,
-    #[serde(default)]
-    pub assistant_content: Option<String>,
-    #[serde(default)]
-    pub hints: Option<Vec<std::collections::HashMap<String, serde_json::Value>>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MessageDataInput {
+pub struct MessageData {
     pub id: String,
     #[serde(default)]
     pub chat_id: Option<String>,
@@ -10297,43 +12676,19 @@ pub struct MessageDataInput {
     #[serde(default)]
     pub completed: Option<bool>,
     #[serde(default)]
-    pub contents: Option<Vec<app__infra__attempt__types__ContentEntry>>,
+    pub contents: Option<Vec<ContentEntry>>,
     #[serde(default)]
     pub feedbacks: Option<Vec<MessageFeedbackEntry>>,
     #[serde(default)]
-    pub hints: Option<Vec<app__infra__attempt__types__HintEntry>>,
+    pub hints: Option<Vec<HintEntry>>,
     #[serde(default)]
     pub parent_message_id: Option<String>,
     #[serde(default)]
     pub sibling_index: Option<i64>,
     #[serde(default)]
     pub sibling_count: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MessageDataOutput {
-    pub id: String,
     #[serde(default)]
-    pub chat_id: Option<String>,
-    #[serde(rename = "type")]
-    #[serde(default)]
-    pub r#type: Option<String>,
-    #[serde(default)]
-    pub created_at: Option<String>,
-    #[serde(default)]
-    pub completed: Option<bool>,
-    #[serde(default)]
-    pub contents: Option<Vec<ContentEntryOutput>>,
-    #[serde(default)]
-    pub feedbacks: Option<Vec<MessageFeedbackEntry>>,
-    #[serde(default)]
-    pub hints: Option<Vec<HintEntryOutput>>,
-    #[serde(default)]
-    pub parent_message_id: Option<String>,
-    #[serde(default)]
-    pub sibling_index: Option<i64>,
-    #[serde(default)]
-    pub sibling_count: Option<i64>,
+    pub audios_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10353,61 +12708,37 @@ pub struct MessageFeedbackEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelDepartmentSection {
+pub struct ModelDepartmentResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub department_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelDescriptionSection {
+pub struct ModelDescriptionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelDraftFormState {
-    pub flag_ids: Vec<String>,
-    pub department_ids: Vec<String>,
-    pub modality_ids: Vec<String>,
-    pub pricing_ids: Vec<String>,
-    pub provider_ids: Vec<String>,
-    pub quality_ids: Vec<String>,
-    pub reasoning_level_ids: Vec<String>,
-    pub temperature_level_ids: Vec<String>,
-    pub value_ids: Vec<String>,
-    pub voice_ids: Vec<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10417,161 +12748,142 @@ pub struct ModelFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct ModelFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelFlagSection {
+pub struct ModelModalityResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub modality: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub is_input: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<ModelFlagConfig>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ModelFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelModalitySection {
+pub struct ModelNameResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelNameSection {
+pub struct ModelPricingResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub pricing_type: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub price: Option<f64>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub unit_name: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub unit_category: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub unit_value: Option<f64>,
     #[serde(default)]
-    pub resource: Option<serde_json::Value>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelPricingSection {
+pub struct ModelProviderResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub value: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub base_url: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelProviderSection {
+pub struct ModelQualityResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub quality: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelQualitySection {
+pub struct ModelReasoningLevelResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub reasoning_level: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelReasoningLevelSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10585,63 +12897,53 @@ pub struct ModelResultItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelTemperatureLevelSection {
+pub struct ModelTemperatureLevelResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub temperature: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelValueSection {
+pub struct ModelValueResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub value: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub value_type: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ModelVoiceSection {
+pub struct ModelVoiceResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub voice: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10649,20 +12951,6 @@ pub struct MvInfo {
     pub name: String,
     pub definition: String,
     pub columns: Vec<ColumnInfo>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NextAttemptApiResponse {
-    pub attempt_id: String,
-    pub chat_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NextTestApiResponse {
-    pub invocation_id: String,
-    pub run_id: String,
-    pub current_run: i64,
-    pub total_runs: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10674,23 +12962,18 @@ pub struct ObjectiveEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct OperationErrorEvent {
-    pub message: String,
-    #[serde(default)]
-    pub error_type: Option<String>,
-    #[serde(default)]
-    pub artifact: Option<String>,
-    #[serde(default)]
-    pub operation: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OperationInfo {
     pub name: String,
     pub description: String,
     pub params: Vec<ParamInfo>,
     #[serde(default)]
     pub returns: Option<std::collections::HashMap<String, serde_json::Value>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OperationPrompts {
+    #[serde(default)]
+    pub prompts: Option<std::collections::HashMap<String, Vec<StarterPrompt>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10724,33 +13007,19 @@ pub struct ParamInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParameterDepartmentResource {
     #[serde(default)]
-    pub id: Option<String>,
+    pub department_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ParameterDepartmentSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ParameterDepartmentResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ParameterDepartmentResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10761,37 +13030,12 @@ pub struct ParameterDescriptionResource {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ParameterDescriptionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<ParameterDescriptionResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<ParameterDescriptionResource>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ParameterDraftFormState {
-    pub flag_ids: Vec<String>,
-    pub department_ids: Vec<String>,
-    pub field_ids: Vec<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10811,65 +13055,44 @@ pub struct ParameterFieldResource {
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub conditional_parameter_id: Option<String>,
+    #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ParameterFieldSection {
+pub struct ParameterFlagResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
+    #[serde(rename = "type")]
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub r#type: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ParameterFieldResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ParameterFieldResource>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ParameterFlagConfig {
-    pub key: String,
-    pub label: String,
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ParameterFlagSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ParameterFlagConfig>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ParameterFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10880,26 +13103,12 @@ pub struct ParameterNameResource {
     pub name: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ParameterNameSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<ParameterNameResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<ParameterNameResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10916,6 +13125,14 @@ pub struct ParameterResultItem {
 pub struct ParseAgentCsvApiResponse {
     pub upload_id: String,
     pub items: Vec<CreateAgentItem>,
+    pub mapped_fields: Vec<String>,
+    pub row_count: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ParseAuthCsvApiResponse {
+    pub upload_id: String,
+    pub items: Vec<CreateAuthItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
 }
@@ -10985,6 +13202,14 @@ pub struct ParsePersonaCsvApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ParseProfileCsvApiResponse {
+    pub upload_id: String,
+    pub items: Vec<CreateProfileItem>,
+    pub mapped_fields: Vec<String>,
+    pub row_count: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParseProviderCsvApiResponse {
     pub upload_id: String,
     pub items: Vec<CreateProviderItem>,
@@ -11035,11 +13260,15 @@ pub struct ParseToolCsvApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchAgentDraftApiRequest {
     #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
     pub group_id: Option<String>,
     #[serde(default)]
     pub input_draft_id: Option<String>,
     #[serde(default)]
-    pub expected_version: Option<i64>,
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
@@ -11051,37 +13280,66 @@ pub struct PatchAgentDraftApiRequest {
     #[serde(default)]
     pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub model_ids: Option<Vec<String>>,
+    pub model_id: Option<String>,
     #[serde(default)]
     pub tool_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub reasoning_level_ids: Option<Vec<String>>,
+    pub reasoning_level: Option<String>,
     #[serde(default)]
-    pub temperature_level_ids: Option<Vec<String>>,
+    pub reasoning_level_id: Option<String>,
+    #[serde(default)]
+    pub temperature_level: Option<String>,
+    #[serde(default)]
+    pub temperature_level_id: Option<String>,
+    #[serde(default)]
+    pub voices: Option<Vec<String>>,
     #[serde(default)]
     pub voice_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub qualities: Option<Vec<String>>,
+    #[serde(default)]
+    pub quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub prompt_id: Option<String>,
+    #[serde(default)]
+    pub prompt: Option<CreatePromptInput>,
+    #[serde(default)]
+    pub instruction_id: Option<String>,
+    #[serde(default)]
+    pub instructions_id: Option<String>,
+    #[serde(default)]
     pub rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchAgentDraftApiResponse {
     pub success: bool,
     pub draft_id: String,
-    pub new_version: i64,
     pub message: String,
     #[serde(default)]
-    pub form_state: Option<AgentDraftFormState>,
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__agent__types__DraftFormState>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchAuthDraftApiRequest {
     #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
     pub input_draft_id: Option<String>,
     #[serde(default)]
-    pub expected_version: Option<i64>,
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
@@ -11091,516 +13349,44 @@ pub struct PatchAuthDraftApiRequest {
     #[serde(default)]
     pub description_id: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub protocols: Option<Vec<String>>,
+    #[serde(default)]
     pub protocol_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub slugs: Option<Vec<String>>,
     #[serde(default)]
     pub slug_ids: Option<Vec<String>>,
     #[serde(default)]
     pub item_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchAuthDraftApiResponse {
     pub success: bool,
     pub draft_id: String,
-    pub new_version: i64,
     pub message: String,
     #[serde(default)]
-    pub form_state: Option<AuthDraftFormState>,
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__auth__types__DraftFormState>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchChatDraftApiRequest {
     #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub problem_statement: Option<String>,
-    #[serde(default)]
-    pub objectives: Option<Vec<String>>,
-    #[serde(default)]
-    pub images: Option<Vec<app__infra__chat__types__DraftImageValue>>,
-    #[serde(default)]
-    pub videos: Option<Vec<app__infra__chat__types__DraftVideoValue>>,
-    #[serde(default)]
-    pub questions: Option<Vec<app__infra__chat__types__DraftQuestionValue>>,
-    #[serde(default)]
-    pub options: Option<Vec<app__infra__chat__types__DraftOptionValue>>,
-    #[serde(default)]
-    pub name_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub description_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub document_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub field_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub flag_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub image_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub objective_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub option_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub parameter_field_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub parameter_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub persona_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub problem_statement_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub question_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub scenario_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub video_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchChatDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<ChatDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchCohortDraftApiRequest {
+    pub draft_id: Option<String>,
     #[serde(default)]
     pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub simulation_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub profile_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub simulation_position_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub simulation_positions: Option<Vec<DraftSimulationPositionValue>>,
-    #[serde(default)]
-    pub simulation_availability_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub simulation_availability: Option<Vec<DraftSimulationAvailabilityValue>>,
-    #[serde(default)]
-    pub profile_persona_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub profile_personas: Option<Vec<DraftProfilePersonaValue>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchCohortDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<CohortDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchDepartmentDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
-    #[serde(default)]
-    pub setting_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchDepartmentDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<DepartmentDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchDocumentDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub files: Option<Vec<DraftFileValue>>,
-    #[serde(default)]
-    pub file_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub texts: Option<Vec<DraftTextValue>>,
-    #[serde(default)]
-    pub text_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub flag_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub image_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub parameter_field_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub parameter_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchDocumentDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<DocumentDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchEvalDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub model_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub rubric_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchEvalDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<EvalDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchFieldDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub conditional_parameter_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchFieldDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<FieldDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchModelDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub modality_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub pricing_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub provider_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub quality_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub reasoning_level_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub temperature_level_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub value_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub voice_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchModelDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<ModelDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchParameterDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub field_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchParameterDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<ParameterDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchPersonaDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub instructions: Option<String>,
-    #[serde(default)]
-    pub instructions_id: Option<String>,
-    #[serde(default)]
-    pub examples: Option<Vec<String>>,
-    #[serde(default)]
-    pub example_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub color_id: Option<String>,
-    #[serde(default)]
-    pub icon_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub parameter_field_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub voice_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchPersonaDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    pub form_state: DraftFormState,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchProfileDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub email: Option<String>,
-    #[serde(default)]
-    pub request_limit: Option<i64>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub email_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub role_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub request_limit_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchProfileDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<ProfileDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchProviderDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub endpoint_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub key_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub value_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchProviderDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<ProviderDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchRubricDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub point_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub standard_group_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub standard_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchRubricDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<RubricDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchScenarioDraftApiRequest {
-    #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
@@ -11618,23 +13404,780 @@ pub struct PatchScenarioDraftApiRequest {
     #[serde(default)]
     pub objective_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub images: Option<Vec<app__infra__scenario__types__DraftImageValue>>,
+    pub images: Option<Vec<App__infra__attempt__chat__types__DraftImageValue>>,
     #[serde(default)]
     pub image_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub videos: Option<Vec<app__infra__scenario__types__DraftVideoValue>>,
+    pub videos: Option<Vec<App__infra__attempt__chat__types__DraftVideoValue>>,
     #[serde(default)]
     pub video_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub questions: Option<Vec<app__infra__scenario__types__DraftQuestionValue>>,
+    pub questions: Option<Vec<App__infra__attempt__chat__types__DraftQuestionValue>>,
     #[serde(default)]
     pub question_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub options: Option<Vec<app__infra__scenario__types__DraftOptionValue>>,
+    pub options: Option<Vec<App__infra__attempt__chat__types__DraftOptionValue>>,
+    #[serde(default)]
+    pub option_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub document_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchChatDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<ChatDraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchCohortDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulations: Option<Vec<String>>,
+    #[serde(default)]
+    pub profile_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_positions: Option<Vec<DraftSimulationPositionValue>>,
+    #[serde(default)]
+    pub simulation_availability_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_availability: Option<Vec<DraftSimulationAvailabilityValue>>,
+    #[serde(default)]
+    pub profile_persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub profile_personas: Option<Vec<DraftProfilePersonaValue>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchCohortDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub idempotency_key: String,
+    pub message: String,
+    #[serde(default)]
+    pub form_state: Option<App__infra__cohort__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchDepartmentDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub settings: Option<Vec<String>>,
+    #[serde(default)]
+    pub setting_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchDepartmentDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__department__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchDocumentDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub files: Option<Vec<DraftFileValue>>,
+    #[serde(default)]
+    pub file_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub texts: Option<Vec<DraftTextValue>>,
+    #[serde(default)]
+    pub text_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub images: Option<Vec<App__infra__document__types__DraftImageValue>>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchDocumentDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub idempotency_key: String,
+    pub message: String,
+    #[serde(default)]
+    pub form_state: Option<App__infra__document__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchEvalDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_flags: Option<Vec<std::collections::HashMap<String, serde_json::Value>>>,
+    #[serde(default)]
+    pub model_flag_values: Option<Vec<EvalModelFlagValue>>,
+    #[serde(default)]
+    pub model_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchEvalDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__eval__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchFieldDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub conditional_parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub conditional_parameters: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchFieldDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub idempotency_key: String,
+    pub message: String,
+    #[serde(default)]
+    pub form_state: Option<App__infra__field__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchInvocationDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub key_id: Option<String>,
+    #[serde(default)]
+    pub endpoint_id: Option<String>,
+    #[serde(default)]
+    pub modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub temperature_level_id: Option<String>,
+    #[serde(default)]
+    pub pricing_id: Option<String>,
+    #[serde(default)]
+    pub reasoning_level_id: Option<String>,
+    #[serde(default)]
+    pub quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_flags: Option<Vec<std::collections::HashMap<String, serde_json::Value>>>,
+    #[serde(default)]
+    pub model_flag_values: Option<Vec<InvocationModelFlagValue>>,
+    #[serde(default)]
+    pub model_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchInvocationDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__invocation__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchModelDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub value: Option<String>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub provider: Option<String>,
+    #[serde(default)]
+    pub provider_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub modalities_enabled: Option<bool>,
+    #[serde(default)]
+    pub temperature_enabled: Option<bool>,
+    #[serde(default)]
+    pub pricing_enabled: Option<bool>,
+    #[serde(default)]
+    pub voices_enabled: Option<bool>,
+    #[serde(default)]
+    pub reasoning_levels_enabled: Option<bool>,
+    #[serde(default)]
+    pub qualities_enabled: Option<bool>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub modalities: Option<Vec<String>>,
+    #[serde(default)]
+    pub modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pricing: Option<Vec<PricingDraftValue>>,
+    #[serde(default)]
+    pub pricing_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub qualities: Option<Vec<String>>,
+    #[serde(default)]
+    pub quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub reasoning_levels: Option<Vec<String>>,
+    #[serde(default)]
+    pub reasoning_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub temperature_levels: Option<Vec<String>>,
+    #[serde(default)]
+    pub temperature_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voices: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchModelDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__model__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchParameterDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_fields: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchParameterDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub idempotency_key: String,
+    pub message: String,
+    #[serde(default)]
+    pub form_state: Option<App__infra__parameter__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchPersonaDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub color: Option<String>,
+    #[serde(default)]
+    pub color_id: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
+    pub icon_id: Option<String>,
+    #[serde(default)]
+    pub instructions: Option<String>,
+    #[serde(default)]
+    pub instructions_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub examples: Option<Vec<String>>,
+    #[serde(default)]
+    pub example_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_fields: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voices: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchPersonaDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub idempotency_key: String,
+    pub message: String,
+    pub form_state: App__infra__persona__types__DraftFormState,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchProfileDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub email: Option<String>,
+    #[serde(default)]
+    pub emails: Option<Vec<String>>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub email_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub role: Option<String>,
+    #[serde(default)]
+    pub role_id: Option<String>,
+    #[serde(default)]
+    pub role_draft: Option<ProfileRoleDraftValue>,
+    #[serde(default)]
+    pub primary_department_id: Option<String>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchProfileDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__profile__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchProviderDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub endpoint: Option<String>,
+    #[serde(default)]
+    pub endpoint_id: Option<String>,
+    #[serde(default)]
+    pub endpoint_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub key: Option<String>,
+    #[serde(default)]
+    pub key_name: Option<String>,
+    #[serde(default)]
+    pub key_description: Option<String>,
+    #[serde(default)]
+    pub key_id: Option<String>,
+    #[serde(default)]
+    pub key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub value: Option<String>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchProviderDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__provider__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchRubricDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub simulation_rubric: Option<bool>,
+    #[serde(default)]
+    pub video_rubric: Option<bool>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pass_points_id: Option<String>,
+    #[serde(default)]
+    pub pass_points: Option<i64>,
+    #[serde(default)]
+    pub standard_group_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub standard_groups: Option<Vec<RubricStandardGroupDraftValue>>,
+    #[serde(default)]
+    pub standard_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub standards: Option<Vec<RubricStandardDraftValue>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchRubricDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__rubric__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchScenarioDraftApiRequest {
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub problem_statement: Option<String>,
+    #[serde(default)]
+    pub problem_statement_id: Option<String>,
+    #[serde(default)]
+    pub objectives: Option<Vec<String>>,
+    #[serde(default)]
+    pub objective_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub images: Option<Vec<App__infra__scenario__types__DraftImageValue>>,
+    #[serde(default)]
+    pub image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub videos: Option<Vec<App__infra__scenario__types__DraftVideoValue>>,
+    #[serde(default)]
+    pub video_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub questions: Option<Vec<App__infra__scenario__types__DraftQuestionValue>>,
+    #[serde(default)]
+    pub question_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub options: Option<Vec<App__infra__scenario__types__DraftOptionValue>>,
     #[serde(default)]
     pub option_ids: Option<Vec<String>>,
     #[serde(default)]
     pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub video_enabled: Option<bool>,
+    #[serde(default)]
+    pub problem_statement_enabled: Option<bool>,
+    #[serde(default)]
+    pub objectives_enabled: Option<bool>,
+    #[serde(default)]
+    pub images_enabled: Option<bool>,
+    #[serde(default)]
+    pub questions_enabled: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -11643,13 +14186,19 @@ pub struct PatchScenarioDraftApiRequest {
     pub document_ids: Option<Vec<String>>,
     #[serde(default)]
     pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchScenarioDraftApiResponse {
     pub success: bool,
     pub draft_id: String,
-    pub new_version: i64,
+    pub idempotency_key: String,
     pub message: String,
     pub form_state: ScenarioDraftFormState,
 }
@@ -11657,51 +14206,13 @@ pub struct PatchScenarioDraftApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchSettingDraftApiRequest {
     #[serde(default)]
-    pub input_draft_id: Option<String>,
-    #[serde(default)]
-    pub expected_version: Option<i64>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub color_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub profile_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub auth_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub provider_key_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub auth_item_key_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub threshold_ids: Option<Vec<String>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchSettingDraftApiResponse {
-    pub success: bool,
-    pub draft_id: String,
-    pub new_version: i64,
-    pub message: String,
-    #[serde(default)]
-    pub form_state: Option<SettingDraftFormState>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PatchSimulationDraftApiRequest {
+    pub draft_id: Option<String>,
     #[serde(default)]
     pub input_draft_id: Option<String>,
     #[serde(default)]
-    pub expected_version: Option<i64>,
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
@@ -11713,6 +14224,83 @@ pub struct PatchSimulationDraftApiRequest {
     #[serde(default)]
     pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub mcp: Option<bool>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub color_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub logins_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub system_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub mcp_id: Option<String>,
+    #[serde(default)]
+    pub threshold_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_item_key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_item_value_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_keys: Option<Vec<SettingProviderKeyDraftValue>>,
+    #[serde(default)]
+    pub auth_item_keys: Option<Vec<SettingAuthItemKeyDraftValue>>,
+    #[serde(default)]
+    pub auth_item_values: Option<Vec<SettingAuthItemValueDraftValue>>,
+    #[serde(default)]
+    pub mcp_values: Option<Vec<SettingMcpDraftValue>>,
+    #[serde(default)]
+    pub system_values: Option<Vec<SettingSystemDraftValue>>,
+    #[serde(default)]
+    pub threshold_values: Option<Vec<SettingThresholdDraftValue>>,
+    #[serde(default)]
+    pub logins: Option<Vec<SettingLoginDraftValue>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchSettingDraftApiResponse {
+    pub success: bool,
+    pub draft_id: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__setting__types__DraftFormState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PatchSimulationDraftApiRequest {
+    #[serde(default)]
+    pub draft_id: Option<String>,
+    #[serde(default)]
+    pub input_draft_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub practice: Option<bool>,
+    #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
     pub scenario_ids: Option<Vec<String>>,
@@ -11720,6 +14308,8 @@ pub struct PatchSimulationDraftApiRequest {
     pub scenario_flag_ids: Option<Vec<String>>,
     #[serde(default)]
     pub scenario_flags: Option<Vec<DraftScenarioFlagValue>>,
+    #[serde(default)]
+    pub scenario_flag_values: Option<Vec<DraftScenarioFlagDenormValue>>,
     #[serde(default)]
     pub scenario_position_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -11732,24 +14322,29 @@ pub struct PatchSimulationDraftApiRequest {
     pub scenario_time_limit_ids: Option<Vec<String>>,
     #[serde(default)]
     pub scenario_time_limits: Option<Vec<DraftScenarioTimeLimitValue>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchSimulationDraftApiResponse {
     pub success: bool,
     pub draft_id: String,
-    pub new_version: i64,
+    pub idempotency_key: String,
     pub message: String,
-    #[serde(default)]
-    pub form_state: Option<SimulationDraftFormState>,
+    pub form_state: App__infra__simulation__types__DraftFormState,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchToolDraftApiRequest {
     #[serde(default)]
-    pub input_draft_id: Option<String>,
+    pub draft_id: Option<String>,
     #[serde(default)]
-    pub expected_version: Option<i64>,
+    pub input_draft_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
@@ -11761,27 +14356,48 @@ pub struct PatchToolDraftApiRequest {
     #[serde(default)]
     pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
     pub arg_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub args: Option<Vec<CreateArgInput>>,
+    #[serde(default)]
     pub arg_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub arg_positions: Option<Vec<CreateArgPositionInput>>,
     #[serde(default)]
     pub args_output_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub artifact_ids: Option<Vec<String>>,
+    pub args_outputs_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub operation_ids: Option<Vec<String>>,
+    pub args_outputs: Option<Vec<CreateArgsOutputInput>>,
+    #[serde(default)]
+    pub args_drafts: Option<Vec<ToolArgDraftValue>>,
+    #[serde(default)]
+    pub instruction_id: Option<String>,
+    #[serde(default)]
+    pub instruction_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub permission_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PatchToolDraftApiResponse {
     pub success: bool,
     pub draft_id: String,
-    pub new_version: i64,
     pub message: String,
     #[serde(default)]
-    pub form_state: Option<ToolDraftFormState>,
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub form_state: Option<App__infra__tool__types__DraftFormState>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -11822,26 +14438,12 @@ pub struct PersonaColorResource {
     pub hex_code: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaColorSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<PersonaColorResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<PersonaColorResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -11854,26 +14456,12 @@ pub struct PersonaDepartmentResource {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaDepartmentSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<PersonaDepartmentResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<PersonaDepartmentResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -11884,32 +14472,20 @@ pub struct PersonaDescriptionResource {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaDescriptionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<PersonaDescriptionResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<PersonaDescriptionResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PersonaEntry {
     #[serde(default)]
     pub id: Option<String>,
+    #[serde(default)]
+    pub entry_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
@@ -11930,26 +14506,12 @@ pub struct PersonaExampleResource {
     pub example: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaExampleSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<PersonaExampleResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<PersonaExampleResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -11959,104 +14521,30 @@ pub struct PersonaFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct PersonaFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaFlagSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<PersonaFlagConfig>,
-    #[serde(default)]
-    pub resources: Option<Vec<PersonaFlagConfig>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaGenerationProgressEvent {
-    #[serde(default)]
-    pub artifact_type: Option<String>,
-    #[serde(default)]
-    pub resource_type: Option<String>,
-    #[serde(default)]
-    pub group_id: Option<String>,
-    #[serde(default)]
-    pub artifact_id: Option<String>,
-    #[serde(default)]
-    pub run_id: Option<String>,
-    #[serde(default)]
-    pub success: Option<bool>,
-    #[serde(default)]
-    pub message: Option<String>,
-    #[serde(default)]
-    pub error_stage: Option<String>,
-    #[serde(default)]
-    pub tool_call_id: Option<String>,
-    #[serde(default)]
-    pub tool_name: Option<String>,
-    #[serde(default)]
-    pub arguments_delta: Option<String>,
-    #[serde(default)]
-    pub id: Option<String>,
-    #[serde(default)]
-    pub generated: Option<bool>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub example: Option<String>,
-    #[serde(default)]
-    pub template: Option<String>,
-    #[serde(default)]
-    pub hex_code: Option<String>,
-    #[serde(default)]
-    pub value: Option<String>,
-    #[serde(default)]
     pub icon: Option<String>,
-    #[serde(rename = "type")]
     #[serde(default)]
-    pub r#type: Option<String>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub department_ids: Option<Vec<serde_json::Value>>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub setting_ids: Option<Vec<serde_json::Value>>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub field_id: Option<String>,
-    #[serde(default)]
-    pub updated_at: Option<String>,
-    #[serde(default)]
-    pub parameter_id: Option<String>,
-    #[serde(default)]
-    pub conditional_parameter_id: Option<String>,
-    #[serde(default)]
-    pub conditional_parameter_ids: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub voice: Option<String>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12071,26 +14559,12 @@ pub struct PersonaIconResource {
     pub value: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaIconSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<PersonaIconResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<PersonaIconResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12101,26 +14575,12 @@ pub struct PersonaInstructionResource {
     pub template: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaInstructionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<PersonaInstructionResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<PersonaInstructionResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12131,26 +14591,12 @@ pub struct PersonaNameResource {
     pub name: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaNameSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<PersonaNameResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<PersonaNameResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12166,47 +14612,15 @@ pub struct PersonaParameterFieldResource {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
+    pub conditional_parameter_id: Option<String>,
+    #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaParameterFieldSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<PersonaParameterFieldResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<PersonaParameterFieldResource>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaParameterSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<GetParameterResponse>>,
-    #[serde(default)]
-    pub resources: Option<Vec<GetParameterResponse>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12214,7 +14628,7 @@ pub struct PersonaResultItem {
     pub success: bool,
     pub message: String,
     #[serde(default)]
-    pub persona_id: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
     pub errors: Option<Vec<PersonaFieldError>>,
 }
@@ -12239,26 +14653,32 @@ pub struct PersonaVoiceResource {
     pub voice: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PersonaVoiceSection {
+pub struct PreviewToolApiRequest {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub args: Option<Vec<ToolPreviewArg>>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub outputs: Option<Vec<ToolPreviewOutput>>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub mock: Option<std::collections::HashMap<String, String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PreviewToolApiResponse {
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub outputs: Option<Vec<ToolPreviewOutputResult>>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub type_hints: Option<Vec<ToolPreviewArgHint>>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<PersonaVoiceResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<PersonaVoiceResource>>,
+    pub undeclared: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12280,18 +14700,7 @@ pub struct PreviousChatOption {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PricingDailyItemInput {
-    pub date_key: String,
-    #[serde(default)]
-    pub model_id: Option<String>,
-    #[serde(default)]
-    pub total_cost: Option<serde_json::Value>,
-    #[serde(default)]
-    pub run_count: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PricingDailyItemOutput {
+pub struct PricingDailyItem {
     pub date_key: String,
     #[serde(default)]
     pub model_id: Option<String>,
@@ -12299,6 +14708,17 @@ pub struct PricingDailyItemOutput {
     pub total_cost: Option<String>,
     #[serde(default)]
     pub run_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PricingDraftValue {
+    pub pricing_type: String,
+    pub price: f64,
+    pub unit_name: String,
+    pub unit_category: String,
+    pub unit_value: i64,
+    #[serde(default)]
+    pub id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12327,9 +14747,27 @@ pub struct PricingGroupItem {
     #[serde(default)]
     pub model_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub profile_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub agent_names: Option<Vec<String>>,
     #[serde(default)]
     pub model_names: Option<Vec<String>>,
+    #[serde(default)]
+    pub profile_names: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PricingHistoryResponse {
+    #[serde(default)]
+    pub items: Option<Vec<PricingGroupItem>>,
+    #[serde(default)]
+    pub total_count: Option<i64>,
+    #[serde(default)]
+    pub page: Option<i64>,
+    #[serde(default)]
+    pub page_size: Option<i64>,
+    #[serde(default)]
+    pub total_pages: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12342,24 +14780,26 @@ pub struct PricingRequest {
     pub date_from: Option<String>,
     #[serde(default)]
     pub date_to: Option<String>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub page_limit: Option<i64>,
+    #[serde(default)]
+    pub page_offset: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PricingResources {
     #[serde(default)]
-    pub agents: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub agents: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub models: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub models: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PricingResponseInput {
+pub struct PricingResponse {
     #[serde(default)]
-    pub daily: Option<Vec<PricingDailyItemInput>>,
+    pub daily: Option<Vec<PricingDailyItem>>,
     #[serde(default)]
     pub resources: Option<PricingResources>,
     #[serde(default)]
@@ -12369,27 +14809,13 @@ pub struct PricingResponseInput {
     #[serde(default)]
     pub agent_options: Option<Vec<FilterOption>>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsInput>,
+    pub analytics: Option<AnalyticsFacets>,
+    #[serde(default)]
+    pub history: Option<PricingHistoryResponse>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PricingResponseOutput {
-    #[serde(default)]
-    pub daily: Option<Vec<PricingDailyItemOutput>>,
-    #[serde(default)]
-    pub resources: Option<PricingResources>,
-    #[serde(default)]
-    pub total_count: Option<i64>,
-    #[serde(default)]
-    pub model_options: Option<Vec<FilterOption>>,
-    #[serde(default)]
-    pub agent_options: Option<Vec<FilterOption>>,
-    #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsOutput>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PrimaryPersonaPerformanceInput {
+pub struct PrimaryPersonaPerformance {
     #[serde(default)]
     pub chart_data: Option<Vec<PersonaChartRow>>,
     #[serde(default)]
@@ -12401,31 +14827,9 @@ pub struct PrimaryPersonaPerformanceInput {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PrimaryPersonaPerformanceOutput {
+pub struct PrimaryRubricHeatmap {
     #[serde(default)]
-    pub chart_data: Option<Vec<PersonaChartRow>>,
-    #[serde(default)]
-    pub valid_simulation_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub persona_colors_junction: Option<Vec<PersonaColorJunction>>,
-    #[serde(default)]
-    pub status: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PrimaryRubricHeatmapInput {
-    #[serde(default)]
-    pub matrices: Option<Vec<RubricHeatmapMatrixInput>>,
-    #[serde(default)]
-    pub valid_rubric_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub status: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PrimaryRubricHeatmapOutput {
-    #[serde(default)]
-    pub matrices: Option<Vec<RubricHeatmapMatrixOutput>>,
+    pub matrices: Option<Vec<RubricHeatmapMatrix>>,
     #[serde(default)]
     pub valid_rubric_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -12455,6 +14859,376 @@ pub struct PrimaryRubricTrendPoint {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemAgentApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemAgentApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemAttemptApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemAttemptApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemAuthApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemAuthApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemCohortApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemCohortApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemDepartmentApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemDepartmentApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemDocumentApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemDocumentApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemEvalApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemEvalApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemFieldApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemFieldApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemModelApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemModelApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemParameterApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemParameterApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemPersonaApiRequest {
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemPersonaApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemProfileApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemProfileApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemProviderApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemProviderApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemRubricApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemRubricApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemScenarioApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemScenarioApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemSettingApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemSettingApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemSimulationApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemSimulationApiResponse {
+    pub problem_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProblemStatementEntry {
     #[serde(default)]
     pub problem_statement_id: Option<String>,
@@ -12463,79 +15237,86 @@ pub struct ProblemStatementEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProfileContextApiResponse {
+pub struct ProblemSystemApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemSystemApiResponse {
+    pub problem_id: String,
     #[serde(default)]
-    pub id: Option<String>,
+    pub success: Option<bool>,
     #[serde(default)]
-    pub name: Option<String>,
+    pub message: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemTestApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemTestApiResponse {
+    pub problem_id: String,
     #[serde(default)]
-    pub role: Option<String>,
+    pub success: Option<bool>,
     #[serde(default)]
-    pub active: Option<bool>,
+    pub message: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemToolApiRequest {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub message: String,
     #[serde(default)]
-    pub role_artifacts: Option<Vec<String>>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub scoped_roles: Option<Vec<String>>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProblemToolApiResponse {
+    pub problem_id: String,
     #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
+    pub success: Option<bool>,
     #[serde(default)]
-    pub primary_department_id: Option<String>,
+    pub message: Option<String>,
     #[serde(default)]
-    pub settings_id: Option<String>,
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProducedMedia {
+    pub modality: String,
+    pub resource_id: String,
+    pub upload_id: String,
     #[serde(default)]
-    pub theme: Option<ThemePrimitives>,
+    pub mime_type: Option<String>,
     #[serde(default)]
-    pub session_id: Option<String>,
-    #[serde(default)]
-    pub is_emulation: Option<bool>,
-    #[serde(default)]
-    pub emulation_depth: Option<i64>,
-    #[serde(default)]
-    pub role_resources: Option<Vec<QGetProfileContextV4RoleResource>>,
+    pub file_size: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProfileDepartmentResource {
     #[serde(default)]
-    pub id: Option<String>,
+    pub department_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProfileDepartmentSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ProfileDepartmentResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ProfileDepartmentResource>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProfileDraftFormState {
-    pub department_ids: Vec<String>,
-    pub email_ids: Vec<String>,
-    pub role_ids: Vec<String>,
-    pub request_limit_ids: Vec<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12545,27 +15326,15 @@ pub struct ProfileEmailResource {
     #[serde(default)]
     pub email: Option<String>,
     #[serde(default)]
+    pub is_primary: Option<bool>,
+    #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProfileEmailSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ProfileEmailResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ProfileEmailResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12575,41 +15344,30 @@ pub struct ProfileFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProfileFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct ProfileFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProfileFlagSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<ProfileFlagConfig>,
-    #[serde(default)]
-    pub resources: Option<Vec<ProfileFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12620,26 +15378,34 @@ pub struct ProfileNameResource {
     pub name: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProfileNameSection {
+pub struct ProfilePermissionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub artifact: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub operation: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProfileRequestLimitDraftValue {
+    pub limit: i64,
+    pub interval: String,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<ProfileNameResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<ProfileNameResource>>,
+    pub id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12647,29 +15413,9 @@ pub struct ProfileRequestLimitResource {
     #[serde(default)]
     pub id: Option<String>,
     #[serde(default)]
-    pub requests_per_day: Option<i64>,
+    pub limit: Option<i64>,
     #[serde(default)]
-    pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProfileRequestLimitSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<ProfileRequestLimitResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<ProfileRequestLimitResource>>,
+    pub interval: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12683,6 +15429,28 @@ pub struct ProfileResultItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProfileRoleDraftValue {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub icon_id: Option<String>,
+    #[serde(default)]
+    pub color_id: Option<String>,
+    #[serde(default)]
+    pub level: Option<i64>,
+    #[serde(default)]
+    pub permission_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub request_limit_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub request_limits: Option<Vec<ProfileRequestLimitDraftValue>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProfileRoleResource {
     #[serde(default)]
     pub id: Option<String>,
@@ -12693,29 +15461,53 @@ pub struct ProfileRoleResource {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
+    pub icon_id: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
     pub icon_value: Option<String>,
     #[serde(default)]
+    pub color_id: Option<String>,
+    #[serde(default)]
     pub color_hex: Option<String>,
+    #[serde(default)]
+    pub level: Option<i64>,
+    #[serde(default)]
+    pub permission_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub request_limit_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProfileRoleSection {
+pub struct ProfileSummary {
+    pub name: String,
+    pub role: String,
+    pub role_level: i64,
+    pub department_ids: Vec<String>,
+    pub artifact_access: Vec<String>,
+    pub role_permissions: Vec<Vec<serde_json::Value>>,
+    pub is_active: bool,
+    pub id: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub theme: Option<ThemeBundle>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub session_id: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub is_emulation: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub role_resources: Option<Vec<QGetProfileContextV4RoleResource>>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub scoped_roles: Option<Vec<String>>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ProfileRoleResource>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ProfileRoleResource>>,
+    pub active: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12737,77 +15529,53 @@ pub struct ProfileSummaryItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProviderDepartmentSection {
+pub struct ProviderDepartmentResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub department_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProviderDescriptionSection {
+pub struct ProviderDescriptionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProviderDraftFormState {
-    pub department_ids: Vec<String>,
-    pub endpoint_ids: Vec<String>,
-    pub key_ids: Vec<String>,
-    pub value_ids: Vec<String>,
+pub struct ProviderEndpointResource {
     #[serde(default)]
-    pub name_id: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub description_id: Option<String>,
+    pub base_url: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProviderEndpointSection {
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12817,81 +15585,66 @@ pub struct ProviderFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProviderFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct ProviderFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProviderFlagSection {
+pub struct ProviderKeyResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub key: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<ProviderFlagConfig>>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<ProviderFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProviderKeySection {
+pub struct ProviderNameResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProviderNameSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12905,23 +15658,21 @@ pub struct ProviderResultItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProviderValueSection {
+pub struct ProviderValueResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub value: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub value_type: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12965,60 +15716,113 @@ pub struct QuizResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RecordRequest {
-    pub target_profile_id: String,
+pub struct RefreshAgentApiRequest {
     #[serde(default)]
-    pub start_date: Option<String>,
+    pub targets: Option<Vec<String>>,
     #[serde(default)]
-    pub end_date: Option<String>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub cohort_ids: Option<Vec<String>>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshAuthApiRequest {
     #[serde(default)]
-    pub simulation_ids: Option<Vec<String>>,
+    pub targets: Option<Vec<String>>,
     #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub simulation_filters: Option<Vec<String>>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshCohortApiRequest {
     #[serde(default)]
-    pub actor_profile_id: Option<String>,
+    pub targets: Option<Vec<String>>,
     #[serde(default)]
-    pub rubric_ids: Option<Vec<String>>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub rubric_search: Option<String>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshDepartmentApiRequest {
     #[serde(default)]
-    pub simulation_picker_ids: Option<Vec<String>>,
+    pub targets: Option<Vec<String>>,
     #[serde(default)]
-    pub simulation_picker_search: Option<String>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub parameter_ids: Option<Vec<String>>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshDocumentApiRequest {
     #[serde(default)]
-    pub parameter_search: Option<String>,
+    pub targets: Option<Vec<String>>,
     #[serde(default)]
-    pub scenario_ids: Option<Vec<String>>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub scenario_search: Option<String>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshEvalApiRequest {
     #[serde(default)]
-    pub history_practice: Option<bool>,
+    pub targets: Option<Vec<String>>,
     #[serde(default)]
-    pub history_scenario_ids: Option<Vec<String>>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub history_infinite_mode: Option<bool>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshFieldApiRequest {
     #[serde(default)]
-    pub history_show_archived: Option<bool>,
+    pub targets: Option<Vec<String>>,
     #[serde(default)]
-    pub history_sort_by: Option<String>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub history_sort_order: Option<String>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshModelApiRequest {
     #[serde(default)]
-    pub history_page: Option<i64>,
+    pub targets: Option<Vec<String>>,
     #[serde(default)]
-    pub history_page_size: Option<i64>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub history_simulation_search: Option<String>,
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshParameterApiRequest {
     #[serde(default)]
-    pub history_scenario_search: Option<String>,
+    pub targets: Option<Vec<String>>,
     #[serde(default)]
-    pub history_profile_search: Option<String>,
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshProfileApiRequest {
+    #[serde(default)]
+    pub targets: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshProviderApiRequest {
+    #[serde(default)]
+    pub targets: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13026,6 +15830,58 @@ pub struct RefreshResponse {
     pub success: bool,
     pub refreshed_views: Vec<String>,
     pub invalidated_tags: Vec<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshRubricApiRequest {
+    #[serde(default)]
+    pub targets: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshScenarioApiRequest {
+    #[serde(default)]
+    pub targets: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshSettingApiRequest {
+    #[serde(default)]
+    pub targets: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshSimulationApiRequest {
+    #[serde(default)]
+    pub targets: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshToolApiRequest {
+    #[serde(default)]
+    pub targets: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13278,6 +16134,8 @@ pub struct ReportsProfileResource {
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
+    pub role_id: Option<String>,
+    #[serde(default)]
     pub role: Option<String>,
     #[serde(default)]
     pub emails: Option<Vec<String>>,
@@ -13298,7 +16156,7 @@ pub struct ReportsRequest {
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub roles: Option<Vec<String>>,
+    pub role_ids: Option<Vec<String>>,
     #[serde(default)]
     pub simulation_filters: Option<Vec<String>>,
     #[serde(default)]
@@ -13328,6 +16186,8 @@ pub struct ReportsResources {
     #[serde(default)]
     pub profiles: Option<std::collections::HashMap<String, ReportsProfileResource>>,
     #[serde(default)]
+    pub roles: Option<std::collections::HashMap<String, ReportsRoleResource>>,
+    #[serde(default)]
     pub scenarios: Option<std::collections::HashMap<String, ReportsScenarioResource>>,
     #[serde(default)]
     pub cohorts: Option<std::collections::HashMap<String, ReportsCohortResource>>,
@@ -13354,7 +16214,23 @@ pub struct ReportsResponse {
     #[serde(default)]
     pub scenario_options: Option<Vec<FilterOption>>,
     #[serde(default)]
-    pub analytics: Option<AnalyticsFacetsOutput>,
+    pub analytics: Option<AnalyticsFacets>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ReportsRoleResource {
+    #[serde(default)]
+    pub role_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub icon_id: Option<String>,
+    #[serde(default)]
+    pub color_id: Option<String>,
+    #[serde(default)]
+    pub level: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13450,23 +16326,17 @@ pub struct ReportsViews {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ResolveProblemRequest {
+pub struct ResolveProblemApiRequest {
     pub problem_id: String,
     #[serde(default)]
     pub resolved: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ResolveProblemResponse {
+pub struct ResolveProblemApiResponse {
     pub problem_id: String,
     pub resolved: bool,
     pub updated_at: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ResourceTypeItem {
-    pub name: String,
-    pub operation: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13481,57 +16351,43 @@ pub struct ResponseAttemptApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricDepartmentSection {
+pub struct RubricDepartmentResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub department_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub setting_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricDescriptionSection {
+pub struct RubricDescriptionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricDraftFormState {
-    pub department_ids: Vec<String>,
-    pub point_ids: Vec<String>,
-    pub standard_group_ids: Vec<String>,
-    pub standard_ids: Vec<String>,
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_id: Option<String>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13555,41 +16411,30 @@ pub struct RubricFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct RubricFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricFlagSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<RubricFlagConfig>>,
-    #[serde(default)]
-    pub resources: Option<Vec<RubricFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13609,21 +16454,7 @@ pub struct RubricHeatmapCell {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricHeatmapMatrixInput {
-    #[serde(default)]
-    pub rubric_id: Option<String>,
-    #[serde(default)]
-    pub standard_groups: Option<Vec<RubricHeatmapStandardGroup>>,
-    #[serde(default)]
-    pub matrix: Option<Vec<RubricHeatmapMatrixRow>>,
-    #[serde(default)]
-    pub insights: Option<String>,
-    #[serde(default)]
-    pub has_data: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricHeatmapMatrixOutput {
+pub struct RubricHeatmapMatrix {
     #[serde(default)]
     pub rubric_id: Option<String>,
     #[serde(default)]
@@ -13664,43 +16495,38 @@ pub struct RubricMapping {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricNameSection {
+pub struct RubricNameResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricPointsSection {
+pub struct RubricPointResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub value: Option<i64>,
+    #[serde(rename = "type")]
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub r#type: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13714,43 +16540,77 @@ pub struct RubricResultItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricStandardGroupsSection {
+pub struct RubricStandardDraftValue {
+    pub name: String,
+    pub points: i64,
+    pub standard_group_id: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RubricStandardsSection {
+pub struct RubricStandardGroupDraftValue {
+    pub name: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub points: Option<i64>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub pass_points: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RubricStandardGroupResource {
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub standard_group_id: Option<String>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub short_name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub points: Option<i64>,
+    #[serde(default)]
+    pub pass_points: Option<i64>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RubricStandardResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub standard_id: Option<String>,
+    #[serde(default)]
+    pub standard_group_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub points: Option<i64>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13771,13 +16631,6 @@ pub struct RunPricingItem {
     pub count: Option<i64>,
     #[serde(default)]
     pub pricing_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RunTestApiResponse {
-    pub test_id: String,
-    pub invocation_id: String,
-    pub run_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13815,26 +16668,12 @@ pub struct ScenarioDepartment {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioDepartmentSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioDepartment>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioDepartment>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13845,26 +16684,12 @@ pub struct ScenarioDescriptionResource {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioDescriptionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<ScenarioDescriptionResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioDescriptionResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13875,6 +16700,8 @@ pub struct ScenarioDocument {
     pub name: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
+    pub file_id: Option<String>,
     #[serde(default)]
     pub file_path: Option<String>,
     #[serde(default)]
@@ -13893,26 +16720,14 @@ pub struct ScenarioDocument {
     pub video_document: Option<bool>,
     #[serde(default)]
     pub non_video_document: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioDocumentSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioDocument>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioDocument>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13925,6 +16740,18 @@ pub struct ScenarioDraftFormState {
     pub problem_statement_id: Option<String>,
     #[serde(default)]
     pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub video_enabled: Option<bool>,
+    #[serde(default)]
+    pub problem_statement_enabled: Option<bool>,
+    #[serde(default)]
+    pub objectives_enabled: Option<bool>,
+    #[serde(default)]
+    pub images_enabled: Option<bool>,
+    #[serde(default)]
+    pub questions_enabled: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -13958,6 +16785,8 @@ pub struct ScenarioEntry {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScenarioField {
     #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
     pub field_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
@@ -13971,6 +16800,12 @@ pub struct ScenarioField {
     pub conditional_parameter_ids: Option<Vec<String>>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13980,51 +16815,30 @@ pub struct ScenarioFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioFieldParamFilter {
+pub struct ScenarioFlagResource {
     #[serde(default)]
-    pub parameter_id: Option<String>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub show_selected: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioFlagConfig {
-    pub key: String,
-    pub label: String,
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
     #[serde(default)]
-    pub video_flag: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioFlagSection {
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioFlagConfig>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14041,26 +16855,12 @@ pub struct ScenarioImage {
     pub upload_id: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioImageSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioImage>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioImage>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14071,26 +16871,12 @@ pub struct ScenarioNameResource {
     pub name: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioNameSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<ScenarioNameResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioNameResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14101,26 +16887,12 @@ pub struct ScenarioObjective {
     pub objective: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioObjectiveSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioObjective>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioObjective>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14135,88 +16907,12 @@ pub struct ScenarioOption {
     pub question_id: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioOptionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioOption>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioOption>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioParameter {
-    #[serde(default)]
-    pub parameter_id: Option<String>,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
-    pub description: Option<String>,
-    #[serde(default)]
-    pub document_parameter: Option<bool>,
-    #[serde(default)]
-    pub persona_parameter: Option<bool>,
-    #[serde(default)]
-    pub scenario_parameter: Option<bool>,
-    #[serde(default)]
-    pub video_parameter: Option<bool>,
-    #[serde(default)]
-    pub non_video_parameter: Option<bool>,
-    #[serde(default)]
-    pub conditional: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioParameterFieldSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioField>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioField>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioParameterSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioParameter>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioParameter>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14243,26 +16939,14 @@ pub struct ScenarioPersona {
     pub video_persona: Option<bool>,
     #[serde(default)]
     pub non_video_persona: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioPersonaSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioPersona>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioPersona>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14275,26 +16959,12 @@ pub struct ScenarioProblemStatement {
     pub problem_statement: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioProblemStatementSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<ScenarioProblemStatement>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioProblemStatement>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14307,26 +16977,12 @@ pub struct ScenarioQuestion {
     pub allow_multiple: Option<bool>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioQuestionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioQuestion>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioQuestion>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14353,26 +17009,12 @@ pub struct ScenarioVideo {
     pub upload_id: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScenarioVideoSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<ScenarioVideo>>,
-    #[serde(default)]
-    pub resources: Option<Vec<ScenarioVideo>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14400,17 +17042,25 @@ pub struct SearchAgentApiRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchAttemptApiRequest {
     #[serde(default)]
-    pub search: Option<String>,
+    pub target_profile_id: Option<String>,
     #[serde(default)]
-    pub simulation_ids: Option<Vec<String>>,
+    pub profile_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub cohort_ids: Option<Vec<String>>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub role_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub practice: Option<bool>,
     #[serde(default)]
-    pub is_archived: Option<bool>,
-    #[serde(default)]
     pub infinite_mode: Option<bool>,
+    #[serde(default)]
+    pub show_archived: Option<bool>,
     #[serde(default)]
     pub start_date: Option<String>,
     #[serde(default)]
@@ -14418,54 +17068,17 @@ pub struct SearchAttemptApiRequest {
     #[serde(default)]
     pub simulation_search: Option<String>,
     #[serde(default)]
-    pub department_search: Option<String>,
+    pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub profile_search: Option<String>,
+    #[serde(default)]
+    pub sort_by: Option<String>,
+    #[serde(default)]
+    pub sort_order: Option<String>,
+    #[serde(default)]
+    pub page: Option<i64>,
     #[serde(default)]
     pub page_size: Option<i64>,
-    #[serde(default)]
-    pub page_offset: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SearchAttemptApiResponse {
-    #[serde(default)]
-    pub actor_name: Option<String>,
-    #[serde(default)]
-    pub attempts: Option<Vec<SearchAttemptItem>>,
-    #[serde(default)]
-    pub simulation_filter: Option<ListFilterSection>,
-    #[serde(default)]
-    pub department_filter: Option<ListFilterSection>,
-    #[serde(default)]
-    pub total_count: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SearchAttemptItem {
-    pub attempt_id: String,
-    #[serde(default)]
-    pub date: Option<String>,
-    #[serde(default)]
-    pub profile_id: Option<String>,
-    #[serde(default)]
-    pub profile_name: Option<String>,
-    #[serde(default)]
-    pub simulation_id: Option<String>,
-    #[serde(default)]
-    pub simulation_name: Option<String>,
-    #[serde(default)]
-    pub department_id: Option<String>,
-    #[serde(default)]
-    pub cohort_id: Option<String>,
-    #[serde(default)]
-    pub practice: Option<bool>,
-    #[serde(default)]
-    pub infinite_mode: Option<bool>,
-    #[serde(default)]
-    pub num_chats: Option<i64>,
-    #[serde(default)]
-    pub is_archived: Option<bool>,
-    #[serde(default)]
-    pub scenario_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14580,12 +17193,14 @@ pub struct SearchMessageResponse {
     pub run_id: String,
     pub role: String,
     pub message_created_at: String,
-    pub text_upload_ids: Vec<String>,
-    pub audio_upload_ids: Vec<String>,
-    pub image_upload_ids: Vec<String>,
-    pub video_upload_ids: Vec<String>,
-    pub file_upload_ids: Vec<String>,
-    pub call_upload_ids: Vec<String>,
+    pub text_ids: Vec<String>,
+    pub audio_ids: Vec<String>,
+    pub image_ids: Vec<String>,
+    pub video_ids: Vec<String>,
+    pub file_ids: Vec<String>,
+    pub call_ids: Vec<String>,
+    #[serde(default)]
+    pub reasoning: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14634,6 +17249,8 @@ pub struct SearchParameterApiRequest {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchPersonaApiRequest {
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
     #[serde(default)]
     pub search: Option<String>,
     #[serde(default)]
@@ -14840,13 +17457,9 @@ pub struct SearchToolApiRequest {
     #[serde(default)]
     pub filter_department_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub filter_agent_ids: Option<Vec<String>>,
-    #[serde(default)]
     pub filter_creatable: Option<Vec<String>>,
     #[serde(default)]
     pub department_search: Option<String>,
-    #[serde(default)]
-    pub agent_search: Option<String>,
     #[serde(default)]
     pub page_size: Option<i64>,
     #[serde(default)]
@@ -15008,17 +17621,7 @@ pub struct SecondarySkillPackage {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SecondarySkillPerformanceInput {
-    #[serde(default)]
-    pub packages: Option<Vec<SecondarySkillPackage>>,
-    #[serde(default)]
-    pub valid_rubric_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub status: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SecondarySkillPerformanceOutput {
+pub struct SecondarySkillPerformance {
     #[serde(default)]
     pub packages: Option<Vec<SecondarySkillPackage>>,
     #[serde(default)]
@@ -15079,120 +17682,191 @@ pub struct SessionTimelineItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingAuthItemKeySection {
+pub struct SettingAgentCatalogResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub agent_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingAuthSection {
+pub struct SettingAuthCatalogResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub auth_id: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub slug: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub protocol: Option<String>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingColorSection {
+pub struct SettingAuthItemKeyDraftValue {
+    pub auth_id: String,
+    pub item_id: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub key_id: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub key_value: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub key_name: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingDepartmentSection {
+pub struct SettingAuthItemKeyOption {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub auth_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub item_id: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub key_id: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub auth_name: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub item_name: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub key_name: Option<String>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub masked_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingDescriptionSection {
+pub struct SettingAuthItemKeyResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub auth_id: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub item_id: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub key_id: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub resource: Option<std::collections::HashMap<String, serde_json::Value>>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingDraftFormState {
-    pub department_ids: Vec<String>,
-    pub color_ids: Vec<String>,
-    pub profile_ids: Vec<String>,
-    pub auth_ids: Vec<String>,
-    pub provider_key_ids: Vec<String>,
-    pub auth_item_key_ids: Vec<String>,
-    pub threshold_ids: Vec<String>,
+pub struct SettingAuthItemValueDraftValue {
+    pub auth_id: String,
+    pub item_id: String,
+    pub value: String,
     #[serde(default)]
-    pub name_id: Option<String>,
+    pub id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingAuthItemValueOption {
     #[serde(default)]
-    pub description_id: Option<String>,
+    pub auth_id: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub item_id: Option<String>,
+    #[serde(default)]
+    pub auth_name: Option<String>,
+    #[serde(default)]
+    pub item_name: Option<String>,
+    #[serde(default)]
+    pub item_description: Option<String>,
+    #[serde(default)]
+    pub encrypted: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingAuthItemValueResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub auth_id: Option<String>,
+    #[serde(default)]
+    pub item_id: Option<String>,
+    #[serde(default)]
+    pub value: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingColorResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub hex_code: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingDepartmentResource {
+    #[serde(default)]
+    pub department_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingDescriptionResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15202,101 +17876,263 @@ pub struct SettingFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct SettingFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingFlagSection {
+pub struct SettingIconCatalogResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub icon_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<SettingFlagConfig>,
-    #[serde(default)]
-    pub resources: Option<Vec<SettingFlagConfig>>,
+    pub value: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingNameSection {
+pub struct SettingItemCatalogResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub item_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub encrypted: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<std::collections::HashMap<String, serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub position: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingProfileSection {
+pub struct SettingKeyCatalogResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub key_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub masked_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingProviderKeySection {
+pub struct SettingLoginDraftValue {
+    pub login_type: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub auth_id: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub profile_id: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub display_name: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub icon_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingLoginOption {
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub login_type: Option<String>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub auth_id: Option<String>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub profile_id: Option<String>,
+    #[serde(default)]
+    pub display_name: Option<String>,
+    #[serde(default)]
+    pub icon_id: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingLoginsResource {
+    #[serde(default)]
+    pub logins_id: Option<String>,
+    #[serde(default)]
+    pub profile_id: Option<String>,
+    #[serde(default)]
+    pub auth_id: Option<String>,
+    #[serde(default)]
+    pub icon_id: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
+    pub display_name: Option<String>,
+    #[serde(default)]
+    pub login_type: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingMcpDraftValue {
+    pub agent_id: String,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingMcpOption {
+    #[serde(default)]
+    pub agent_id: Option<String>,
+    #[serde(default)]
+    pub agent_name: Option<String>,
+    #[serde(default)]
+    pub agent_description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingMcpResource {
+    #[serde(default)]
+    pub mcp_id: Option<String>,
+    #[serde(default)]
+    pub agent_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingNameResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingProfileCatalogResource {
+    #[serde(default)]
+    pub profile_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingProviderCatalogResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub provider_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingProviderKeyDraftValue {
+    pub provider_id: String,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub key_id: Option<String>,
+    #[serde(default)]
+    pub key_value: Option<String>,
+    #[serde(default)]
+    pub key_name: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingProviderKeyOption {
+    #[serde(default)]
+    pub provider_id: Option<String>,
+    #[serde(default)]
+    pub key_id: Option<String>,
+    #[serde(default)]
+    pub provider_name: Option<String>,
+    #[serde(default)]
+    pub key_name: Option<String>,
+    #[serde(default)]
+    pub masked_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingProviderKeyResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub provider_id: Option<String>,
+    #[serde(default)]
+    pub key_id: Option<String>,
+    #[serde(default)]
+    pub key: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15310,23 +18146,62 @@ pub struct SettingResultItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SettingSystemSection {
+pub struct SettingSystemDraftValue {
+    pub name: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub agent_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingSystemResource {
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub system_id: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub agent_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingThresholdDraftValue {
+    #[serde(rename = "type")]
+    pub r#type: String,
+    pub value: i64,
+    #[serde(default)]
+    pub id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SettingThresholdResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<i64>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15363,26 +18238,12 @@ pub struct SimulationDepartment {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationDepartmentSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<SimulationDepartment>>,
-    #[serde(default)]
-    pub resources: Option<Vec<SimulationDepartment>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15393,48 +18254,12 @@ pub struct SimulationDescriptionResource {
     pub description: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationDescriptionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<SimulationDescriptionResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<SimulationDescriptionResource>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationDraftFormState {
-    #[serde(default)]
-    pub name_id: Option<String>,
-    #[serde(default)]
-    pub description_id: Option<String>,
-    #[serde(default)]
-    pub flag_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub department_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub scenario_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub scenario_flag_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub scenario_position_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub scenario_rubric_ids: Option<Vec<String>>,
-    #[serde(default)]
-    pub scenario_time_limit_ids: Option<Vec<String>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15444,41 +18269,30 @@ pub struct SimulationFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct SimulationFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationFlagSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<SimulationFlagConfig>>,
-    #[serde(default)]
-    pub resources: Option<Vec<SimulationFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15489,26 +18303,12 @@ pub struct SimulationNameResource {
     pub name: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationNameSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<SimulationNameResource>,
-    #[serde(default)]
-    pub resources: Option<Vec<SimulationNameResource>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15559,6 +18359,12 @@ pub struct SimulationScenario {
     pub show_images: Option<bool>,
     #[serde(default)]
     pub show_questions: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15571,32 +18377,42 @@ pub struct SimulationScenarioFlag {
     pub flag_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationScenarioFlagSection {
+pub struct SimulationScenarioFlagOption {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub scenario_id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub flag_id: Option<String>,
+    #[serde(rename = "type")]
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub r#type: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub value: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub current: Option<Vec<SimulationScenarioFlag>>,
-    #[serde(default)]
-    pub resources: Option<Vec<SimulationScenarioFlag>>,
+    pub icon: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15609,26 +18425,12 @@ pub struct SimulationScenarioPosition {
     pub value: Option<i64>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationScenarioPositionSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<SimulationScenarioPosition>>,
-    #[serde(default)]
-    pub resources: Option<Vec<SimulationScenarioPosition>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15641,46 +18443,12 @@ pub struct SimulationScenarioRubric {
     pub rubric_id: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationScenarioRubricSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<SimulationScenarioRubric>>,
-    #[serde(default)]
-    pub resources: Option<Vec<SimulationScenarioRubric>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationScenarioSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<SimulationScenario>>,
-    #[serde(default)]
-    pub resources: Option<Vec<SimulationScenario>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15695,26 +18463,12 @@ pub struct SimulationScenarioTimeLimit {
     pub generated: Option<bool>,
     #[serde(default)]
     pub negative: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimulationScenarioTimeLimitSection {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<SimulationScenarioTimeLimit>>,
-    #[serde(default)]
-    pub resources: Option<Vec<SimulationScenarioTimeLimit>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15810,25 +18564,18 @@ pub struct StandardMeta {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct StartAttemptApiResponse {
-    pub attempt_id: String,
-    #[serde(default)]
-    pub chat_entry_id: Option<String>,
-    #[serde(default)]
-    pub attempt_chat_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StartTestApiResponse {
     pub test_id: String,
+    #[serde(default)]
+    pub invocation_id: Option<String>,
+    #[serde(default)]
+    pub benchmark_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct StopAttemptApiResponse {
-    pub chat_id: String,
-    pub success: bool,
-    #[serde(default)]
-    pub message: Option<String>,
+pub struct StarterPrompt {
+    pub title: String,
+    pub content: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15840,213 +18587,64 @@ pub struct StopTestApiResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteDepartmentSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteDescriptionSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteEndpointSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteFlagSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteKeySection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteModalitySection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteNameSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuitePricingSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteQualitySection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteReasoningLevelSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteTemperatureLevelSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteValueSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SuiteVoiceSection {
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TableInfo {
     pub name: String,
     pub columns: Vec<ColumnInfo>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestAllCompleteEvent {
-    pub invocation_id: String,
-    pub total_runs: i64,
+pub struct TestCompleteInternalResult {
+    pub test_id: String,
     #[serde(default)]
     pub success: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestEndAllPayload {
-    pub test_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestEndPayload {
-    pub test_id: String,
-    pub test_invocation_id: String,
-    pub run_id: String,
     #[serde(default)]
-    pub grade: Option<bool>,
+    pub completed_count: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TestCompletePayload {
+    pub test_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TestConfigGroup {
+    pub group_id: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub run_count: Option<i64>,
+    #[serde(default)]
+    pub last_run_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TestConfigItem {
+    pub run_id: String,
+    pub label: String,
+    #[serde(default)]
+    pub group_id: Option<String>,
+    #[serde(default)]
+    pub agent_name: Option<String>,
+    #[serde(default)]
+    pub model_name: Option<String>,
+    #[serde(default)]
+    pub created_at: Option<String>,
+    #[serde(default)]
+    pub prompt_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub tool_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub instruction_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_id: Option<String>,
+    #[serde(default)]
+    pub temperature: Option<f64>,
+    #[serde(default)]
+    pub reasoning: Option<String>,
+    #[serde(default)]
+    pub quality: Option<String>,
+    #[serde(default)]
+    pub permissions: Option<Vec<Vec<serde_json::Value>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16058,78 +18656,30 @@ pub struct TestEntries {
     #[serde(default)]
     pub runs: Option<Vec<GetTestInvocationRunsResponse>>,
     #[serde(default)]
-    pub groups: Option<Vec<GetTestInvocationGroupsResponse>>,
+    pub groups: Option<Vec<GetTestInvocationTracesResponse>>,
     #[serde(default)]
     pub grades: Option<Vec<GetTestGradeResponse>>,
     #[serde(default)]
     pub feedback: Option<Vec<GetTestFeedbackResponse>>,
     #[serde(default)]
     pub messages: Option<Vec<SearchMessageResponse>>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestGroupPayload {
-    pub test_id: String,
-    pub test_invocation_id: String,
     #[serde(default)]
-    pub prev_run_id: Option<String>,
+    pub calls: Option<Vec<serde_json::Value>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestJoinPayload {
+pub struct TestInvocationCompleteInternalResult {
     pub invocation_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestJoinRequest {
-    pub sid: String,
-    pub invocation_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestJoinResponse {
-    pub success: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestJoinedEvent {
-    pub invocation_id: String,
+    #[serde(default)]
+    pub completion_id: Option<String>,
     #[serde(default)]
     pub success: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestLeavePayload {
-    pub invocation_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestLeaveRequest {
-    pub sid: String,
-    pub invocation_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestLeaveResponse {
-    pub success: bool,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestNextPayload {
+pub struct TestInvocationCompletePayload {
     pub test_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestProgressEvent {
-    pub invocation_id: String,
-    #[serde(rename = "type")]
-    pub r#type: String,
-    #[serde(default)]
-    pub run_id: Option<String>,
-    #[serde(default)]
-    pub current_run: Option<i64>,
-    #[serde(default)]
-    pub total_runs: Option<i64>,
+    pub test_invocation_id: String,
     #[serde(default)]
     pub message: Option<String>,
 }
@@ -16137,73 +18687,59 @@ pub struct TestProgressEvent {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TestResources {
     #[serde(default)]
-    pub evals: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub evals: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub rubrics: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub rubrics: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub agents: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub agents: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub models: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub models: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub voices: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub voices: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub temperature_levels: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub temperature_levels: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub reasoning_levels: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub reasoning_levels: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub modalities: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub modalities: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub prompts: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub prompts: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub instructions: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub instructions: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub tools: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub tools: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub qualities: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub qualities: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
+    #[serde(default)]
+    pub standard_groups: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
+    #[serde(default)]
+    pub standards: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestRunCompleteEvent {
-    pub invocation_id: String,
-    pub run_id: String,
-    pub current_run: i64,
-    pub total_runs: i64,
-    pub remaining_runs: i64,
+pub struct TestRunEndPayload {
+    pub test_invocation_run_id: String,
     #[serde(default)]
-    pub original_run_resource_id: Option<String>,
+    pub success: Option<bool>,
     #[serde(default)]
-    pub tool_calls: Option<Vec<std::collections::HashMap<String, serde_json::Value>>>,
+    pub error: Option<bool>,
+    #[serde(default)]
+    pub message: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestRunDeltaEvent {
-    pub invocation_id: String,
-    pub run_id: String,
-    pub content: String,
+pub struct TestRunEndResponse {
+    pub test_invocation_run_id: String,
+    pub completion_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TestRunInternalResult {
+    pub test_invocation_run_id: String,
+    #[serde(default)]
+    pub success: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16233,29 +18769,15 @@ pub struct TestRunPayload {
     pub test_id: String,
     pub test_invocation_id: String,
     pub run_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestRunStartEvent {
-    pub invocation_id: String,
-    pub run_id: String,
-    pub current_run: i64,
-    pub total_runs: i64,
-    pub created_at: String,
     #[serde(default)]
-    pub original_run_resource_id: Option<String>,
+    pub test_invocation_trace_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TestStartPayload {
-    pub benchmark_id: String,
+    pub eval_id: String,
     #[serde(default)]
     pub infinite_mode: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestStartedEvent {
-    pub test_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16276,30 +18798,186 @@ pub struct TestStopPayload {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TestStoppedEvent {
-    pub invocation_id: String,
+pub struct TestTraceInternalResult {
+    pub test_invocation_trace_id: String,
     #[serde(default)]
     pub success: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TestTracePayload {
+    pub test_id: String,
+    pub test_invocation_id: String,
     #[serde(default)]
-    pub message: Option<String>,
+    pub run_id: Option<String>,
+    #[serde(default)]
+    pub tool_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub temperature_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub reasoning_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub prompt_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub instruction_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub prompt_text: Option<String>,
+    #[serde(default)]
+    pub instructions: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadAgentApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadAttemptApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadAuthApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadCohortApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadDepartmentApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadDocumentApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadEvalApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadFieldApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadGroupApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadModelApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadParameterApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadPersonaApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadProfileApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadProviderApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadRubricApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadScenarioApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadSettingApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadSimulationApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadTestApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextDownloadToolApiRequest {
+    pub text_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextUploadDocumentApiResponse {
+    pub text_id: String,
+    pub upload_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ThemeBundle {
+    #[serde(default)]
+    pub primitives: Option<ThemePrimitives>,
+    #[serde(default)]
+    pub tokens: Option<ThemeTokens>,
+    #[serde(default)]
+    pub dark_primitives: Option<ThemePrimitives>,
+    #[serde(default)]
+    pub dark_tokens: Option<ThemeTokens>,
+    #[serde(default)]
+    pub thresholds: Option<Thresholds>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ThemePrimitives {
     #[serde(default)]
+    pub background: Option<String>,
+    #[serde(default)]
     pub primary: Option<String>,
     #[serde(default)]
     pub accent: Option<String>,
     #[serde(default)]
-    pub background: Option<String>,
+    pub card: Option<String>,
     #[serde(default)]
-    pub surface: Option<String>,
+    pub sidebar: Option<String>,
+    #[serde(default)]
+    pub muted_foreground: Option<String>,
+    #[serde(default)]
+    pub ring: Option<String>,
+    #[serde(default)]
+    pub border: Option<String>,
+    #[serde(default)]
+    pub destructive: Option<String>,
     #[serde(default)]
     pub success: Option<String>,
     #[serde(default)]
     pub warning: Option<String>,
     #[serde(default)]
-    pub error: Option<String>,
+    pub info: Option<String>,
     #[serde(default)]
     pub chart1: Option<String>,
     #[serde(default)]
@@ -16310,6 +18988,143 @@ pub struct ThemePrimitives {
     pub chart4: Option<String>,
     #[serde(default)]
     pub chart5: Option<String>,
+    #[serde(default)]
+    pub foreground: Option<String>,
+    #[serde(default)]
+    pub card_foreground: Option<String>,
+    #[serde(default)]
+    pub popover: Option<String>,
+    #[serde(default)]
+    pub popover_foreground: Option<String>,
+    #[serde(default)]
+    pub primary_foreground: Option<String>,
+    #[serde(default)]
+    pub secondary: Option<String>,
+    #[serde(default)]
+    pub secondary_foreground: Option<String>,
+    #[serde(default)]
+    pub muted: Option<String>,
+    #[serde(default)]
+    pub accent_foreground: Option<String>,
+    #[serde(default)]
+    pub destructive_foreground: Option<String>,
+    #[serde(default)]
+    pub danger: Option<String>,
+    #[serde(default)]
+    pub danger_foreground: Option<String>,
+    #[serde(default)]
+    pub input: Option<String>,
+    #[serde(default)]
+    pub success_foreground: Option<String>,
+    #[serde(default)]
+    pub warning_foreground: Option<String>,
+    #[serde(default)]
+    pub info_foreground: Option<String>,
+    #[serde(default)]
+    pub sidebar_foreground: Option<String>,
+    #[serde(default)]
+    pub sidebar_primary: Option<String>,
+    #[serde(default)]
+    pub sidebar_primary_foreground: Option<String>,
+    #[serde(default)]
+    pub sidebar_accent: Option<String>,
+    #[serde(default)]
+    pub sidebar_accent_foreground: Option<String>,
+    #[serde(default)]
+    pub sidebar_border: Option<String>,
+    #[serde(default)]
+    pub sidebar_ring: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ThemeTokens {
+    #[serde(default)]
+    pub background: Option<String>,
+    #[serde(default)]
+    pub foreground: Option<String>,
+    #[serde(default)]
+    pub card: Option<String>,
+    #[serde(default)]
+    pub card_foreground: Option<String>,
+    #[serde(default)]
+    pub popover: Option<String>,
+    #[serde(default)]
+    pub popover_foreground: Option<String>,
+    #[serde(default)]
+    pub primary: Option<String>,
+    #[serde(default)]
+    pub primary_foreground: Option<String>,
+    #[serde(default)]
+    pub secondary: Option<String>,
+    #[serde(default)]
+    pub secondary_foreground: Option<String>,
+    #[serde(default)]
+    pub muted: Option<String>,
+    #[serde(default)]
+    pub muted_foreground: Option<String>,
+    #[serde(default)]
+    pub accent: Option<String>,
+    #[serde(default)]
+    pub accent_foreground: Option<String>,
+    #[serde(default)]
+    pub destructive: Option<String>,
+    #[serde(default)]
+    pub destructive_foreground: Option<String>,
+    #[serde(default)]
+    pub danger: Option<String>,
+    #[serde(default)]
+    pub danger_foreground: Option<String>,
+    #[serde(default)]
+    pub border: Option<String>,
+    #[serde(default)]
+    pub input: Option<String>,
+    #[serde(default)]
+    pub ring: Option<String>,
+    #[serde(default)]
+    pub success: Option<String>,
+    #[serde(default)]
+    pub success_foreground: Option<String>,
+    #[serde(default)]
+    pub warning: Option<String>,
+    #[serde(default)]
+    pub warning_foreground: Option<String>,
+    #[serde(default)]
+    pub info: Option<String>,
+    #[serde(default)]
+    pub info_foreground: Option<String>,
+    #[serde(default)]
+    pub chart1: Option<String>,
+    #[serde(default)]
+    pub chart2: Option<String>,
+    #[serde(default)]
+    pub chart3: Option<String>,
+    #[serde(default)]
+    pub chart4: Option<String>,
+    #[serde(default)]
+    pub chart5: Option<String>,
+    #[serde(default)]
+    pub sidebar: Option<String>,
+    #[serde(default)]
+    pub sidebar_foreground: Option<String>,
+    #[serde(default)]
+    pub sidebar_primary: Option<String>,
+    #[serde(default)]
+    pub sidebar_primary_foreground: Option<String>,
+    #[serde(default)]
+    pub sidebar_accent: Option<String>,
+    #[serde(default)]
+    pub sidebar_accent_foreground: Option<String>,
+    #[serde(default)]
+    pub sidebar_border: Option<String>,
+    #[serde(default)]
+    pub sidebar_ring: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Thresholds {
+    pub success: i64,
+    pub warning: i64,
+    pub danger: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16327,118 +19142,505 @@ pub struct TimerData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolArgOutputSection {
+pub struct TitleAgentApiRequest {
+    pub group_id: String,
+    pub title: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolArgPositionSection {
+pub struct TitleAgentApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
     #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolArgSection {
+pub struct TitleAttemptApiRequest {
+    pub group_id: String,
+    pub title: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolArtifactSection {
+pub struct TitleAttemptApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
     #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolDescriptionSection {
+pub struct TitleAuthApiRequest {
+    pub group_id: String,
+    pub title: String,
     #[serde(default)]
-    pub show: Option<bool>,
+    pub idempotency_key: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
-    #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
-    #[serde(default)]
-    pub show_ai_generate: Option<bool>,
-    #[serde(default)]
-    pub tool_id: Option<String>,
-    #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolDraftFormState {
-    pub flag_ids: Vec<String>,
-    pub department_ids: Vec<String>,
-    pub arg_ids: Vec<String>,
-    pub arg_position_ids: Vec<String>,
-    pub args_output_ids: Vec<String>,
-    pub artifact_ids: Vec<String>,
-    pub operation_ids: Vec<String>,
+pub struct TitleAuthApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
     #[serde(default)]
-    pub name_id: Option<String>,
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleCohortApiRequest {
+    pub group_id: String,
+    pub title: String,
     #[serde(default)]
-    pub description_id: Option<String>,
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleCohortApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleDepartmentApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleDepartmentApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleDocumentApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleDocumentApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleEvalApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleEvalApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleFieldApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleFieldApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleModelApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleModelApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleParameterApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleParameterApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitlePersonaApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitlePersonaApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleProfileApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleProfileApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleProviderApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleProviderApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleRubricApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleRubricApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleScenarioApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleScenarioApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleSettingApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleSettingApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleSimulationApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleSimulationApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleSystemApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleSystemApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleTestApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleTestApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleToolApiRequest {
+    pub group_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TitleToolApiResponse {
+    pub group_id: String,
+    pub group_name_id: String,
+    pub title: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolArgDraftValue {
+    pub name: String,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub field_type: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub required: Option<bool>,
+    #[serde(default)]
+    pub default_value: Option<String>,
+    #[serde(default)]
+    pub outputs: Option<Vec<ToolArgOutputDraftValue>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolArgOutputDraftValue {
+    pub name: String,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub template: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolArgOutputResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub args_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub template: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolArgPositionResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub args_id: Option<String>,
+    #[serde(default)]
+    pub value: Option<i64>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolArgResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub field_type: Option<String>,
+    #[serde(default)]
+    pub required: Option<bool>,
+    #[serde(default)]
+    pub default_value: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolDepartmentResource {
+    #[serde(default)]
+    pub department_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolDescriptionResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16448,81 +19650,120 @@ pub struct ToolFieldError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolFlagConfig {
-    pub key: String,
-    pub label: String,
+pub struct ToolFlagResource {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(rename = "type")]
+    #[serde(default)]
+    pub r#type: Option<String>,
+    #[serde(default)]
+    pub value: Option<bool>,
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
     pub icon_id: Option<String>,
     #[serde(default)]
-    pub flag_option_id: Option<String>,
-    #[serde(default)]
-    pub show: Option<bool>,
-    #[serde(default)]
-    pub required: Option<bool>,
+    pub icon: Option<String>,
     #[serde(default)]
     pub generated: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolFlagSection {
+pub struct ToolInstructionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub template: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub current: Option<ToolFlagConfig>,
-    #[serde(default)]
-    pub resources: Option<Vec<ToolFlagConfig>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolNameSection {
+pub struct ToolNameResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
-    #[serde(default)]
-    pub resource: Option<serde_json::Value>,
-    #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub pending: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolOperationSection {
+pub struct ToolPermissionResource {
     #[serde(default)]
-    pub show: Option<bool>,
+    pub id: Option<String>,
     #[serde(default)]
-    pub required: Option<bool>,
+    pub artifact: Option<String>,
     #[serde(default)]
-    pub suggestions: Option<Vec<String>>,
+    pub operation: Option<String>,
     #[serde(default)]
-    pub show_ai_generate: Option<bool>,
+    pub name: Option<String>,
     #[serde(default)]
-    pub tool_id: Option<String>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub link_tool_id: Option<String>,
+    pub generated: Option<bool>,
     #[serde(default)]
-    pub current: Option<Vec<serde_json::Value>>,
+    pub suggested: Option<bool>,
     #[serde(default)]
-    pub resources: Option<Vec<serde_json::Value>>,
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub pending: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolPreviewArg {
+    pub name: String,
+    #[serde(default)]
+    pub field_type: Option<String>,
+    #[serde(default)]
+    pub default_value: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolPreviewArgHint {
+    pub name: String,
+    #[serde(default)]
+    pub used: Option<bool>,
+    #[serde(default)]
+    pub filters: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolPreviewOutput {
+    pub name: String,
+    #[serde(default)]
+    pub template: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolPreviewOutputResult {
+    pub name: String,
+    #[serde(default)]
+    pub compiled: Option<String>,
+    #[serde(default)]
+    pub error: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16536,6 +19777,11 @@ pub struct ToolResultItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UnemulateProfileApiRequest {
+    pub target_profile_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UnemulateProfileApiResponse {
     pub ok: bool,
     #[serde(default)]
@@ -16544,22 +19790,46 @@ pub struct UnemulateProfileApiResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateAgentApiRequest {
-    pub agents: Vec<UpdateAgentItem>,
+    #[serde(default)]
+    pub agents: Option<Vec<UpdateAgentItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateAgentPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_tool_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub model_search: Option<String>,
+    #[serde(default)]
+    pub tool_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateAgentApiResponseInput {
+pub struct UpdateAgentApiResponse {
     pub results: Vec<AgentResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateAgentApiResponseOutput {
-    pub results: Vec<AgentResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateAgentItem {
-    pub agent_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -16575,7 +19845,43 @@ pub struct UpdateAgentItem {
     #[serde(default)]
     pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub model_ids: Option<Vec<String>>,
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub model_id: Option<String>,
+    #[serde(default)]
+    pub reasoning_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub temperature_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub tool_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub agent_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateAgentPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub model_id: Option<String>,
     #[serde(default)]
     pub reasoning_level_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -16590,22 +19896,40 @@ pub struct UpdateAgentItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateAuthApiRequest {
-    pub auths: Vec<UpdateAuthItem>,
+    #[serde(default)]
+    pub auths: Option<Vec<UpdateAuthItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateAuthPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateAuthApiResponseInput {
+pub struct UpdateAuthApiResponse {
     pub results: Vec<AuthResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateAuthApiResponseOutput {
-    pub results: Vec<AuthResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub auths: Option<Vec<ListAuthApiAuth>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateAuthItem {
-    pub auth_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -16619,9 +19943,43 @@ pub struct UpdateAuthItem {
     #[serde(default)]
     pub slug: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub protocol_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub protocol: Option<String>,
+    #[serde(default)]
+    pub item_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_resource_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateAuthPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub slug_id: Option<String>,
+    #[serde(default)]
+    pub slug: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -16638,22 +19996,46 @@ pub struct UpdateAuthItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateCohortApiRequest {
-    pub cohorts: Vec<UpdateCohortItem>,
+    #[serde(default)]
+    pub cohorts: Option<Vec<UpdateCohortItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateCohortPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_profile_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub profile_search: Option<String>,
+    #[serde(default)]
+    pub simulation_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateCohortApiResponseInput {
+pub struct UpdateCohortApiResponse {
     pub results: Vec<CohortResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateCohortApiResponseOutput {
-    pub results: Vec<CohortResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateCohortItem {
-    pub cohort_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -16663,7 +20045,9 @@ pub struct UpdateCohortItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -16677,7 +20061,41 @@ pub struct UpdateCohortItem {
     #[serde(default)]
     pub profile_persona_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub is_inactive: Option<bool>,
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulations: Option<Vec<String>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateCohortPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_availability_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub profile_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub profile_persona_ids: Option<Vec<String>>,
     #[serde(default)]
     pub departments: Option<Vec<String>>,
     #[serde(default)]
@@ -16688,22 +20106,36 @@ pub struct UpdateCohortItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateDepartmentApiRequest {
-    pub departments: Vec<UpdateDepartmentItem>,
+    #[serde(default)]
+    pub departments: Option<Vec<UpdateDepartmentItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateDepartmentPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateDepartmentApiResponseInput {
+pub struct UpdateDepartmentApiResponse {
     pub results: Vec<DepartmentResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateDepartmentApiResponseOutput {
-    pub results: Vec<DepartmentResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub departments: Option<Vec<ListDepartmentApiDepartment>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateDepartmentItem {
-    pub department_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -16713,9 +20145,31 @@ pub struct UpdateDepartmentItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub settings_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateDepartmentPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
     #[serde(default)]
     pub settings_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -16724,22 +20178,46 @@ pub struct UpdateDepartmentItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateDocumentApiRequest {
-    pub documents: Vec<UpdateDocumentItem>,
+    #[serde(default)]
+    pub documents: Option<Vec<UpdateDocumentItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateDocumentPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub field_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateDocumentApiResponseInput {
+pub struct UpdateDocumentApiResponse {
     pub results: Vec<DocumentResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateDocumentApiResponseOutput {
-    pub results: Vec<DocumentResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateDocumentItem {
-    pub document_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -16749,15 +20227,45 @@ pub struct UpdateDocumentItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub is_inactive: Option<bool>,
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
     pub departments: Option<Vec<String>>,
     #[serde(default)]
-    pub field_ids: Option<Vec<String>>,
+    pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub upload_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub text_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateDocumentPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_field_ids: Option<Vec<String>>,
     #[serde(default)]
     pub upload_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -16768,22 +20276,40 @@ pub struct UpdateDocumentItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateEvalApiRequest {
-    pub evals: Vec<UpdateEvalItem>,
+    #[serde(default)]
+    pub evals: Option<Vec<UpdateEvalItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateEvalPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateEvalApiResponseInput {
+pub struct UpdateEvalApiResponse {
     pub results: Vec<EvalResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateEvalApiResponseOutput {
-    pub results: Vec<EvalResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub evals: Option<Vec<ListEvalApiEval>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateEvalItem {
-    pub eval_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -16806,26 +20332,14 @@ pub struct UpdateEvalItem {
     pub model_rubric_ids: Option<Vec<String>>,
     #[serde(default)]
     pub model_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateFieldApiRequest {
-    pub fields: Vec<UpdateFieldItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateFieldApiResponseInput {
-    pub results: Vec<FieldResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateFieldApiResponseOutput {
-    pub results: Vec<FieldResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateFieldItem {
-    pub field_id: String,
+pub struct UpdateEvalPatch {
+    #[serde(default)]
+    pub id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -16835,7 +20349,103 @@ pub struct UpdateFieldItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateFieldApiRequest {
+    #[serde(default)]
+    pub fields: Option<Vec<UpdateFieldItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateFieldPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_search: Option<String>,
+    #[serde(default)]
+    pub persona_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateFieldApiResponse {
+    pub results: Vec<FieldResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateFieldItem {
+    pub id: String,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub conditional_parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateFieldPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -16848,22 +20458,48 @@ pub struct UpdateFieldItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateModelApiRequest {
-    pub models: Vec<UpdateModelItem>,
+    #[serde(default)]
+    pub models: Option<Vec<UpdateModelItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateModelPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub agent_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateModelApiResponseInput {
+pub struct UpdateModelApiResponse {
     pub results: Vec<ModelResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateModelApiResponseOutput {
-    pub results: Vec<ModelResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub models: Option<Vec<ListModelApiModel>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateModelItem {
-    pub model_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -16883,7 +20519,7 @@ pub struct UpdateModelItem {
     #[serde(default)]
     pub pricing_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub provider_ids: Option<Vec<String>>,
+    pub provider_id: Option<String>,
     #[serde(default)]
     pub quality_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -16891,7 +20527,45 @@ pub struct UpdateModelItem {
     #[serde(default)]
     pub temperature_level_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub value_ids: Option<Vec<String>>,
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateModelPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pricing_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_id: Option<String>,
+    #[serde(default)]
+    pub quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub reasoning_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub temperature_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub value_id: Option<String>,
     #[serde(default)]
     pub voice_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -16900,22 +20574,70 @@ pub struct UpdateModelItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateParameterApiRequest {
-    pub parameters: Vec<UpdateParameterItem>,
+    #[serde(default)]
+    pub parameters: Option<Vec<UpdateParameterItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateParameterPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub field_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateParameterApiResponseInput {
+pub struct UpdateParameterApiResponse {
     pub results: Vec<ParameterResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateParameterApiResponseOutput {
-    pub results: Vec<ParameterResultItem>,
+    #[serde(default)]
+    pub parameters: Option<Vec<ListParameterApiParameter>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateParameterItem {
-    pub parameter_id: String,
+    pub id: String,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateParameterPatch {
+    #[serde(default)]
+    pub id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -16936,22 +20658,54 @@ pub struct UpdateParameterItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdatePersonaApiRequest {
-    pub personas: Vec<UpdatePersonaItem>,
+    #[serde(default)]
+    pub personas: Option<Vec<UpdatePersonaItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdatePersonaPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub field_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub color_search: Option<String>,
+    #[serde(default)]
+    pub icon_search: Option<String>,
+    #[serde(default)]
+    pub voice_search: Option<String>,
+    #[serde(default)]
+    pub instruction_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdatePersonaApiResponseInput {
+pub struct UpdatePersonaApiResponse {
     pub results: Vec<PersonaResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdatePersonaApiResponseOutput {
-    pub results: Vec<PersonaResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub personas: Option<Vec<ListPersonaApiPersona>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdatePersonaItem {
-    pub persona_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -16973,9 +20727,55 @@ pub struct UpdatePersonaItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_fields: Option<Vec<String>>,
+    #[serde(default)]
+    pub example_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub examples: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voices: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdatePersonaPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub color_id: Option<String>,
+    #[serde(default)]
+    pub color: Option<String>,
+    #[serde(default)]
+    pub icon_id: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
+    pub instructions_id: Option<String>,
+    #[serde(default)]
+    pub instructions: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -16996,17 +20796,43 @@ pub struct UpdatePersonaItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateProfileApiRequest {
-    pub profiles: Vec<UpdateProfileItem>,
+    #[serde(default)]
+    pub profiles: Option<Vec<UpdateProfileItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateProfilePatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub cohort_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub role_filter: Option<String>,
+    #[serde(default)]
+    pub cohort_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub role_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateProfileApiResponseInput {
+pub struct UpdateProfileApiResponse {
     pub results: Vec<ProfileResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateProfileApiResponseOutput {
-    pub results: Vec<ProfileResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub profiles: Option<Vec<ListProfilesApiProfile>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17017,9 +20843,9 @@ pub struct UpdateProfileItem {
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
-    pub request_limit_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub flag_id: Option<String>,
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -17027,27 +20853,77 @@ pub struct UpdateProfileItem {
     #[serde(default)]
     pub email_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub role_ids: Option<Vec<String>>,
+    pub role_id: Option<String>,
+    #[serde(default)]
+    pub primary_department_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateProfilePatch {
+    #[serde(default)]
+    pub profile_id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub email_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub role_id: Option<String>,
+    #[serde(default)]
+    pub primary_department_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateProviderApiRequest {
-    pub providers: Vec<UpdateProviderItem>,
+    #[serde(default)]
+    pub providers: Option<Vec<UpdateProviderItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateProviderPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_status: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub model_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateProviderApiResponseInput {
+pub struct UpdateProviderApiResponse {
     pub results: Vec<ProviderResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateProviderApiResponseOutput {
-    pub results: Vec<ProviderResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub providers: Option<Vec<ListProviderApiProvider>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateProviderItem {
-    pub provider_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -17057,9 +20933,9 @@ pub struct UpdateProviderItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -17069,27 +20945,13 @@ pub struct UpdateProviderItem {
     #[serde(default)]
     pub key_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub value_ids: Option<Vec<String>>,
+    pub value_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateRubricApiRequest {
-    pub rubrics: Vec<UpdateRubricItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateRubricApiResponseInput {
-    pub results: Vec<RubricResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateRubricApiResponseOutput {
-    pub results: Vec<RubricResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateRubricItem {
-    pub rubric_id: String,
+pub struct UpdateProviderPatch {
+    #[serde(default)]
+    pub id: Option<String>,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -17099,15 +20961,119 @@ pub struct UpdateRubricItem {
     #[serde(default)]
     pub description: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub active: Option<bool>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
     pub departments: Option<Vec<String>>,
     #[serde(default)]
-    pub point_ids: Option<Vec<String>>,
+    pub endpoint_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateRubricApiRequest {
+    #[serde(default)]
+    pub rubrics: Option<Vec<UpdateRubricItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateRubricPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub simulation_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateRubricApiResponse {
+    pub results: Vec<RubricResultItem>,
+    #[serde(default)]
+    pub rubrics: Option<Vec<ListRubricApiRubric>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateRubricItem {
+    pub id: String,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub simulation_rubric: Option<bool>,
+    #[serde(default)]
+    pub video_rubric: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub pass_points_id: Option<String>,
+    #[serde(default)]
+    pub pass_points: Option<i64>,
+    #[serde(default)]
+    pub standard_group_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub standard_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateRubricPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub simulation_rubric: Option<bool>,
+    #[serde(default)]
+    pub video_rubric: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub pass_points_id: Option<String>,
+    #[serde(default)]
+    pub pass_points: Option<i64>,
     #[serde(default)]
     pub standard_group_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -17116,22 +21082,48 @@ pub struct UpdateRubricItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateScenarioApiRequest {
-    pub scenarios: Vec<UpdateScenarioItem>,
+    #[serde(default)]
+    pub scenarios: Option<Vec<UpdateScenarioItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateScenarioPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub persona_search: Option<String>,
+    #[serde(default)]
+    pub simulation_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateScenarioApiResponseInput {
+pub struct UpdateScenarioApiResponse {
     pub results: Vec<ScenarioResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateScenarioApiResponseOutput {
-    pub results: Vec<ScenarioResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub scenarios: Option<Vec<ListScenarioApiScenario>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateScenarioItem {
-    pub scenario_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -17145,17 +21137,7 @@ pub struct UpdateScenarioItem {
     #[serde(default)]
     pub problem_statement: Option<String>,
     #[serde(default)]
-    pub active_flag_id: Option<String>,
-    #[serde(default)]
-    pub objectives_enabled_flag_id: Option<String>,
-    #[serde(default)]
-    pub images_enabled_flag_id: Option<String>,
-    #[serde(default)]
-    pub video_enabled_flag_id: Option<String>,
-    #[serde(default)]
-    pub questions_enabled_flag_id: Option<String>,
-    #[serde(default)]
-    pub problem_statement_enabled_flag_id: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
     pub department_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -17177,7 +21159,63 @@ pub struct UpdateScenarioItem {
     #[serde(default)]
     pub option_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub active_flag: Option<bool>,
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub personas: Option<Vec<String>>,
+    #[serde(default)]
+    pub documents: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_fields: Option<Vec<String>>,
+    #[serde(default)]
+    pub objectives: Option<Vec<String>>,
+    #[serde(default)]
+    pub images: Option<Vec<String>>,
+    #[serde(default)]
+    pub videos: Option<Vec<String>>,
+    #[serde(default)]
+    pub questions: Option<Vec<String>>,
+    #[serde(default)]
+    pub options: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateScenarioPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub problem_statement_id: Option<String>,
+    #[serde(default)]
+    pub problem_statement: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub document_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub objective_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub video_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub question_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub option_ids: Option<Vec<String>>,
     #[serde(default)]
     pub departments: Option<Vec<String>>,
     #[serde(default)]
@@ -17200,22 +21238,54 @@ pub struct UpdateScenarioItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateSettingApiRequest {
-    pub settings: Vec<UpdateSettingItem>,
+    #[serde(default)]
+    pub settings: Option<Vec<UpdateSettingItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateSettingPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub system_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub provider_search: Option<String>,
+    #[serde(default)]
+    pub auth_search: Option<String>,
+    #[serde(default)]
+    pub system_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateSettingApiResponseInput {
+pub struct UpdateSettingApiResponse {
     pub results: Vec<SettingResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateSettingApiResponseOutput {
-    pub results: Vec<SettingResultItem>,
+    #[serde(default)]
+    pub settings: Option<Vec<ListSettingApiSetting>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateSettingItem {
-    pub setting_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -17224,6 +21294,8 @@ pub struct UpdateSettingItem {
     pub description_id: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
     #[serde(default)]
     pub active_flag_id: Option<String>,
     #[serde(default)]
@@ -17235,9 +21307,13 @@ pub struct UpdateSettingItem {
     #[serde(default)]
     pub color_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub profile_ids: Option<Vec<String>>,
+    pub logins_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub auth_ids: Option<Vec<String>>,
+    pub system_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub mcp_id: Option<String>,
+    #[serde(default)]
+    pub threshold_ids: Option<Vec<String>>,
     #[serde(default)]
     pub provider_key_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -17245,31 +21321,101 @@ pub struct UpdateSettingItem {
     #[serde(default)]
     pub auth_item_value_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub auth_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub setting_resource_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateSettingPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active_flag_id: Option<String>,
+    #[serde(default)]
+    pub active_flag: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub color_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub logins_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub system_ids: Option<Vec<String>>,
     #[serde(default)]
+    pub mcp_id: Option<String>,
+    #[serde(default)]
     pub threshold_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_item_key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_item_value_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_ids: Option<Vec<String>>,
     #[serde(default)]
     pub setting_resource_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateSimulationApiRequest {
-    pub simulations: Vec<UpdateSimulationItem>,
+    #[serde(default)]
+    pub simulations: Option<Vec<UpdateSimulationItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateSimulationPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_cohort_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub cohort_search: Option<String>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateSimulationApiResponseInput {
+pub struct UpdateSimulationApiResponse {
     pub results: Vec<SimulationResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateSimulationApiResponseOutput {
-    pub results: Vec<SimulationResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateSimulationItem {
-    pub simulation_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -17293,9 +21439,37 @@ pub struct UpdateSimulationItem {
     #[serde(default)]
     pub scenario_time_limit_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub is_inactive: Option<bool>,
+    pub departments: Option<Vec<String>>,
     #[serde(default)]
-    pub is_practice: Option<bool>,
+    pub scenarios: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateSimulationPatch {
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_time_limit_ids: Option<Vec<String>>,
     #[serde(default)]
     pub departments: Option<Vec<String>>,
     #[serde(default)]
@@ -17304,22 +21478,46 @@ pub struct UpdateSimulationItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateToolApiRequest {
-    pub tools: Vec<UpdateToolItem>,
+    #[serde(default)]
+    pub tools: Option<Vec<UpdateToolItem>>,
+    #[serde(default)]
+    pub all: Option<bool>,
+    #[serde(default)]
+    pub excluded_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub patch: Option<UpdateToolPatch>,
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_creatable: Option<Vec<String>>,
+    #[serde(default)]
+    pub filter_agent_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_search: Option<String>,
+    #[serde(default)]
+    pub flag_search: Option<String>,
+    #[serde(default)]
+    pub agent_search: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateToolApiResponseInput {
+pub struct UpdateToolApiResponse {
     pub results: Vec<ToolResultItem>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UpdateToolApiResponseOutput {
-    pub results: Vec<ToolResultItem>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub tools: Option<Vec<ListToolApiTool>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateToolItem {
-    pub tool_id: String,
+    pub id: String,
     #[serde(default)]
     pub name_id: Option<String>,
     #[serde(default)]
@@ -17339,23 +21537,41 @@ pub struct UpdateToolItem {
     #[serde(default)]
     pub args_outputs_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub artifact_ids: Option<Vec<String>>,
+    pub permission_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub operation_ids: Option<Vec<String>>,
+    pub instruction_id: Option<String>,
     #[serde(default)]
     pub tool_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UploadResponse {
-    pub upload_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UsePreviousAttemptApiResponse {
-    pub success: bool,
+pub struct UpdateToolPatch {
     #[serde(default)]
-    pub message: Option<String>,
+    pub id: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub arg_positions_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub args_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub args_outputs_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub permission_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub instruction_id: Option<String>,
+    #[serde(default)]
+    pub tool_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17367,85 +21583,87 @@ pub struct ValidationError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VideoDownloadAttemptApiRequest {
+    pub video_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VideoDownloadGroupApiRequest {
+    pub video_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VideoDownloadScenarioApiRequest {
+    pub video_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VideoEntry {
     #[serde(default)]
     pub video_id: Option<String>,
     #[serde(default)]
-    pub upload_id: Option<String>,
-    #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
+    pub length_seconds: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__attempt__types__ContentEntry {
+pub struct VideoUploadScenarioApiResponse {
+    pub video_id: String,
+    pub upload_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__agent__types__DraftFormState {
+    pub department_ids: Vec<String>,
+    pub tool_ids: Vec<String>,
+    pub voice_ids: Vec<String>,
+    pub quality_ids: Vec<String>,
+    pub rubric_ids: Vec<String>,
     #[serde(default)]
-    pub content: Option<String>,
+    pub name_id: Option<String>,
     #[serde(default)]
     pub name: Option<String>,
     #[serde(default)]
-    pub color: Option<String>,
+    pub description_id: Option<String>,
     #[serde(default)]
-    pub icon: Option<String>,
+    pub description: Option<String>,
     #[serde(default)]
-    pub created_at: Option<String>,
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub model_id: Option<String>,
+    #[serde(default)]
+    pub reasoning_level_id: Option<String>,
+    #[serde(default)]
+    pub temperature_level_id: Option<String>,
+    #[serde(default)]
+    pub prompt_id: Option<String>,
+    #[serde(default)]
+    pub instruction_id: Option<String>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__attempt__types__HintEntry {
-    #[serde(default)]
-    pub hint: Option<String>,
-    #[serde(default)]
-    pub idx: Option<i64>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__chat__types__DraftImageValue {
-    pub name: String,
-    pub description: String,
-    #[serde(default)]
-    pub upload_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__chat__types__DraftOptionValue {
-    pub option_text: String,
-    #[serde(default)]
-    pub question_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__chat__types__DraftQuestionValue {
-    pub question_text: String,
-    #[serde(default)]
-    pub time: Option<i64>,
-    #[serde(default)]
-    pub allow_multiple: Option<bool>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__chat__types__DraftVideoValue {
-    pub name: String,
-    pub description: String,
-    #[serde(default)]
-    pub upload_id: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__cohort__types__ExportCohortApiRequest {
+pub struct App__infra__agent__types__SectionFilter {
     #[serde(default)]
     pub search: Option<String>,
     #[serde(default)]
-    pub filter_simulation_ids: Option<Vec<String>>,
+    pub limit: Option<i64>,
     #[serde(default)]
-    pub filter_profile_ids: Option<Vec<String>>,
+    pub selected: Option<bool>,
     #[serde(default)]
-    pub filter_department_ids: Option<Vec<String>>,
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__scenario__types__DraftImageValue {
+pub struct App__infra__attempt__chat__types__DraftImageValue {
     pub name: String,
     pub description: String,
     #[serde(default)]
@@ -17453,14 +21671,14 @@ pub struct app__infra__scenario__types__DraftImageValue {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__scenario__types__DraftOptionValue {
+pub struct App__infra__attempt__chat__types__DraftOptionValue {
     pub option_text: String,
     #[serde(default)]
     pub question_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__scenario__types__DraftQuestionValue {
+pub struct App__infra__attempt__chat__types__DraftQuestionValue {
     pub question_text: String,
     #[serde(default)]
     pub time: Option<i64>,
@@ -17469,7 +21687,693 @@ pub struct app__infra__scenario__types__DraftQuestionValue {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__infra__scenario__types__DraftVideoValue {
+pub struct App__infra__attempt__chat__types__DraftVideoValue {
+    pub name: String,
+    pub description: String,
+    #[serde(default)]
+    pub upload_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__attempt__chat__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__auth__types__DraftFormState {
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub protocol_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub slug_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub item_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__auth__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__cohort__types__DraftFormState {
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulations: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_positions: Option<Vec<DraftSimulationPositionValue>>,
+    #[serde(default)]
+    pub simulation_availability_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub simulation_availability: Option<Vec<DraftSimulationAvailabilityValue>>,
+    #[serde(default)]
+    pub profile_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub profiles: Option<Vec<String>>,
+    #[serde(default)]
+    pub profile_persona_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub profile_personas: Option<Vec<DraftProfilePersonaValue>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__cohort__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__department__types__DraftFormState {
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub setting_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__department__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__document__types__DraftFormState {
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub file_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub image_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub text_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__document__types__DraftImageValue {
+    pub name: String,
+    pub description: String,
+    #[serde(default)]
+    pub upload_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__document__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__eval__types__DraftFormState {
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_flag_values: Option<Vec<EvalModelFlagValue>>,
+    #[serde(default)]
+    pub model_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__eval__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__field__types__DraftFormState {
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub conditional_parameter_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__field__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__invocation__types__DraftFormState {
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub key_id: Option<String>,
+    #[serde(default)]
+    pub endpoint_id: Option<String>,
+    #[serde(default)]
+    pub modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub temperature_level_id: Option<String>,
+    #[serde(default)]
+    pub pricing_id: Option<String>,
+    #[serde(default)]
+    pub reasoning_level_id: Option<String>,
+    #[serde(default)]
+    pub quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_flag_values: Option<Vec<InvocationModelFlagValue>>,
+    #[serde(default)]
+    pub model_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub model_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__invocation__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__model__types__DraftFormState {
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub value: Option<String>,
+    #[serde(default)]
+    pub provider_id: Option<String>,
+    #[serde(default)]
+    pub provider: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub modalities_enabled: Option<bool>,
+    #[serde(default)]
+    pub temperature_enabled: Option<bool>,
+    #[serde(default)]
+    pub pricing_enabled: Option<bool>,
+    #[serde(default)]
+    pub voices_enabled: Option<bool>,
+    #[serde(default)]
+    pub reasoning_levels_enabled: Option<bool>,
+    #[serde(default)]
+    pub qualities_enabled: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pricing_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pricing: Option<Vec<PricingDraftValue>>,
+    #[serde(default)]
+    pub quality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub reasoning_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub temperature_level_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__model__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__parameter__types__DraftFormState {
+    pub flag_ids: Vec<String>,
+    pub department_ids: Vec<String>,
+    pub field_ids: Vec<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__parameter__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__persona__types__DraftFormState {
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub instructions_id: Option<String>,
+    #[serde(default)]
+    pub instructions: Option<String>,
+    #[serde(default)]
+    pub color_id: Option<String>,
+    #[serde(default)]
+    pub color: Option<String>,
+    #[serde(default)]
+    pub icon_id: Option<String>,
+    #[serde(default)]
+    pub icon: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub example_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub parameter_field_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub voice_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__persona__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__profile__types__DraftFormState {
+    pub department_ids: Vec<String>,
+    pub email_ids: Vec<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub emails: Option<Vec<String>>,
+    #[serde(default)]
+    pub role: Option<String>,
+    #[serde(default)]
+    pub role_id: Option<String>,
+    #[serde(default)]
+    pub role_draft: Option<ProfileRoleDraftValue>,
+    #[serde(default)]
+    pub primary_department_id: Option<String>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__profile__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__provider__types__DraftFormState {
+    pub department_ids: Vec<String>,
+    pub endpoint_ids: Vec<String>,
+    pub key_ids: Vec<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub departments: Option<Vec<String>>,
+    #[serde(default)]
+    pub endpoint: Option<String>,
+    #[serde(default)]
+    pub endpoint_id: Option<String>,
+    #[serde(default)]
+    pub key: Option<String>,
+    #[serde(default)]
+    pub key_name: Option<String>,
+    #[serde(default)]
+    pub key_description: Option<String>,
+    #[serde(default)]
+    pub key_id: Option<String>,
+    #[serde(default)]
+    pub value: Option<String>,
+    #[serde(default)]
+    pub value_id: Option<String>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__provider__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__rubric__types__DraftFormState {
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub simulation_rubric: Option<bool>,
+    #[serde(default)]
+    pub video_rubric: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pass_points_id: Option<String>,
+    #[serde(default)]
+    pub pass_points: Option<i64>,
+    #[serde(default)]
+    pub total_points_id: Option<String>,
+    #[serde(default)]
+    pub total_points: Option<i64>,
+    #[serde(default)]
+    pub standard_group_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub standard_groups: Option<Vec<RubricStandardGroupDraftValue>>,
+    #[serde(default)]
+    pub standard_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub standards: Option<Vec<RubricStandardDraftValue>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__rubric__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__scenario__types__DraftImageValue {
+    pub name: String,
+    pub description: String,
+    #[serde(default)]
+    pub upload_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__scenario__types__DraftOptionValue {
+    pub option_text: String,
+    #[serde(default)]
+    pub question_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__scenario__types__DraftQuestionValue {
+    pub question_text: String,
+    #[serde(default)]
+    pub time: Option<i64>,
+    #[serde(default)]
+    pub allow_multiple: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__scenario__types__DraftVideoValue {
     pub name: String,
     pub description: String,
     #[serde(default)]
@@ -17479,21 +22383,168 @@ pub struct app__infra__scenario__types__DraftVideoValue {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__routes__attempt__message__ContentEntry {
-    pub content: String,
+pub struct App__infra__setting__types__DraftFormState {
     #[serde(default)]
-    pub persona_id: Option<String>,
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub mcp: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub color_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub logins_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub system_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub mcp_id: Option<String>,
+    #[serde(default)]
+    pub threshold_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_item_key_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_item_value_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub auth_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub provider_keys: Option<Vec<SettingProviderKeyDraftValue>>,
+    #[serde(default)]
+    pub auth_item_keys: Option<Vec<SettingAuthItemKeyDraftValue>>,
+    #[serde(default)]
+    pub auth_item_values: Option<Vec<SettingAuthItemValueDraftValue>>,
+    #[serde(default)]
+    pub mcp_values: Option<Vec<SettingMcpDraftValue>>,
+    #[serde(default)]
+    pub system_values: Option<Vec<SettingSystemDraftValue>>,
+    #[serde(default)]
+    pub threshold_values: Option<Vec<SettingThresholdDraftValue>>,
+    #[serde(default)]
+    pub logins: Option<Vec<SettingLoginDraftValue>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__routes__attempt__message__HintEntry {
-    pub hint: String,
+pub struct App__infra__setting__types__SectionFilter {
     #[serde(default)]
-    pub message_id: Option<String>,
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct app__routes__cohort__export__ExportCohortApiRequest {
+pub struct App__infra__simulation__types__DraftFormState {
     #[serde(default)]
-    pub cohort_id: Option<String>,
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub practice: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_flag_values: Option<Vec<DraftScenarioFlagDenormValue>>,
+    #[serde(default)]
+    pub scenario_position_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_rubric_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub scenario_time_limit_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__simulation__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
+    #[serde(default)]
+    pub parameter_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__tool__types__DraftFormState {
+    pub arg_ids: Vec<String>,
+    pub arg_position_ids: Vec<String>,
+    pub args_output_ids: Vec<String>,
+    pub args_outputs_ids: Vec<String>,
+    pub permission_ids: Vec<String>,
+    #[serde(default)]
+    pub name_id: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub description_id: Option<String>,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub flag_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub active: Option<bool>,
+    #[serde(default)]
+    pub department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub args_drafts: Option<Vec<ToolArgDraftValue>>,
+    #[serde(default)]
+    pub instruction_id: Option<String>,
+    #[serde(default)]
+    pub instruction_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub pending_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct App__infra__tool__types__SectionFilter {
+    #[serde(default)]
+    pub search: Option<String>,
+    #[serde(default)]
+    pub limit: Option<i64>,
+    #[serde(default)]
+    pub selected: Option<bool>,
+    #[serde(default)]
+    pub suggested: Option<bool>,
+    #[serde(default)]
+    pub include: Option<bool>,
 }
