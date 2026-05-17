@@ -194,12 +194,17 @@ jobs:
 
       - name: Generate app token for Homebrew tap
         id: app-token
-        uses: actions/create-github-app-token@v1
+        # Org-owned GitHub App with `contents: write` + `actions: write`
+        # on glow-academic/tap. See README for setup instructions.
+        # If DEPLOY_APP_ID isn't set yet (first run before App is
+        # installed), this step will fail loudly — that's intentional;
+        # set up the App + secrets and re-run, don't paper over it.
+        uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.DEPLOY_APP_ID }}
           private-key: ${{ secrets.DEPLOY_APP_PRIVATE_KEY }}
-          owner: learnloopllc
-          repositories: homebrew-tap
+          owner: glow-academic
+          repositories: tap
 
       - name: Update Homebrew tap
         env:
@@ -209,37 +214,31 @@ jobs:
           TAG="${{ needs.release.outputs.tag }}"
           BRANCH="${{ github.ref_name }}"
 
-          SHA_ARM=$(shasum -a 256 artifacts/glow-aarch64-apple-darwin.tar.gz | cut -d' ' -f1)
-          SHA_X86_MAC=$(shasum -a 256 artifacts/glow-x86_64-apple-darwin.tar.gz | cut -d' ' -f1)
-          SHA_LINUX=$(shasum -a 256 artifacts/glow-x86_64-unknown-linux-gnu.tar.gz | cut -d' ' -f1)
-
           if [ "$BRANCH" = "beta" ]; then
             FORMULA="glow-beta"
-            BIN_NAME="glow-beta"
-            BIN_ALIAS="glw-beta"
+            TARBALL_PREFIX="glow-beta"
           else
             FORMULA="glow"
-            BIN_NAME="glow"
-            BIN_ALIAS="glw"
+            TARBALL_PREFIX="glow"
           fi
 
+          SHA_ARM_MAC=$(shasum -a 256 artifacts/${TARBALL_PREFIX}-aarch64-apple-darwin.tar.gz | cut -d' ' -f1)
+          SHA_X86_MAC=$(shasum -a 256 artifacts/${TARBALL_PREFIX}-x86_64-apple-darwin.tar.gz | cut -d' ' -f1)
+          SHA_X86_LINUX=$(shasum -a 256 artifacts/${TARBALL_PREFIX}-x86_64-unknown-linux-gnu.tar.gz | cut -d' ' -f1)
+
           gh workflow run update-formula.yml \
-            -R learnloopllc/homebrew-tap \
+            -R glow-academic/tap \
             -f formula="$FORMULA" \
             -f version="$VERSION" \
             -f tag="$TAG" \
-            -f repo="learnloopllc/glow-cli" \
-            -f bin_name="$BIN_NAME" \
-            -f bin_alias="$BIN_ALIAS" \
-            -f sha_arm="$SHA_ARM" \
+            -f sha_arm_mac="$SHA_ARM_MAC" \
             -f sha_x86_mac="$SHA_X86_MAC" \
-            -f sha_linux="$SHA_LINUX"
+            -f sha_x86_linux="$SHA_X86_LINUX"
 
-          echo "Dispatched formula update for $FORMULA $TAG to homebrew-tap"
+          echo "Dispatched formula update for $FORMULA $TAG to glow-academic/tap"
 
       - name: Build and push Docker image
         run: |
-          VERSION="${{ needs.release.outputs.version }}"
           TAG="${{ needs.release.outputs.tag }}"
           BRANCH="${{ github.ref_name }}"
 
@@ -250,15 +249,15 @@ jobs:
             cp /tmp/glow .
           fi
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker build --label "org.opencontainers.image.source=https://github.com/learnloopllc/glow-cli" -t ghcr.io/learnloopllc/glow-cli:${TAG} .
-          docker push ghcr.io/learnloopllc/glow-cli:${TAG}
+          docker build --label "org.opencontainers.image.source=https://github.com/glow-academic/cli" -t ghcr.io/glow-academic/cli:${TAG} .
+          docker push ghcr.io/glow-academic/cli:${TAG}
 
           # Rolling tag: latest for main, beta for beta
           if [ "$BRANCH" = "main" ]; then
-            docker tag ghcr.io/learnloopllc/glow-cli:${TAG} ghcr.io/learnloopllc/glow-cli:latest
-            docker push ghcr.io/learnloopllc/glow-cli:latest
+            docker tag ghcr.io/glow-academic/cli:${TAG} ghcr.io/glow-academic/cli:latest
+            docker push ghcr.io/glow-academic/cli:latest
           else
-            docker tag ghcr.io/learnloopllc/glow-cli:${TAG} ghcr.io/learnloopllc/glow-cli:beta
-            docker push ghcr.io/learnloopllc/glow-cli:beta
+            docker tag ghcr.io/glow-academic/cli:${TAG} ghcr.io/glow-academic/cli:beta
+            docker push ghcr.io/glow-academic/cli:beta
           fi
           rm glow
