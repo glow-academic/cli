@@ -319,6 +319,149 @@ pub fn cmd_chats_live(
     Ok(())
 }
 
+// ── MCP (JSON-RPC over POST /mcp/) ──────────────────────────────
+
+/// Minimal MCP JSON-RPC call. Sends a single request to ``/mcp/``,
+/// returns the parsed JSON-RPC response. The API mounts FastMCP at
+/// ``/mcp/`` — POST takes a JSON-RPC 2.0 envelope, bearer header
+/// flows through the existing auth.
+///
+/// This is intentionally NOT a full MCP client (no session handshake,
+/// no SSE for server→client streaming, no capability negotiation)
+/// because the common use cases (``tools/list``, ``tools/call``) work
+/// fine as standalone POSTs against FastMCP. If we ever need
+/// notifications / progress / subscribe, drop in a real MCP crate.
+fn mcp_jsonrpc(
+    client: &GlowClient,
+    base_url: &str,
+    method: &str,
+    params: serde_json::Value,
+) -> Result<serde_json::Value> {
+    let envelope = json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": method,
+        "params": params,
+    });
+    let _ = client; // base_url has the bearer-aware path; keep client param for symmetry
+    let bearer = crate::auth::get_token(base_url).ok().map(|t| t.access_token);
+    let url = format!("{}/mcp/", base_url.trim_end_matches('/'));
+    let mut req = reqwest::blocking::Client::new()
+        .post(&url)
+        .header("Content-Type", "application/json")
+        .header("Accept", "application/json, text/event-stream")
+        .json(&envelope);
+    if let Some(t) = bearer {
+        req = req.header("Authorization", format!("Bearer {}", t));
+    }
+    let resp = req
+        .send()
+        .with_context(|| format!("Failed to POST {}", url))?;
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let text = resp.text().unwrap_or_default();
+        anyhow::bail!("MCP request failed (HTTP {}): {}", status, text);
+    }
+    let text = resp.text().context("Failed to read MCP response body")?;
+    // FastMCP may respond with either JSON or SSE-framed JSON depending
+    // on the Accept header. When the body starts with ``event:`` /
+    // ``data:`` we strip the SSE framing and parse the first data
+    // frame; otherwise we parse the body directly.
+    let body = if text.trim_start().starts_with("event:")
+        || text.trim_start().starts_with("data:")
+    {
+        let mut payload = String::new();
+        for line in text.lines() {
+            if let Some(d) = line.strip_prefix("data: ") {
+                payload.push_str(d);
+                break;
+            }
+        }
+        payload
+    } else {
+        text
+    };
+    serde_json::from_str::<serde_json::Value>(&body)
+        .with_context(|| format!("MCP response was not JSON: {}", body))
+}
+
+pub fn cmd_mcp_list_tools(
+    client: &GlowClient,
+    base_url: &str,
+    mode: OutputMode,
+) -> Result<()> {
+    use colored::Colorize;
+    let resp = mcp_jsonrpc(client, base_url, "tools/list", json!({}))?;
+    let tools = resp
+        .pointer("/result/tools")
+        .cloned()
+        .unwrap_or(serde_json::Value::Null);
+    match mode {
+        OutputMode::Json => {
+            println!("{}", serde_json::to_string_pretty(&tools).unwrap_or_default());
+        }
+        OutputMode::Human => {
+            if let Some(arr) = tools.as_array() {
+                println!("{} {} MCP tools:", "·".dimmed(), arr.len());
+                for t in arr {
+                    let name = t.get("name").and_then(|v| v.as_str()).unwrap_or("(unnamed)");
+                    let desc = t
+                        .get("description")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("");
+                    let first_line = desc.lines().next().unwrap_or("");
+                    println!("  {:30} {}", name.bold(), first_line.dimmed());
+                }
+            } else {
+                // Unexpected shape — surface the whole response.
+                println!("{}", serde_json::to_string_pretty(&resp).unwrap_or_default());
+            }
+        }
+    }
+    Ok(())
+}
+
+pub fn cmd_mcp_call(
+    client: &GlowClient,
+    base_url: &str,
+    tool_name: &str,
+    args_json: &str,
+    mode: OutputMode,
+) -> Result<()> {
+    let arguments: serde_json::Value = serde_json::from_str(args_json)
+        .with_context(|| format!("--args must be valid JSON. Got: {}", args_json))?;
+    let resp = mcp_jsonrpc(
+        client,
+        base_url,
+        "tools/call",
+        json!({ "name": tool_name, "arguments": arguments }),
+    )?;
+    let result = resp
+        .pointer("/result")
+        .cloned()
+        .unwrap_or(serde_json::Value::Null);
+    match mode {
+        OutputMode::Json => {
+            println!("{}", serde_json::to_string_pretty(&result).unwrap_or_default());
+        }
+        OutputMode::Human => {
+            // MCP tool results have shape ``{ content: [{type, text}, ...], isError? }``.
+            if let Some(content) = result.get("content").and_then(|v| v.as_array()) {
+                for block in content {
+                    if let Some(t) = block.get("text").and_then(|v| v.as_str()) {
+                        println!("{}", t);
+                    } else {
+                        println!("{}", serde_json::to_string(block).unwrap_or_default());
+                    }
+                }
+            } else {
+                println!("{}", serde_json::to_string_pretty(&result).unwrap_or_default());
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Placeholder for the voice REPL. Prints a clear deferral message
 /// with the suggested next-step so the user knows the WS scaffold
 /// is ready and what remains gated on their go-ahead.

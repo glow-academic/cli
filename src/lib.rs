@@ -132,6 +132,14 @@ enum Commands {
         command: GroupsCommands,
     },
 
+    /// MCP — talk to the Glow instance's Model Context Protocol
+    /// endpoint at ``/mcp/``. Currently a JSON-RPC client thin enough
+    /// to list + call tools without dragging in a full MCP crate.
+    Mcp {
+        #[command(subcommand)]
+        command: McpCommands,
+    },
+
     /// Chats — live (WebSocket) interaction with an attempt chat.
     ///
     /// Lives outside the per-resource dispatch because chat ops are
@@ -295,6 +303,23 @@ enum Commands {
     /// Interact with a resource on the Glow instance (e.g. glow personas search)
     #[command(external_subcommand)]
     Resource(Vec<String>),
+}
+
+#[derive(Subcommand)]
+enum McpCommands {
+    /// List the MCP tools the Glow instance exposes.
+    /// → POST /mcp/ with JSON-RPC ``tools/list``.
+    #[command(name = "list-tools")]
+    ListTools,
+    /// Call an MCP tool by name with a JSON arguments object.
+    /// → POST /mcp/ with JSON-RPC ``tools/call``.
+    Call {
+        /// Tool name (as it appears in ``list-tools`` output).
+        tool_name: String,
+        /// JSON arguments object (defaults to ``{}``).
+        #[arg(long, default_value = "{}")]
+        args: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -639,6 +664,18 @@ pub fn run() -> Result<()> {
                     date_to.as_deref(),
                     mode,
                 )?,
+            }
+        }
+        Commands::Mcp { command } => {
+            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
+            let client = glow::GlowClient::new(&glow_url);
+            match command {
+                McpCommands::ListTools => {
+                    glow_cmd::helpers::cmd_mcp_list_tools(&client, &glow_url, mode)?
+                }
+                McpCommands::Call { tool_name, args } => {
+                    glow_cmd::helpers::cmd_mcp_call(&client, &glow_url, &tool_name, &args, mode)?
+                }
             }
         }
         Commands::Chats { command } => {
