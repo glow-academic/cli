@@ -132,6 +132,18 @@ enum Commands {
         command: GroupsCommands,
     },
 
+    /// Chats — live (WebSocket) interaction with an attempt chat.
+    ///
+    /// Lives outside the per-resource dispatch because chat ops are
+    /// nested under the ``attempt`` artifact's URL space
+    /// (``/attempt/chat_message`` etc.) AND the live flow needs a
+    /// persistent socket.io connection, not the per-request HTTP
+    /// dispatch the macro provides.
+    Chats {
+        #[command(subcommand)]
+        command: ChatsCommands,
+    },
+
     /// Stream events via SSE (Server-Sent Events)
     Stream {
         /// Artifact type to stream
@@ -283,6 +295,32 @@ enum Commands {
     /// Interact with a resource on the Glow instance (e.g. glow personas search)
     #[command(external_subcommand)]
     Resource(Vec<String>),
+}
+
+#[derive(Subcommand)]
+enum ChatsCommands {
+    /// Interactive live chat REPL over socket.io. Reads stdin lines,
+    /// emits ``attempt.chat_message`` per line, prints inbound events
+    /// (chat_message lifecycle, generate progress/completion).
+    ///
+    /// **Untested against a live server** — the WS layer compiles
+    /// clean but hasn't been exercised end-to-end. Expect iteration
+    /// on event names + payload shapes once a smoke test runs.
+    Live {
+        /// Chat ID to send messages to.
+        chat_id: String,
+        /// Optional persona ID to attribute messages to.
+        #[arg(long)]
+        persona: Option<String>,
+    },
+    /// Voice REPL — **deferred**. Requires native audio deps
+    /// (``cpal`` for mic capture, ``rodio`` for playback) which the
+    /// Phase-5 goal command explicitly gated on user confirmation.
+    /// Run anyway to see the deferral message + the suggested path.
+    Voice {
+        /// Chat ID to send voice frames to.
+        chat_id: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -601,6 +639,31 @@ pub fn run() -> Result<()> {
                     date_to.as_deref(),
                     mode,
                 )?,
+            }
+        }
+        Commands::Chats { command } => {
+            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
+            match command {
+                ChatsCommands::Live { chat_id, persona } => {
+                    let client = glow::GlowClient::new(&glow_url);
+                    // Pull the stored bearer (if any) so socket.io's
+                    // auth handshake matches what the HTTP routes
+                    // already use. Anonymous WS connects also work
+                    // when the server has no auth requirement on the
+                    // path, so missing-token is non-fatal.
+                    let bearer = auth::get_token(&glow_url).ok().map(|t| t.access_token);
+                    glow_cmd::helpers::cmd_chats_live(
+                        &client,
+                        &glow_url,
+                        bearer.as_deref(),
+                        &chat_id,
+                        persona.as_deref(),
+                        mode,
+                    )?
+                }
+                ChatsCommands::Voice { chat_id } => {
+                    glow_cmd::helpers::cmd_chats_voice_placeholder(&chat_id)?
+                }
             }
         }
         Commands::Stream {
