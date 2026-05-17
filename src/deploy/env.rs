@@ -141,9 +141,10 @@ pub struct ClientEnvInputs {
 /// and only update the keys in OWNED_KEYS.
 pub fn render(path: &Path, inputs: &EnvInputs) -> Result<()> {
     let mut env = if path.exists() {
-        parse(&fs::read_to_string(path).with_context(|| {
-            format!("read existing .env: {}", path.display())
-        })?)
+        parse(
+            &fs::read_to_string(path)
+                .with_context(|| format!("read existing .env: {}", path.display()))?,
+        )
     } else {
         // First deploy — generate the persistent secrets.
         let mut seed = BTreeMap::new();
@@ -199,28 +200,94 @@ pub fn render(path: &Path, inputs: &EnvInputs) -> Result<()> {
 /// redeploy clobbers them all and leaves any user-added vars alone.
 pub fn render_client(path: &Path, inputs: &ClientEnvInputs) -> Result<()> {
     let mut env = if path.exists() {
-        parse(&fs::read_to_string(path).with_context(|| {
-            format!("read existing client .env: {}", path.display())
-        })?)
+        parse(
+            &fs::read_to_string(path)
+                .with_context(|| format!("read existing client .env: {}", path.display()))?,
+        )
     } else {
         BTreeMap::new()
     };
 
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "CLIENT_VERSION", &inputs.client_version);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "ACTIVE_CLIENT_ENV", &inputs.active_client_env);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "COMPOSE_PROJECT_NAME", &inputs.project_name);
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "CLIENT_VERSION",
+        &inputs.client_version,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "ACTIVE_CLIENT_ENV",
+        &inputs.active_client_env,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "COMPOSE_PROJECT_NAME",
+        &inputs.project_name,
+    );
     upsert_in(&mut env, CLIENT_OWNED_KEYS, "DOMAIN", &inputs.domain);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "NEXT_PUBLIC_API_URL", &inputs.public_api_url);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "INTERNAL_API_BASE", &inputs.internal_api_base);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "NEXT_PUBLIC_API_BASE", &inputs.public_api_url);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "AUTH_SECRET", &inputs.auth_secret);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "AUTH_KEYCLOAK_ID", &inputs.auth_keycloak_id);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "AUTH_KEYCLOAK_SECRET", &inputs.auth_keycloak_secret);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "KEYCLOAK_PUBLIC_URL", &inputs.keycloak_public_url);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "NEXTAUTH_URL", &inputs.nextauth_url);
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "NEXT_PUBLIC_API_URL",
+        &inputs.public_api_url,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "INTERNAL_API_BASE",
+        &inputs.internal_api_base,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "NEXT_PUBLIC_API_BASE",
+        &inputs.public_api_url,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "AUTH_SECRET",
+        &inputs.auth_secret,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "AUTH_KEYCLOAK_ID",
+        &inputs.auth_keycloak_id,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "AUTH_KEYCLOAK_SECRET",
+        &inputs.auth_keycloak_secret,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "KEYCLOAK_PUBLIC_URL",
+        &inputs.keycloak_public_url,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "NEXTAUTH_URL",
+        &inputs.nextauth_url,
+    );
     upsert_in(&mut env, CLIENT_OWNED_KEYS, "AUTH_TRUST_HOST", "true");
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "MCP_BACKEND", &inputs.mcp_backend);
-    upsert_in(&mut env, CLIENT_OWNED_KEYS, "GLOW_NETWORK", &inputs.glow_network);
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "MCP_BACKEND",
+        &inputs.mcp_backend,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "GLOW_NETWORK",
+        &inputs.glow_network,
+    );
     upsert_in(
         &mut env,
         CLIENT_OWNED_KEYS,
@@ -231,25 +298,15 @@ pub fn render_client(path: &Path, inputs: &ClientEnvInputs) -> Result<()> {
     write(path, &env)
 }
 
-/// Read just SECRET_KEY out of a .env file (used by `glow status` /
-/// other read-only paths that need to derive other secrets without
-/// re-rendering).
-pub fn read_secret_key(path: &Path) -> Result<Option<String>> {
-    if !path.exists() {
-        return Ok(None);
-    }
-    let env = parse(&fs::read_to_string(path)?);
-    Ok(env.get("SECRET_KEY").cloned())
-}
-
 /// Read SECRET_KEY + AUTH_CLIENT_SECRET out of an api `.env`. The
 /// client stack reuses both — AUTH_SECRET = SECRET_KEY (so NextAuth
 /// can verify api-minted JWTs) and AUTH_KEYCLOAK_SECRET =
 /// AUTH_CLIENT_SECRET (so the OIDC handshake succeeds).
 pub fn read_api_shared_secrets(path: &Path) -> Result<(String, String)> {
-    let env = parse(&fs::read_to_string(path).with_context(|| {
-        format!("read api .env for shared secrets: {}", path.display())
-    })?);
+    let env = parse(
+        &fs::read_to_string(path)
+            .with_context(|| format!("read api .env for shared secrets: {}", path.display()))?,
+    );
     let secret = env
         .get("SECRET_KEY")
         .cloned()
@@ -267,12 +324,7 @@ fn upsert(env: &mut BTreeMap<String, String>, key: &str, value: &str) {
     upsert_in(env, OWNED_KEYS, key, value);
 }
 
-fn upsert_in(
-    env: &mut BTreeMap<String, String>,
-    owned: &[&str],
-    key: &str,
-    value: &str,
-) {
+fn upsert_in(env: &mut BTreeMap<String, String>, owned: &[&str], key: &str, value: &str) {
     debug_assert!(
         owned.contains(&key),
         "upsert should only touch the owned-key list — `{key}` isn't in it"
@@ -295,12 +347,8 @@ fn parse(body: &str) -> BTreeMap<String, String> {
 }
 
 fn write(path: &Path, env: &BTreeMap<String, String>) -> Result<()> {
-    let body: String = env
-        .iter()
-        .map(|(k, v)| format!("{k}={v}\n"))
-        .collect();
-    fs::write(path, body)
-        .with_context(|| format!("write .env: {}", path.display()))?;
+    let body: String = env.iter().map(|(k, v)| format!("{k}={v}\n")).collect();
+    fs::write(path, body).with_context(|| format!("write .env: {}", path.display()))?;
     // Tighten perms to 0600 — these are secrets.
     #[cfg(unix)]
     {
@@ -375,10 +423,7 @@ pub fn derive_client_public_urls(cfg: &crate::deploy::config::DeployConfig) -> (
 /// deploy ends up with the same AUTH_CLIENT_SECRET shape as the
 /// LearnLoop control-plane deploys produced).
 fn derive_auth_client_secret(secret_key: &str) -> String {
-    let derived: [u8; 32] = pbkdf2_hmac_array::<Sha256, 32>(
-        secret_key.as_bytes(),
-        b"glow-auth-secret-v1",
-        100_000,
-    );
+    let derived: [u8; 32] =
+        pbkdf2_hmac_array::<Sha256, 32>(secret_key.as_bytes(), b"glow-auth-secret-v1", 100_000);
     base64::engine::general_purpose::STANDARD.encode(derived)
 }

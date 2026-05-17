@@ -47,18 +47,6 @@ impl Config {
         toml::from_str(toml_str).map_err(|e| anyhow::anyhow!("Invalid config: {}", e))
     }
 
-    /// Save config to disk
-    pub fn save(&self) -> Result<()> {
-        let path = Self::config_path();
-        if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent)
-                .with_context(|| format!("Failed to create config dir: {}", parent.display()))?;
-        }
-        let toml_str = toml::to_string_pretty(self).context("Failed to serialize config")?;
-        std::fs::write(&path, toml_str)
-            .with_context(|| format!("Failed to write config: {}", path.display()))
-    }
-
     /// Returns the config file path
     pub fn config_path() -> PathBuf {
         dirs::config_dir()

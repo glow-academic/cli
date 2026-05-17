@@ -103,6 +103,9 @@ pub fn monitor_after_switch(
         sleep(poll_interval);
     }
 
-    println!("    ✓ {label} stayed healthy through {}s grace window", grace.as_secs());
+    println!(
+        "    ✓ {label} stayed healthy through {}s grace window",
+        grace.as_secs()
+    );
     Ok(())
 }

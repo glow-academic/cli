@@ -27,26 +27,12 @@ const CLIENT_NGINX_CONF: &str = include_str!("templates/client-nginx.conf.templa
 const CLIENT_UPSTREAMS_TMPL: &str = include_str!("templates/client-upstreams.tmpl");
 const CLIENT_UPSTREAMS_SEED: &str = include_str!("templates/client-upstreams.conf");
 
-/// Write the bundled api compose template into `instance_dir`. This
-/// keeps the legacy single-stack shape working — the api compose lives
-/// in the instance root as `docker-compose.yml`.
-///
-/// Kept for backwards compat with callers that haven't moved to the
-/// two-stack layout. Prefer `write_api_stack` going forward.
-pub fn write(instance_dir: &Path) -> Result<()> {
-    let target = instance_dir.join("docker-compose.yml");
-    fs::write(&target, API_COMPOSE)
-        .with_context(|| format!("write {}", target.display()))?;
-    Ok(())
-}
-
 /// Write the api stack files into `<instance>/api/`. Just the compose
 /// file for now — the api stack's nginx config is baked into the api
 /// image, not mounted from the host.
 pub fn write_api_stack(instance_dir: &Path) -> Result<()> {
     let dir = instance_dir.join("api");
-    fs::create_dir_all(&dir)
-        .with_context(|| format!("mkdir {}", dir.display()))?;
+    fs::create_dir_all(&dir).with_context(|| format!("mkdir {}", dir.display()))?;
     fs::write(dir.join("docker-compose.yml"), API_COMPOSE)
         .with_context(|| format!("write api compose to {}", dir.display()))?;
     Ok(())
@@ -59,8 +45,7 @@ pub fn write_api_stack(instance_dir: &Path) -> Result<()> {
 ///   - upstreams.conf         (seed; docker-gen overwrites at runtime)
 pub fn write_client_stack(instance_dir: &Path) -> Result<()> {
     let dir = instance_dir.join("client");
-    fs::create_dir_all(&dir)
-        .with_context(|| format!("mkdir {}", dir.display()))?;
+    fs::create_dir_all(&dir).with_context(|| format!("mkdir {}", dir.display()))?;
     fs::write(dir.join("docker-compose.yml"), CLIENT_COMPOSE)
         .with_context(|| format!("write client compose to {}", dir.display()))?;
     fs::write(dir.join("default.conf.template"), CLIENT_NGINX_CONF)

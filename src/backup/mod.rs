@@ -33,9 +33,13 @@ pub fn list(instance_name: &str) -> Result<Vec<BackupEntry>> {
     for e in fs::read_dir(&dir)? {
         let e = e?;
         let meta = e.metadata()?;
-        if !meta.is_file() { continue; }
+        if !meta.is_file() {
+            continue;
+        }
         let name = e.file_name().to_string_lossy().to_string();
-        if !name.ends_with(".sql.gz") { continue; }
+        if !name.ends_with(".sql.gz") {
+            continue;
+        }
         out.push(BackupEntry {
             name,
             path: e.path(),
@@ -65,10 +69,13 @@ pub fn create(instance_name: &str, label: Option<&str>) -> Result<PathBuf> {
         &i.dir,
         &project_name,
         "database",
-        &["sh", "-c", "pg_dump --exclude-schema=keycloak -U $POSTGRES_USER $POSTGRES_DB | gzip"],
+        &[
+            "sh",
+            "-c",
+            "pg_dump --exclude-schema=keycloak -U $POSTGRES_USER $POSTGRES_DB | gzip",
+        ],
     )?;
-    fs::write(&target, dump)
-        .with_context(|| format!("write backup: {}", target.display()))?;
+    fs::write(&target, dump).with_context(|| format!("write backup: {}", target.display()))?;
 
     println!("✓ backup written: {}", target.display());
     Ok(target)
@@ -80,8 +87,7 @@ pub fn delete(instance_name: &str, name: &str) -> Result<()> {
     if !target.exists() {
         return Err(anyhow!("backup not found: {}", target.display()));
     }
-    fs::remove_file(&target)
-        .with_context(|| format!("delete {}", target.display()))?;
+    fs::remove_file(&target).with_context(|| format!("delete {}", target.display()))?;
     println!("✓ deleted {}", target.display());
     Ok(())
 }
@@ -126,7 +132,8 @@ pub fn restore(instance_name: &str, name: &str) -> Result<()> {
         &project_name,
         "database",
         &[
-            "sh", "-c",
+            "sh",
+            "-c",
             "psql -U $POSTGRES_USER -d postgres -c \"DROP DATABASE IF EXISTS $POSTGRES_DB;\" \
              && psql -U $POSTGRES_USER -d postgres -c \"CREATE DATABASE $POSTGRES_DB;\"",
         ],
@@ -138,10 +145,9 @@ pub fn restore(instance_name: &str, name: &str) -> Result<()> {
         &project_name,
         "database",
         &[
-            "sh", "-c",
-            &format!(
-                "gunzip -c {in_container_path} | psql -U $POSTGRES_USER -d $POSTGRES_DB"
-            ),
+            "sh",
+            "-c",
+            &format!("gunzip -c {in_container_path} | psql -U $POSTGRES_USER -d $POSTGRES_DB"),
         ],
     )?;
     // Cleanup the in-container file.

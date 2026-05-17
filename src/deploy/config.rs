@@ -161,9 +161,7 @@ impl DeployConfig {
             }
             Topology::ApiOnly => {
                 if api_origin.is_empty() {
-                    return Err(anyhow!(
-                        "`api_origin` is required for api_only topology"
-                    ));
+                    return Err(anyhow!("`api_origin` is required for api_only topology"));
                 }
             }
         }
@@ -191,9 +189,7 @@ impl DeployConfig {
         }
         match self.topology {
             Topology::Airgapped => String::new(),
-            Topology::Exposed | Topology::ApiOnly => {
-                self.origin.clone().unwrap_or_default()
-            }
+            Topology::Exposed | Topology::ApiOnly => self.origin.clone().unwrap_or_default(),
         }
     }
 

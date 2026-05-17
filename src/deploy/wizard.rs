@@ -38,11 +38,13 @@ pub fn run(name: &str) -> Result<DeployConfig> {
     let provider_name = ["openai", "anthropic", "gemini", "grok", "custom"][provider_idx];
 
     let endpoint = if provider_name == "custom" {
-        Some(Input::<String>::with_theme(&theme)
-            .with_prompt("Custom AI endpoint URL")
-            .interact_text()?)
+        Some(
+            Input::<String>::with_theme(&theme)
+                .with_prompt("Custom AI endpoint URL")
+                .interact_text()?,
+        )
     } else {
-        None  // Provider's default is wired in by the api image.
+        None // Provider's default is wired in by the api image.
     };
 
     let key = Password::with_theme(&theme)
@@ -74,8 +76,12 @@ pub fn run(name: &str) -> Result<DeployConfig> {
         .default(false)
         .interact()?
     {
-        let cid: String = Input::with_theme(&theme).with_prompt("Google client_id").interact_text()?;
-        let csec = Password::with_theme(&theme).with_prompt("Google client_secret").interact()?;
+        let cid: String = Input::with_theme(&theme)
+            .with_prompt("Google client_id")
+            .interact_text()?;
+        let csec = Password::with_theme(&theme)
+            .with_prompt("Google client_secret")
+            .interact()?;
         auth_providers.push(serde_yaml::to_value(serde_json::json!({
             "name": "google",
             "protocol": "oidc",
@@ -105,7 +111,9 @@ pub fn run(name: &str) -> Result<DeployConfig> {
             roles,
             models: vec![],
         },
-        auth: AuthConfig { providers: auth_providers },
+        auth: AuthConfig {
+            providers: auth_providers,
+        },
         extra: BTreeMap::new(),
     };
 

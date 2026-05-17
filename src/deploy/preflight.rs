@@ -54,8 +54,12 @@ pub fn disk_space(dir: &Path, min_free_gb: u64) -> Result<()> {
     let out = Command::new("df")
         .args(["-k", "--", dir.to_str().unwrap_or(".")])
         .output();
-    let Ok(out) = out else { return Ok(()); };  // df not present — skip
-    if !out.status.success() { return Ok(()); }
+    let Ok(out) = out else {
+        return Ok(());
+    }; // df not present — skip
+    if !out.status.success() {
+        return Ok(());
+    }
     let text = String::from_utf8_lossy(&out.stdout);
     let avail_kb: Option<u64> = text
         .lines()
@@ -79,7 +83,9 @@ pub fn disk_space(dir: &Path, min_free_gb: u64) -> Result<()> {
 /// something else (a stray dev server, a previous Glow that didn't
 /// clean up, etc.). Skips remote origins — nothing to check.
 pub fn ports_free_for_origin(origin: &str) -> Result<()> {
-    let Some(port) = port_from_origin(origin) else { return Ok(()); };
+    let Some(port) = port_from_origin(origin) else {
+        return Ok(());
+    };
     // Quick TCP bind-check on 127.0.0.1 — if it fails, something's
     // already listening. Don't bother checking other interfaces;
     // docker maps to all by default and the conflict will surface.
@@ -101,15 +107,12 @@ pub fn ports_free_for_origin(origin: &str) -> Result<()> {
 /// behind some load balancer — not our problem to check).
 fn port_from_origin(origin: &str) -> Option<u16> {
     // Crude but sufficient: pull host:port from after the scheme.
-    let after_scheme = origin
-        .splitn(2, "://")
-        .nth(1)
-        .unwrap_or(origin);
+    let after_scheme = origin.split_once("://").map(|x| x.1).unwrap_or(origin);
     let host_port = after_scheme.split('/').next().unwrap_or("");
     let mut parts = host_port.splitn(2, ':');
     let host = parts.next()?;
     if host != "localhost" && host != "127.0.0.1" && host != "0.0.0.0" {
-        return None;  // Only preflight localhost — remote ports aren't ours.
+        return None; // Only preflight localhost — remote ports aren't ours.
     }
     parts.next().and_then(|p| p.parse().ok())
 }
