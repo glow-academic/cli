@@ -341,7 +341,18 @@ pub fn build_cli_spec() -> serde_json::Value {
 
         let resources: Vec<serde_json::Value> = resource::Resource::all()
             .iter()
-            .map(|r| json!({ "slug": r.slug(), "about": r.about() }))
+            // Spec consumers (the CLI-dev server) want both the
+            // user-typed name and the actual wire path so the help
+            // surface matches what the user just typed AND what hits
+            // the API. ``slug`` is kept as an alias for ``cli_name``
+            // to avoid breaking any consumer that's still on the old
+            // single-field shape.
+            .map(|r| json!({
+                "slug": r.cli_name(),
+                "cli_name": r.cli_name(),
+                "api_path": r.api_path(),
+                "about": r.about(),
+            }))
             .collect();
         obj.insert("resources".into(), json!(resources));
 
@@ -617,26 +628,31 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
     if args.len() < 2 {
         anyhow::bail!(
             "Expected an action for resource '{}'. Example: glow {} search",
-            resource.slug(),
-            resource.slug(),
+            resource.cli_name(),
+            resource.cli_name(),
         );
     }
 
-    // Check if second arg is a media type (file, image, text, audio, video)
+    // Check if second arg is a media type (file, image, text, audio, video).
+    // Media routes also hit the singular ``api_path`` on the wire.
     if let Some(media) = resource::MediaType::from_str(&args[1]) {
-        return dispatch_media(client, resource.slug(), media, &args[2..], mode);
+        return dispatch_media(client, resource.api_path(), media, &args[2..], mode);
     }
 
     let action = &args[1];
 
-    // Show help for resource action
+    // Show help for resource action. UX note: the heading uses the
+    // user-facing plural ``cli_name`` ("glow personas search") so the
+    // copy-paste hint matches what they just typed; the URL line shows
+    // the actual singular API path ("POST /persona/search") so the user
+    // can verify the wire call against the API docs without confusion.
     if args[2..].iter().any(|a| a == "--help" || a == "-h") {
         use colored::Colorize;
         println!(
             "{}\n",
-            format!("glow {} {}", resource.slug(), action).bold()
+            format!("glow {} {}", resource.cli_name(), action).bold()
         );
-        println!("  {} /{}/{}\n", "POST".dimmed(), resource.slug(), action);
+        println!("  {} /{}/{}\n", "POST".dimmed(), resource.api_path(), action);
         println!("  Pass --key value pairs as needed. The API will validate parameters.\n");
         println!("{}:", "Options".bold());
         println!(
@@ -649,7 +665,9 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
 
     let body = build_resource_body(&args[2..])?;
 
-    commands::glow::cmd_resource_action(client, resource.slug(), action, body.as_deref(), mode)
+    // Wire the singular ``api_path`` here — ``cli_name`` is plural for
+    // the user, ``api_path`` is what the frozen API actually exposes.
+    commands::glow::cmd_resource_action(client, resource.api_path(), action, body.as_deref(), mode)
 }
 
 /// Dispatch per-resource media operations: glow <resource> <media> <action> [flags]
