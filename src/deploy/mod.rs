@@ -143,7 +143,10 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
     compat::check_api(&args.api_version)?;
     if deploy_client {
         let cv = args.client_version.as_deref().unwrap();
-        println!("· compat check (client {cv} ↔ cli + api {})", args.api_version);
+        println!(
+            "· compat check (client {cv} ↔ cli + api {})",
+            args.api_version
+        );
         compat::check_client(cv, &args.api_version)?;
     }
 
@@ -165,7 +168,11 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
 
     let plan = bluegreen::plan_swap(&state);
     let target_env = plan.to_env.clone();
-    let prev_env = if is_first_deploy { target_env.clone() } else { plan.from_env.clone() };
+    let prev_env = if is_first_deploy {
+        target_env.clone()
+    } else {
+        plan.from_env.clone()
+    };
 
     let (api_origin, api_client_origins) = env::derive_api_origins(&cfg);
 
@@ -173,8 +180,16 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
         "→ deploy `{}` ({:?}) — api={} client={} (target color: {target_env})",
         args.name,
         cfg.topology,
-        if api_origin.is_empty() { "(internal)" } else { &api_origin },
-        if cfg.effective_client_origin().is_empty() { "(none)".to_string() } else { cfg.effective_client_origin() },
+        if api_origin.is_empty() {
+            "(internal)"
+        } else {
+            &api_origin
+        },
+        if cfg.effective_client_origin().is_empty() {
+            "(none)".to_string()
+        } else {
+            cfg.effective_client_origin()
+        },
     );
 
     // ── Render api .env (first deploy seeds secrets; redeploy merges).
@@ -219,11 +234,9 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
     )?;
     if !is_first_deploy {
         let server = format!("server-{prev_env}");
-        if let Err(e) = migrations::run_add(
-            &instance.api_dir(),
-            &instance.api_project_name(),
-            &server,
-        ) {
+        if let Err(e) =
+            migrations::run_add(&instance.api_dir(), &instance.api_project_name(), &server)
+        {
             eprintln!("  ! add migrations failed (continuing): {e}");
         }
     }
@@ -247,20 +260,19 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
             .to_string();
         // Reuse the api's SECRET_KEY + AUTH_CLIENT_SECRET so NextAuth
         // can verify api-minted JWTs and the OIDC handshake works.
-        let (auth_secret, auth_kc_secret) =
-            env::read_api_shared_secrets(&instance.api_env_file())?;
+        let (auth_secret, auth_kc_secret) = env::read_api_shared_secrets(&instance.api_env_file())?;
         let client_inputs = env::ClientEnvInputs {
             client_version: cv.clone(),
-            active_client_env: state.active_client_env.clone().unwrap_or_else(|| ct.clone()),
+            active_client_env: state
+                .active_client_env
+                .clone()
+                .unwrap_or_else(|| ct.clone()),
             project_name: instance.client_project_name(),
             glow_network: instance.shared_network(),
             client_http_port: 80,
             domain,
             public_api_url,
-            internal_api_base: format!(
-                "http://{}-nginx:80",
-                instance.api_project_name()
-            ),
+            internal_api_base: format!("http://{}-nginx:80", instance.api_project_name()),
             auth_secret,
             auth_keycloak_id: "glow-client".into(),
             auth_keycloak_secret: auth_kc_secret,
@@ -349,7 +361,10 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
 
     // Then client swap (only if there's a client to swap).
     if let Some(ct) = &client_target {
-        let prev_client = state.active_client_env.clone().unwrap_or_else(|| ct.clone());
+        let prev_client = state
+            .active_client_env
+            .clone()
+            .unwrap_or_else(|| ct.clone());
         bluegreen::switch_client_traffic(
             &instance.client_env_file(),
             &instance.client_project_name(),
@@ -379,7 +394,10 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
     state.last_deployed_at = Some(chrono_iso8601_now());
     state.save(&instance.state_file())?;
 
-    println!("\n✓ redeploy complete — {} is live on {target_env}", args.name);
+    println!(
+        "\n✓ redeploy complete — {} is live on {target_env}",
+        args.name
+    );
     Ok(())
 }
 
@@ -423,17 +441,37 @@ pub fn status(name: &str) -> Result<()> {
     println!("instance:    {}", i.name);
     println!("dir:         {}", i.dir.display());
     println!("project:     {}", i.project_name());
-    println!("active env:  {}", state.active_env.as_deref().unwrap_or("none"));
-    println!("api version: {}", state.api_version.as_deref().unwrap_or("unknown"));
-    println!("first deploy:{}", state.first_deployed_at.as_deref().unwrap_or("never"));
-    println!("last deploy: {}", state.last_deployed_at.as_deref().unwrap_or("never"));
+    println!(
+        "active env:  {}",
+        state.active_env.as_deref().unwrap_or("none")
+    );
+    println!(
+        "api version: {}",
+        state.api_version.as_deref().unwrap_or("unknown")
+    );
+    println!(
+        "first deploy:{}",
+        state.first_deployed_at.as_deref().unwrap_or("never")
+    );
+    println!(
+        "last deploy: {}",
+        state.last_deployed_at.as_deref().unwrap_or("never")
+    );
     println!();
 
     // Health snapshot for the key services.
     println!("container health:");
-    for svc in ["database", "redis", "nginx", "keycloak-blue", "keycloak-green", "server-blue", "server-green"] {
-        let h = runtime::container_health(&i.project_name(), svc)
-            .unwrap_or_else(|_| "missing".into());
+    for svc in [
+        "database",
+        "redis",
+        "nginx",
+        "keycloak-blue",
+        "keycloak-green",
+        "server-blue",
+        "server-green",
+    ] {
+        let h =
+            runtime::container_health(&i.project_name(), svc).unwrap_or_else(|_| "missing".into());
         println!("  {svc:18}  {h}");
     }
     Ok(())
@@ -458,11 +496,14 @@ fn pre_deploy_backup(instance: &Instance) -> Result<()> {
         project_dir,
         &project_name,
         "database",
-        &["sh", "-c", "pg_dump --exclude-schema=keycloak -U $POSTGRES_USER $POSTGRES_DB | gzip"],
+        &[
+            "sh",
+            "-c",
+            "pg_dump --exclude-schema=keycloak -U $POSTGRES_USER $POSTGRES_DB | gzip",
+        ],
     )
     .context("pg_dump inside database container")?;
-    std::fs::write(&target, dump)
-        .with_context(|| format!("write backup: {}", target.display()))?;
+    std::fs::write(&target, dump).with_context(|| format!("write backup: {}", target.display()))?;
 
     // Retention: keep newest 7.
     rotate_backups(&instance.backups_dir(), "backup-deploy-", 7).ok();

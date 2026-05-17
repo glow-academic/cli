@@ -133,9 +133,7 @@ fn fetch(repo: &str, version: &str) -> Result<Compat> {
     } else {
         format!("v{version}")
     };
-    let url = format!(
-        "https://github.com/{repo}/releases/download/{tag}/compat.json"
-    );
+    let url = format!("https://github.com/{repo}/releases/download/{tag}/compat.json");
 
     let mut req = reqwest::blocking::Client::builder()
         .timeout(Duration::from_secs(8))
@@ -154,19 +152,29 @@ fn fetch(repo: &str, version: &str) -> Result<Compat> {
 }
 
 /// Compares two dotted semver-ish strings. Strips a leading `v` and any
-/// `-prerelease` suffix. We don't need full semver semantics for a
-/// min-version floor check — just numeric major.minor.patch order.
+/// `-prerelease` suffix. Per semver, a prerelease of X.Y.Z is *less*
+/// than the stable X.Y.Z (so a CLI v1.0.0-beta does NOT satisfy a
+/// min_version of 1.0.0). We don't need full semver precedence
+/// across prerelease identifiers — just (X.Y.Z, has_prerelease).
 fn version_lt(a: &str, b: &str) -> bool {
-    fn parts(v: &str) -> [u32; 3] {
-        let core = v.trim_start_matches('v').split('-').next().unwrap_or("0");
+    fn parts(v: &str) -> ([u32; 3], bool) {
+        let v = v.trim_start_matches('v');
+        let (core, suffix) = v.split_once('-').unwrap_or((v, ""));
         let mut iter = core.split('.').map(|s| s.parse::<u32>().unwrap_or(0));
-        [
+        let xyz = [
             iter.next().unwrap_or(0),
             iter.next().unwrap_or(0),
             iter.next().unwrap_or(0),
-        ]
+        ];
+        (xyz, !suffix.is_empty())
     }
-    parts(a) < parts(b)
+    let (a_xyz, a_pre) = parts(a);
+    let (b_xyz, b_pre) = parts(b);
+    if a_xyz != b_xyz {
+        return a_xyz < b_xyz;
+    }
+    // Same X.Y.Z: prerelease loses to stable; two prereleases are equal.
+    a_pre && !b_pre
 }
 
 #[cfg(test)]

@@ -52,7 +52,10 @@ impl Instance {
         let dir = instances_root()?.join(name);
         fs::create_dir_all(dir.join("backups"))
             .with_context(|| format!("create instance dir: {}", dir.display()))?;
-        Ok(Self { name: name.to_string(), dir })
+        Ok(Self {
+            name: name.to_string(),
+            dir,
+        })
     }
 
     /// Open an existing instance (errors if missing — used by stop/destroy
@@ -65,14 +68,10 @@ impl Instance {
                 dir.display()
             ));
         }
-        Ok(Self { name: name.to_string(), dir })
-    }
-
-    /// Open the active instance (whatever the marker file points at,
-    /// falling back to DEFAULT_NAME).
-    pub fn active() -> Result<Self> {
-        let name = read_active_name().unwrap_or_else(|_| DEFAULT_NAME.into());
-        Self::open(&name)
+        Ok(Self {
+            name: name.to_string(),
+            dir,
+        })
     }
 
     /// Mark this as the active instance.
@@ -88,23 +87,33 @@ impl Instance {
 
     // ── Conventional paths ──────────────────────────────────────────
 
-    pub fn deploy_yaml(&self) -> PathBuf { self.dir.join("glow-deploy.yaml") }
+    pub fn deploy_yaml(&self) -> PathBuf {
+        self.dir.join("glow-deploy.yaml")
+    }
 
-    /// Legacy single-stack `.env` (api-only / pre-two-stack callers).
-    /// New code should prefer `api_env_file` / `client_env_file`.
-    pub fn env_file(&self) -> PathBuf { self.dir.join(".env") }
-    pub fn compose_file(&self) -> PathBuf { self.dir.join("docker-compose.yml") }
-    pub fn state_file(&self) -> PathBuf { self.dir.join(".deploy-state.json") }
-    pub fn backups_dir(&self) -> PathBuf { self.dir.join("backups") }
+    pub fn state_file(&self) -> PathBuf {
+        self.dir.join(".deploy-state.json")
+    }
+    pub fn backups_dir(&self) -> PathBuf {
+        self.dir.join("backups")
+    }
 
     // ── Two-stack layout ────────────────────────────────────────────
     // Each stack gets its own subdir + .env so compose state is clean
     // and the two stacks can be touched independently.
 
-    pub fn api_dir(&self) -> PathBuf { self.dir.join("api") }
-    pub fn client_dir(&self) -> PathBuf { self.dir.join("client") }
-    pub fn api_env_file(&self) -> PathBuf { self.api_dir().join(".env") }
-    pub fn client_env_file(&self) -> PathBuf { self.client_dir().join(".env") }
+    pub fn api_dir(&self) -> PathBuf {
+        self.dir.join("api")
+    }
+    pub fn client_dir(&self) -> PathBuf {
+        self.dir.join("client")
+    }
+    pub fn api_env_file(&self) -> PathBuf {
+        self.api_dir().join(".env")
+    }
+    pub fn client_env_file(&self) -> PathBuf {
+        self.client_dir().join(".env")
+    }
 
     /// Compose project name — used as container prefix. We derive from the
     /// instance name so two instances on the same host don't collide.
@@ -181,8 +190,7 @@ impl DeployState {
 
     pub fn save(&self, path: &Path) -> Result<()> {
         let body = serde_json::to_string_pretty(self)?;
-        fs::write(path, body)
-            .with_context(|| format!("write deploy state: {}", path.display()))?;
+        fs::write(path, body).with_context(|| format!("write deploy state: {}", path.display()))?;
         Ok(())
     }
 
@@ -202,9 +210,4 @@ impl DeployState {
             _ => "blue",
         }
     }
-}
-
-fn read_active_name() -> Result<String> {
-    let marker = active_instance_marker()?;
-    Ok(fs::read_to_string(&marker)?.trim().to_string())
 }

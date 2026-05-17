@@ -168,47 +168,6 @@ fn test_media_unknown_action_shows_error() {
         .stderr(predicate::str::contains("Unknown media action"));
 }
 
-// ── Instance management ─────────────────────────────────────
-
-#[test]
-fn test_instances_list_help() {
-    Command::cargo_bin("glow")
-        .unwrap()
-        .args(["instances", "list", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("configured"));
-}
-
-#[test]
-fn test_instances_alias() {
-    Command::cargo_bin("glow")
-        .unwrap()
-        .args(["inst", "--help"])
-        .assert()
-        .success();
-}
-
-#[test]
-fn test_instances_add_requires_url() {
-    Command::cargo_bin("glow")
-        .unwrap()
-        .args(["instances", "add", "test-inst"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("--url"));
-}
-
-#[test]
-fn test_use_unknown_instance_fails() {
-    Command::cargo_bin("glow")
-        .unwrap()
-        .args(["use", "nonexistent"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("Unknown instance"));
-}
-
 // ── Instance-level: connect, disconnect, problem ──────────
 
 #[test]

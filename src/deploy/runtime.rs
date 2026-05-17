@@ -14,9 +14,9 @@ use which::which;
 /// helpful message instead of failing with "command not found" 12 calls
 /// deep into the orchestrator.
 pub fn assert_docker_available() -> Result<()> {
-    which("docker").map_err(|_| anyhow!(
-        "`docker` not found in PATH — install Docker Desktop or the docker engine first"
-    ))?;
+    which("docker").map_err(|_| {
+        anyhow!("`docker` not found in PATH — install Docker Desktop or the docker engine first")
+    })?;
     // Sanity-check we have compose v2. `docker compose version` exits 0
     // on the plugin; v1 (`docker-compose`) wouldn't respond here.
     let out = Command::new("docker")
@@ -38,9 +38,12 @@ pub fn assert_docker_available() -> Result<()> {
 pub fn compose(project_dir: &Path, project_name: &str) -> Command {
     let mut cmd = Command::new("docker");
     cmd.arg("compose")
-        .arg("--project-directory").arg(project_dir)
-        .arg("--project-name").arg(project_name)
-        .arg("--file").arg(project_dir.join("docker-compose.yml"));
+        .arg("--project-directory")
+        .arg(project_dir)
+        .arg("--project-name")
+        .arg(project_name)
+        .arg("--file")
+        .arg(project_dir.join("docker-compose.yml"));
     // .env is auto-loaded from project_dir by compose; no need to pass.
     cmd
 }
@@ -102,8 +105,12 @@ pub fn logs(
 ) -> Result<()> {
     let mut cmd = compose(project_dir, project_name);
     cmd.arg("logs");
-    if follow { cmd.arg("-f"); }
-    if let Some(s) = service { cmd.arg(s); }
+    if follow {
+        cmd.arg("-f");
+    }
+    if let Some(s) = service {
+        cmd.arg(s);
+    }
     run(cmd, "docker compose logs")
 }
 
@@ -167,7 +174,12 @@ pub fn container_health(project_name: &str, service: &str) -> Result<String> {
     // Compose names containers `<project>-<service>-1` by default.
     let container = format!("{project_name}-{service}-1");
     let out = Command::new("docker")
-        .args(["inspect", "--format", "{{.State.Health.Status}}", &container])
+        .args([
+            "inspect",
+            "--format",
+            "{{.State.Health.Status}}",
+            &container,
+        ])
         .output()
         .context("spawn docker inspect")?;
     if !out.status.success() {

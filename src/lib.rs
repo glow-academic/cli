@@ -497,11 +497,21 @@ pub fn run() -> Result<()> {
         Commands::Init { name } => {
             deploy::wizard::run(&name)?;
         }
-        Commands::Logs { name, follow, service } => {
+        Commands::Logs {
+            name,
+            follow,
+            service,
+        } => {
             let i = deploy::instance::Instance::open(&name)?;
             deploy::runtime::logs(&i.dir, &i.project_name(), follow, service.as_deref())?;
         }
-        Commands::Deploy { name, api_version, client_version, seed_setup, grace_minutes } => {
+        Commands::Deploy {
+            name,
+            api_version,
+            client_version,
+            seed_setup,
+            grace_minutes,
+        } => {
             deploy::deploy(deploy::DeployArgs {
                 name,
                 api_version,
@@ -512,15 +522,22 @@ pub fn run() -> Result<()> {
                 grace_minutes,
             })?;
         }
-        Commands::Redeploy { name, api_version, client_version, from_backup, reseed, grace_minutes } => {
+        Commands::Redeploy {
+            name,
+            api_version,
+            client_version,
+            from_backup,
+            reseed,
+            grace_minutes,
+        } => {
             // Resolve image versions from state when not passed.
             let i = deploy::instance::Instance::open(&name)?;
             let state = deploy::instance::DeployState::load(&i.state_file())?;
             let resolved_api = match api_version {
                 Some(v) => v,
-                None => state.api_version.clone().ok_or_else(|| anyhow::anyhow!(
-                    "no pinned api_version on disk and --api-version not passed"
-                ))?,
+                None => state.api_version.clone().ok_or_else(|| {
+                    anyhow::anyhow!("no pinned api_version on disk and --api-version not passed")
+                })?,
             };
             let resolved_client = client_version.or(state.client_version.clone());
             deploy::deploy(deploy::DeployArgs {

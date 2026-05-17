@@ -40,28 +40,21 @@ pub struct SwapPlan {
 pub fn plan_swap(state: &DeployState) -> SwapPlan {
     let from = state.active_env.clone().unwrap_or_else(|| "none".into());
     let to = state.next_env().to_string();
-    SwapPlan { from_env: from, to_env: to }
+    SwapPlan {
+        from_env: from,
+        to_env: to,
+    }
 }
 
-/// Bring up the target color's server + keycloak containers and wait
-/// for them to be healthy. Caller is responsible for the upstream
+/// Bring up the api server + keycloak pair for `target_env` and wait
+/// for both to be healthy. Caller is responsible for the upstream
 /// orchestration (`docker compose up` of base services like the DB,
 /// which both colors share, must happen first).
 ///
 /// Service-name convention: we expect the compose file to declare
 /// `server-blue` / `server-green` and `keycloak-blue` / `keycloak-green`.
 /// If we ever rename, change here and the compose template in lockstep.
-pub fn bring_up_target(instance: &Instance, target_env: &str) -> Result<()> {
-    bring_up_api_target(&instance.api_dir(), &instance.api_project_name(), target_env)
-}
-
-/// Stack-explicit variant — brings up the api server + keycloak pair for
-/// `target_env` and waits for both to be healthy.
-pub fn bring_up_api_target(
-    project_dir: &Path,
-    project_name: &str,
-    target_env: &str,
-) -> Result<()> {
+pub fn bring_up_api_target(project_dir: &Path, project_name: &str, target_env: &str) -> Result<()> {
     let server = format!("server-{target_env}");
     let keycloak = format!("keycloak-{target_env}");
 
@@ -69,20 +62,10 @@ pub fn bring_up_api_target(
     runtime::up(project_dir, project_name, &[&server, &keycloak])?;
 
     println!("  · waiting for {keycloak} to become healthy (up to 3min)");
-    healthcheck::wait_healthy(
-        project_name,
-        &keycloak,
-        &keycloak,
-        Duration::from_secs(180),
-    )?;
+    healthcheck::wait_healthy(project_name, &keycloak, &keycloak, Duration::from_secs(180))?;
 
     println!("  · waiting for {server} to become healthy (up to 2min)");
-    healthcheck::wait_healthy(
-        project_name,
-        &server,
-        &server,
-        Duration::from_secs(120),
-    )?;
+    healthcheck::wait_healthy(project_name, &server, &server, Duration::from_secs(120))?;
 
     Ok(())
 }
@@ -99,12 +82,7 @@ pub fn bring_up_client_target(
     println!("  · bringing up {app}");
     runtime::up(project_dir, project_name, &[&app])?;
     println!("  · waiting for {app} to become healthy (up to 2min)");
-    healthcheck::wait_healthy(
-        project_name,
-        &app,
-        &app,
-        Duration::from_secs(120),
-    )?;
+    healthcheck::wait_healthy(project_name, &app, &app, Duration::from_secs(120))?;
     Ok(())
 }
 
@@ -130,11 +108,7 @@ pub fn switch_traffic(env_path: &Path, project_name: &str, target_env: &str) -> 
 
 /// Same as `switch_traffic` but for the client stack — flips
 /// `ACTIVE_CLIENT_ENV` and restarts the client nginx.
-pub fn switch_client_traffic(
-    env_path: &Path,
-    project_name: &str,
-    target_env: &str,
-) -> Result<()> {
+pub fn switch_client_traffic(env_path: &Path, project_name: &str, target_env: &str) -> Result<()> {
     println!("  · flipping ACTIVE_CLIENT_ENV → {target_env} in client .env");
     flip_env_key(env_path, "ACTIVE_CLIENT_ENV", target_env)?;
     println!("  · restarting client nginx");
@@ -204,7 +178,9 @@ pub fn monitor_client_then_commit_or_rollback(
         Err(monitor_err) => {
             eprintln!("  ! grace period failed: {monitor_err}");
             eprintln!("  · rolling back: flipping ACTIVE_CLIENT_ENV back to {prev_env}");
-            if let Err(rb_err) = switch_client_traffic(&instance.client_env_file(), &project, prev_env) {
+            if let Err(rb_err) =
+                switch_client_traffic(&instance.client_env_file(), &project, prev_env)
+            {
                 anyhow::bail!(
                     "client monitor failed AND rollback failed — manual intervention needed.\n  monitor: {monitor_err}\n  rollback: {rb_err}"
                 );
@@ -220,8 +196,7 @@ pub fn monitor_client_then_commit_or_rollback(
 /// In-place mutation of a single key in a .env-style file. Keeps every
 /// other line untouched (comments, ordering, secrets).
 fn flip_env_key(path: &Path, key: &str, value: &str) -> Result<()> {
-    let body = std::fs::read_to_string(path)
-        .with_context(|| format!("read {}", path.display()))?;
+    let body = std::fs::read_to_string(path).with_context(|| format!("read {}", path.display()))?;
     let mut out = String::with_capacity(body.len());
     let mut found = false;
     for line in body.lines() {
@@ -242,7 +217,6 @@ fn flip_env_key(path: &Path, key: &str, value: &str) -> Result<()> {
         // First time setting this key — append.
         out.push_str(&format!("{key}={value}\n"));
     }
-    std::fs::write(path, out)
-        .with_context(|| format!("write {}", path.display()))?;
+    std::fs::write(path, out).with_context(|| format!("write {}", path.display()))?;
     Ok(())
 }
