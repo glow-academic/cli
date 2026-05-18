@@ -81,9 +81,7 @@ pub fn cmd_attempt_message(
                 .get("audios_id")
                 .and_then(|v| v.as_str())
                 .or_else(|| resp.get("audio_id").and_then(|v| v.as_str()))
-                .or_else(|| {
-                    resp.get("resource_id").and_then(|v| v.as_str())
-                });
+                .or_else(|| resp.get("resource_id").and_then(|v| v.as_str()));
             match id {
                 Some(s) => Some(s.to_string()),
                 None => anyhow::bail!(
@@ -349,7 +347,9 @@ fn mcp_jsonrpc(
         "params": params,
     });
     let _ = client; // base_url has the bearer-aware path; keep client param for symmetry
-    let bearer = crate::auth::get_token(base_url).ok().map(|t| t.access_token);
+    let bearer = crate::auth::get_token(base_url)
+        .ok()
+        .map(|t| t.access_token);
     let url = format!("{}/mcp/", base_url.trim_end_matches('/'));
     let mut req = reqwest::blocking::Client::new()
         .post(&url)
@@ -372,8 +372,7 @@ fn mcp_jsonrpc(
     // on the Accept header. When the body starts with ``event:`` /
     // ``data:`` we strip the SSE framing and parse the first data
     // frame; otherwise we parse the body directly.
-    let body = if text.trim_start().starts_with("event:")
-        || text.trim_start().starts_with("data:")
+    let body = if text.trim_start().starts_with("event:") || text.trim_start().starts_with("data:")
     {
         let mut payload = String::new();
         for line in text.lines() {
@@ -390,11 +389,7 @@ fn mcp_jsonrpc(
         .with_context(|| format!("MCP response was not JSON: {}", body))
 }
 
-pub fn cmd_mcp_list_tools(
-    client: &GlowClient,
-    base_url: &str,
-    mode: OutputMode,
-) -> Result<()> {
+pub fn cmd_mcp_list_tools(client: &GlowClient, base_url: &str, mode: OutputMode) -> Result<()> {
     use colored::Colorize;
     let resp = mcp_jsonrpc(client, base_url, "tools/list", json!({}))?;
     let tools = resp
@@ -403,23 +398,29 @@ pub fn cmd_mcp_list_tools(
         .unwrap_or(serde_json::Value::Null);
     match mode {
         OutputMode::Json => {
-            println!("{}", serde_json::to_string_pretty(&tools).unwrap_or_default());
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&tools).unwrap_or_default()
+            );
         }
         OutputMode::Human => {
             if let Some(arr) = tools.as_array() {
                 println!("{} {} MCP tools:", "·".dimmed(), arr.len());
                 for t in arr {
-                    let name = t.get("name").and_then(|v| v.as_str()).unwrap_or("(unnamed)");
-                    let desc = t
-                        .get("description")
+                    let name = t
+                        .get("name")
                         .and_then(|v| v.as_str())
-                        .unwrap_or("");
+                        .unwrap_or("(unnamed)");
+                    let desc = t.get("description").and_then(|v| v.as_str()).unwrap_or("");
                     let first_line = desc.lines().next().unwrap_or("");
                     println!("  {:30} {}", name.bold(), first_line.dimmed());
                 }
             } else {
                 // Unexpected shape — surface the whole response.
-                println!("{}", serde_json::to_string_pretty(&resp).unwrap_or_default());
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&resp).unwrap_or_default()
+                );
             }
         }
     }
@@ -447,7 +448,10 @@ pub fn cmd_mcp_call(
         .unwrap_or(serde_json::Value::Null);
     match mode {
         OutputMode::Json => {
-            println!("{}", serde_json::to_string_pretty(&result).unwrap_or_default());
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&result).unwrap_or_default()
+            );
         }
         OutputMode::Human => {
             // MCP tool results have shape ``{ content: [{type, text}, ...], isError? }``.
@@ -460,7 +464,10 @@ pub fn cmd_mcp_call(
                     }
                 }
             } else {
-                println!("{}", serde_json::to_string_pretty(&result).unwrap_or_default());
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&result).unwrap_or_default()
+                );
             }
         }
     }

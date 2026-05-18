@@ -105,7 +105,6 @@ enum Commands {
     //     opens the SSE filtered to a run.
     //   * Connect/disconnect for session-scoped streams didn't exist
     //     on the API and had no live callers.
-
     /// MCP — talk to the Glow instance's Model Context Protocol
     /// endpoint at ``/mcp/``. Currently a JSON-RPC client thin enough
     /// to list + call tools without dragging in a full MCP crate.
@@ -118,7 +117,6 @@ enum Commands {
     // has its own POST /<art>/problem with an artifact-scoped response.
     // Reach via ``glow <art> problem --body '{"type":"...","message":"..."}'``
     // through generic dispatch.
-
     /// Generate shell completions
     Completions {
         /// Shell to generate completions for
@@ -354,12 +352,14 @@ pub fn build_cli_spec() -> serde_json::Value {
             // the API. ``slug`` is kept as an alias for ``cli_name``
             // to avoid breaking any consumer that's still on the old
             // single-field shape.
-            .map(|r| json!({
-                "slug": r.cli_name(),
-                "cli_name": r.cli_name(),
-                "api_path": r.api_path(),
-                "about": r.about(),
-            }))
+            .map(|r| {
+                json!({
+                    "slug": r.cli_name(),
+                    "cli_name": r.cli_name(),
+                    "api_path": r.api_path(),
+                    "about": r.about(),
+                })
+            })
             .collect();
         obj.insert("resources".into(), json!(resources));
 
@@ -371,11 +371,13 @@ pub fn build_cli_spec() -> serde_json::Value {
         // proper parent/view/action structure.
         let namespaces: Vec<serde_json::Value> = resource::NAMESPACES
             .iter()
-            .map(|n| json!({
-                "name": n.name,
-                "own_actions": n.own_actions,
-                "views": n.views,
-            }))
+            .map(|n| {
+                json!({
+                    "name": n.name,
+                    "own_actions": n.own_actions,
+                    "views": n.views,
+                })
+            })
             .collect();
         obj.insert("namespaces".into(), json!(namespaces));
 
@@ -456,18 +458,14 @@ pub fn run() -> Result<()> {
                     access_token: t,
                     id_token: None,
                     token_type: "Bearer".to_string(),
-                    expires_in: None,        // unknown — server enforces via JWT exp
-                    issued_at: 0,            // unknown — server enforces via JWT exp
+                    expires_in: None, // unknown — server enforces via JWT exp
+                    issued_at: 0,     // unknown — server enforces via JWT exp
                     refresh_token: None,
                     token_endpoint: None,
                 };
                 auth::save_token(&glow_url, stored)?;
                 use colored::Colorize;
-                println!(
-                    "{} Token stored for {}",
-                    "✓".green(),
-                    glow_url.bold()
-                );
+                println!("{} Token stored for {}", "✓".green(), glow_url.bold());
             } else {
                 // OAuth redirect flow.
                 let cid = client_id
@@ -475,11 +473,7 @@ pub fn run() -> Result<()> {
                     .unwrap_or_else(|| "glow-cli".to_string());
                 let _ = auth::login(&glow_url, &cid)?;
                 use colored::Colorize;
-                println!(
-                    "{} Signed in to {}",
-                    "✓".green(),
-                    glow_url.bold()
-                );
+                println!("{} Signed in to {}", "✓".green(), glow_url.bold());
             }
         }
         Commands::Logout => {
@@ -682,7 +676,10 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
     // fall through to a bogus POST /<res>/--help.
     if args.len() < 2 || matches!(args[1].as_str(), "--help" | "-h") {
         use colored::Colorize;
-        println!("{}\n", format!("glow {} <action> [args]", resource.cli_name()).bold());
+        println!(
+            "{}\n",
+            format!("glow {} <action> [args]", resource.cli_name()).bold()
+        );
         println!(
             "  Dispatches to {} /{}/<action>\n",
             "POST".dimmed(),
@@ -698,15 +695,35 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
         match resource {
             resource::Resource::Attempts => {
                 println!("{}:", "Sub-namespaces".bold());
-                println!("  {:14} {}", "chat".bold(), "Chat sub-ops (chat_get, chat_message, chat_grade, ...) + live REPL".dimmed());
-                println!("  {:14} {}", "dashboard / home / practice / leaderboard / report".bold(), "View ops".dimmed());
-                println!("  {:14} {}", "watch".bold(), "Block on a run_id over SSE".dimmed());
+                println!(
+                    "  {:14} {}",
+                    "chat".bold(),
+                    "Chat sub-ops (chat_get, chat_message, chat_grade, ...) + live REPL".dimmed()
+                );
+                println!(
+                    "  {:14} {}",
+                    "dashboard / home / practice / leaderboard / report".bold(),
+                    "View ops".dimmed()
+                );
+                println!(
+                    "  {:14} {}",
+                    "watch".bold(),
+                    "Block on a run_id over SSE".dimmed()
+                );
                 println!();
             }
             resource::Resource::Tests => {
                 println!("{}:", "Sub-namespaces".bold());
-                println!("  {:14} {}", "invocation".bold(), "Invocation sub-ops (invocation_get, invocation_run, ...)".dimmed());
-                println!("  {:14} {}", "benchmark".bold(), "Benchmark view op".dimmed());
+                println!(
+                    "  {:14} {}",
+                    "invocation".bold(),
+                    "Invocation sub-ops (invocation_get, invocation_run, ...)".dimmed()
+                );
+                println!(
+                    "  {:14} {}",
+                    "benchmark".bold(),
+                    "Benchmark view op".dimmed()
+                );
                 println!();
             }
             resource::Resource::System => {
@@ -734,7 +751,10 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
             _ => {}
         }
         println!("{}:", "Options".bold());
-        println!("  {:<30} Raw JSON body for the action", "--body <json>".green());
+        println!(
+            "  {:<30} Raw JSON body for the action",
+            "--body <json>".green()
+        );
         println!("  {:<30} Output as JSON", "--json".green());
         return Ok(());
     }
@@ -784,8 +804,8 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
         // watch route accepts it as a query param to scope the
         // subscriber room; omit it and the server-side resolver
         // derives the group from run_id.
-        let group_id = parse_flag(&args[3..], "--group-id")?
-            .or(parse_flag(&args[3..], "--group_id")?);
+        let group_id =
+            parse_flag(&args[3..], "--group-id")?.or(parse_flag(&args[3..], "--group_id")?);
         return commands::glow::cmd_watch_run(
             client,
             resource.api_path(),
@@ -805,9 +825,7 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
     // re-dispatches as the joined action. Also handles the
     // ``glow attempts chat live <chat_id>`` WS REPL and the
     // ``glow attempts chat voice <chat_id>`` deferral message.
-    if dispatch_subop_namespace(client, resource, action, &args[2..], mode)?
-        .is_some()
-    {
+    if dispatch_subop_namespace(client, resource, action, &args[2..], mode)?.is_some() {
         return Ok(());
     }
 
@@ -822,7 +840,12 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
             "{}\n",
             format!("glow {} {}", resource.cli_name(), action).bold()
         );
-        println!("  {} /{}/{}\n", "POST".dimmed(), resource.api_path(), action);
+        println!(
+            "  {} /{}/{}\n",
+            "POST".dimmed(),
+            resource.api_path(),
+            action
+        );
         println!("  Pass --key value pairs as needed. The API will validate parameters.\n");
         println!("{}:", "Options".bold());
         println!(
@@ -839,9 +862,7 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
     // instead of forcing the user to construct ``--body '{...}'``.
     // Everything not matched falls through to the generic body-driven
     // dispatch below — the helpers are pure sugar.
-    if dispatch_resource_helper(client, resource, action, &args[2..], mode)?
-        .is_some()
-    {
+    if dispatch_resource_helper(client, resource, action, &args[2..], mode)?.is_some() {
         return Ok(());
     }
 
@@ -886,7 +907,9 @@ fn dispatch_resource_helper(
         // — also matches the namespaced form ``glow attempts chat message ...``
         //   via the chat-subop intercept (which re-dispatches as
         //   action="chat_message").
-        (Attempts, "message") | (Attempts, "chat_message") if rest.len() >= 2 && !rest[0].starts_with("--") && !rest[1].starts_with("--") => {
+        (Attempts, "message") | (Attempts, "chat_message")
+            if rest.len() >= 2 && !rest[0].starts_with("--") && !rest[1].starts_with("--") =>
+        {
             let chat_id = &rest[0];
             let text = &rest[1];
             let audio = parse_flag(&rest[2..], "--audio")?;
@@ -904,7 +927,9 @@ fn dispatch_resource_helper(
         // glow attempts grade <chat_id> [--score N] — also matches
         // ``glow attempts chat grade ...`` via the chat-subop
         // intercept (which re-dispatches as action="chat_grade").
-        (Attempts, "grade") | (Attempts, "chat_grade") if !rest.is_empty() && !rest[0].starts_with("--") => {
+        (Attempts, "grade") | (Attempts, "chat_grade")
+            if !rest.is_empty() && !rest[0].starts_with("--") =>
+        {
             let chat_id = &rest[0];
             let score = parse_flag(&rest[1..], "--score")?
                 .map(|s| s.parse::<u32>())
@@ -914,21 +939,25 @@ fn dispatch_resource_helper(
             Ok(Some(()))
         }
         // glow scenarios generate <modality> <title> [--instructions <text>]
-        (Scenarios, "generate") if rest.len() >= 2 && !rest[0].starts_with("--") && !rest[1].starts_with("--") => {
+        (Scenarios, "generate")
+            if rest.len() >= 2 && !rest[0].starts_with("--") && !rest[1].starts_with("--") =>
+        {
             let modality = &rest[0];
             let title = &rest[1];
             let instructions = parse_flag(&rest[2..], "--instructions")?;
-            helpers::cmd_scenario_generate(
-                client,
-                modality,
-                title,
-                instructions.as_deref(),
-                mode,
-            )?;
+            helpers::cmd_scenario_generate(client, modality, title, instructions.as_deref(), mode)?;
             Ok(Some(()))
         }
         // glow personas search [--name <pat>] [--page-size N] [--page-offset N]
-        (Personas, "search") if rest.iter().all(|a| a.starts_with("--") || rest.iter().take_while(|x| !x.starts_with("--")).all(|_| false)) => {
+        (Personas, "search")
+            if rest.iter().all(|a| {
+                a.starts_with("--")
+                    || rest
+                        .iter()
+                        .take_while(|x| !x.starts_with("--"))
+                        .all(|_| false)
+            }) =>
+        {
             let name = parse_flag(rest, "--name")?;
             let page_size = parse_flag(rest, "--page-size")?
                 .map(|s| s.parse::<u32>())
@@ -943,13 +972,7 @@ fn dispatch_resource_helper(
             if parse_flag(rest, "--body")?.is_some() {
                 return Ok(None);
             }
-            helpers::cmd_personas_search(
-                client,
-                name.as_deref(),
-                page_size,
-                page_offset,
-                mode,
-            )?;
+            helpers::cmd_personas_search(client, name.as_deref(), page_size, page_offset, mode)?;
             Ok(Some(()))
         }
         // glow profiles emulate <profile_id> [--ttl-minutes N]
@@ -1058,7 +1081,9 @@ fn dispatch_subop_namespace(
         // subcommand so all chat operations live in one place.
         if subop == "live" {
             if subop_args.is_empty() {
-                anyhow::bail!("Expected a chat_id: glow attempts chat live <chat_id> [--persona <id>]");
+                anyhow::bail!(
+                    "Expected a chat_id: glow attempts chat live <chat_id> [--persona <id>]"
+                );
             }
             let chat_id = &subop_args[0];
             let persona = parse_flag(&subop_args[1..], "--persona")?;
@@ -1084,9 +1109,7 @@ fn dispatch_subop_namespace(
         // path; everything else falls through to the generic
         // body-driven dispatch.
         let joined_action = format!("chat_{}", subop);
-        if dispatch_resource_helper(client, resource, &joined_action, subop_args, mode)?
-            .is_some()
-        {
+        if dispatch_resource_helper(client, resource, &joined_action, subop_args, mode)?.is_some() {
             return Ok(Some(()));
         }
         // Generic --body-driven dispatch as the fallback.
@@ -1110,9 +1133,7 @@ fn dispatch_subop_namespace(
         let subop = &rest[0];
         let subop_args = &rest[1..];
         let joined_action = format!("invocation_{}", subop);
-        if dispatch_resource_helper(client, resource, &joined_action, subop_args, mode)?
-            .is_some()
-        {
+        if dispatch_resource_helper(client, resource, &joined_action, subop_args, mode)?.is_some() {
             return Ok(Some(()));
         }
         let body = build_resource_body(subop_args)?;
@@ -1132,55 +1153,64 @@ fn dispatch_subop_namespace(
 fn print_chat_namespace_help() {
     use colored::Colorize;
     println!("{}\n", "glow attempts chat <op>".bold());
-    println!(
-        "  {} /attempt/chat_<op>\n",
-        "POST".dimmed()
-    );
+    println!("  {} /attempt/chat_<op>\n", "POST".dimmed());
     println!("  Chat operations live as ``chat_<op>`` on the attempt artifact's URL.\n");
     println!("{}:", "Common subops".bold());
     for (op, hint) in [
-        ("get",         "Fetch a chat by id"),
-        ("create",      "Create a new chat in an attempt"),
-        ("message",     "Send a message (helper: positional <chat_id> <text>)"),
-        ("grade",       "Grade the chat (helper: positional <chat_id> [--score N])"),
-        ("complete",    "Mark a chat completed"),
-        ("response",    "Submit a question response"),
-        ("hints",       "Fetch hints"),
-        ("feedback",    "Per-standard feedback"),
-        ("strengths",   "Per-message strengths"),
-        ("improvements","Per-message improvements"),
-        ("analyses",    "Overall analyses"),
-        ("audio",       "Attach an audio resource to a chat message"),
-        ("voice",       "[deferred] WS voice REPL — needs cpal/rodio go-ahead"),
-        ("silence",     "Silence the voice session"),
-        ("speak",       "Push a speak frame into the voice session"),
-        ("live",        "Open the socket.io REPL — glow attempts chat live <chat_id>"),
+        ("get", "Fetch a chat by id"),
+        ("create", "Create a new chat in an attempt"),
+        (
+            "message",
+            "Send a message (helper: positional <chat_id> <text>)",
+        ),
+        (
+            "grade",
+            "Grade the chat (helper: positional <chat_id> [--score N])",
+        ),
+        ("complete", "Mark a chat completed"),
+        ("response", "Submit a question response"),
+        ("hints", "Fetch hints"),
+        ("feedback", "Per-standard feedback"),
+        ("strengths", "Per-message strengths"),
+        ("improvements", "Per-message improvements"),
+        ("analyses", "Overall analyses"),
+        ("audio", "Attach an audio resource to a chat message"),
+        (
+            "voice",
+            "[deferred] WS voice REPL — needs cpal/rodio go-ahead",
+        ),
+        ("silence", "Silence the voice session"),
+        ("speak", "Push a speak frame into the voice session"),
+        (
+            "live",
+            "Open the socket.io REPL — glow attempts chat live <chat_id>",
+        ),
     ] {
         println!("  {:14} {}", op.bold(), hint.dimmed());
     }
     println!("\n{}:", "Options".bold());
-    println!("  {:<30} Raw JSON body (for ops without a helper)", "--body <json>".green());
+    println!(
+        "  {:<30} Raw JSON body (for ops without a helper)",
+        "--body <json>".green()
+    );
     println!("  {:<30} Output as JSON", "--json".green());
 }
 
 fn print_invocation_namespace_help() {
     use colored::Colorize;
     println!("{}\n", "glow tests invocation <op>".bold());
-    println!(
-        "  {} /test/invocation_<op>\n",
-        "POST".dimmed()
-    );
+    println!("  {} /test/invocation_<op>\n", "POST".dimmed());
     println!("  Invocation operations live as ``invocation_<op>`` on the test artifact's URL.\n");
     println!("{}:", "Common subops".bold());
     for (op, hint) in [
-        ("get",       "Fetch an invocation"),
-        ("create",    "Create a new test invocation"),
-        ("run",       "Run an invocation"),
-        ("complete",  "Mark an invocation complete"),
+        ("get", "Fetch an invocation"),
+        ("create", "Create a new test invocation"),
+        ("run", "Run an invocation"),
+        ("complete", "Mark an invocation complete"),
         ("terminate", "Terminate an in-flight invocation"),
-        ("trace",     "Get the invocation trace"),
-        ("draft",     "Patch an invocation draft"),
-        ("drafts",    "List invocation drafts"),
+        ("trace", "Get the invocation trace"),
+        ("draft", "Patch an invocation draft"),
+        ("drafts", "List invocation drafts"),
     ] {
         println!("  {:14} {}", op.bold(), hint.dimmed());
     }
