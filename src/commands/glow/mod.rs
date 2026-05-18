@@ -124,8 +124,8 @@ pub(crate) fn cmd_watch_run(
         // header + indented data preview.
         match mode {
             OutputMode::Json => {
-                let parsed: serde_json::Value =
-                    serde_json::from_str(data).unwrap_or(serde_json::Value::String(data.to_string()));
+                let parsed: serde_json::Value = serde_json::from_str(data)
+                    .unwrap_or(serde_json::Value::String(data.to_string()));
                 let frame = serde_json::json!({
                     "event": event_name,
                     "data": parsed,
