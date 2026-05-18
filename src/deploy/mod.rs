@@ -232,6 +232,16 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
         "database",
         Duration::from_secs(180),
     )?;
+    // Run the one-shot seed runner against the live DB. Idempotent —
+    // exits 0 immediately if the target DB already has public tables,
+    // so re-deploys don't re-seed. First deploy runs the full seed,
+    // which can take a few minutes depending on setup.
+    println!("  · running db-init (first-deploy seed, no-op on redeploy)");
+    runtime::up(
+        &instance.api_dir(),
+        &instance.api_project_name(),
+        &["db-init"],
+    )?;
     if !is_first_deploy {
         let server = format!("server-{prev_env}");
         if let Err(e) =

@@ -7,6 +7,6 @@ Set FontSize 18
 Set Padding 16
 Set TypingSpeed 35ms
 
-Type "glow system file download --help"
+Type "glow system --help"
 Enter
 Sleep 2s

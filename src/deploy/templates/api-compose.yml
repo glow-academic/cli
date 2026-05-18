@@ -23,44 +23,53 @@ services:
       - internal
 
   # --------------------
-  # Database Service
+  # Database Service (stock postgres)
   # --------------------
-  # DB_BACKUP env var (optional):
-  #   DB_BACKUP=fresh.sql.gz       Restore from history/fresh.sql.gz
-  #   DB_BACKUP=university.sql.gz  Restore from history/university.sql.gz
-  #   DB_BACKUP=                   Use existing database (default)
+  # First-deploy seeding happens in `db-init` below, not here. This is
+  # just plain postgres with a persistent volume.
   database:
-    build:
-      context: ./database
-      dockerfile: Dockerfile
+    image: postgres:18-alpine
+    restart: unless-stopped
     environment:
       - POSTGRES_USER=${DB_USER:-myuser}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-mypassword}
       - POSTGRES_DB=glowapi
-      - HISTORY_DIR=/database/history
-      - DB_BACKUP=${DB_BACKUP:-}
     volumes:
-      - pgdata:/var/lib/postgresql
-      - history:/database/history
-    depends_on:
-      volume-init:
-        condition: service_completed_successfully
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      # When DB_BACKUP is set, wait for restore to complete before accepting
-      # connections. Marker lives at $PGDATA/.restore_complete (written by
-      # custom-entrypoint.sh's 99-mark-ready.sh init script in v2.15.10+).
-      # Glob-match across PG major-version subdirs so the path doesn't break
-      # on Postgres upgrades.
-      test: >
-        if [ -n "${DB_BACKUP:-}" ] && ! ls /var/lib/postgresql/*/docker/.restore_complete >/dev/null 2>&1 && ! ls /var/lib/postgresql/.restore_complete >/dev/null 2>&1; then
-          exit 1
-        fi &&
-        pg_isready -U ${DB_USER:-myuser} -d glowapi &&
-        psql -U ${DB_USER:-myuser} -d glowapi -tc 'SELECT 1' >/dev/null 2>&1
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-myuser} -d glowapi"]
       interval: 5s
-      timeout: 5s
-      retries: 15
-      start_period: 60s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    networks:
+      - internal
+
+  # --------------------
+  # DB Init (one-shot)
+  # --------------------
+  # Runs the python seed runner against the live DB on first deploy.
+  # Idempotent: if the target DB already has public tables, exits 0
+  # silently — so it's safe to keep in the compose graph permanently
+  # and re-runs on every `compose up` no-op.
+  db-init:
+    image: ${API_REGISTRY:-ghcr.io/glow-academic}/api:${API_VERSION:?API_VERSION is required}
+    restart: "no"
+    environment:
+      - SEED_TARGET_PG_URL=postgresql://${DB_USER:-myuser}:${DB_PASSWORD:-mypassword}@database:5432/glowapi
+      - SEED_TARGET_REDIS_URL=redis://redis:6379/0
+      - SEED_SETUP=${SEED_SETUP:-fresh}
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - AUTH_SECRET=${SECRET_KEY:-dev-secret-key-change-in-production}
+      # Keycloak isn't up yet at first-deploy seeding time, and the
+      # seed runner never needs to round-trip through it.
+      - SKIP_KEYCLOAK_SYNC=1
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["python", "-m", "database.scripts.runner", "--setup", "${SEED_SETUP:-fresh}"]
     networks:
       - internal
 
@@ -105,6 +114,8 @@ services:
         condition: service_completed_successfully
       database:
         condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 2>/dev/null && exec 3<&- && exec 3>&- || exit 1"]
       interval: 5s
@@ -152,6 +163,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     networks:
       - internal
     healthcheck:
