@@ -80,20 +80,16 @@ enum Commands {
     /// Check Glow instance health
     Health,
 
-    /// Show current user context and identity
-    Context,
-
-    /// Emulate another user profile
-    Emulate {
-        /// Target profile ID to emulate
-        target_profile_id: String,
-        /// TTL in minutes (default: 120 = 2 hours)
-        #[arg(long, default_value = "120")]
-        ttl: u32,
-    },
-
-    /// Stop emulating and return to your own profile
-    Unemulate,
+    // ``Context`` removed — no top-level /context route. Every artifact
+    // has its own POST /<art>/context (returns a ComposedContextResponse).
+    // Reach via ``glow profiles context`` (or any other artifact) through
+    // generic dispatch.
+    //
+    // ``Emulate`` / ``Unemulate`` removed — these only exist on the
+    // profile artifact (POST /profile/emulate, POST /profile/unemulate).
+    // Reach via ``glow profiles emulate <profile_id> [--ttl-minutes N]``
+    // and ``glow profiles unemulate`` — ergonomic helpers preserve the
+    // positional + flag UX (see dispatch_resource_helper).
 
     // ``Generate``, ``Stream``, ``Connect``, ``Disconnect`` removed —
     // they all hit non-existent top-level routes on the API
@@ -115,15 +111,10 @@ enum Commands {
         command: McpCommands,
     },
 
-    /// Report a problem
-    Problem {
-        /// Problem type
-        #[arg(long, alias = "type")]
-        kind: String,
-        /// Problem description
-        #[arg(long)]
-        message: String,
-    },
+    // ``Problem`` removed — no top-level /problem route. Every artifact
+    // has its own POST /<art>/problem with an artifact-scoped response.
+    // Reach via ``glow <art> problem --body '{"type":"...","message":"..."}'``
+    // through generic dispatch.
 
     /// Generate shell completions
     Completions {
@@ -500,24 +491,14 @@ pub fn run() -> Result<()> {
             let client = glow::GlowClient::new(&glow_url);
             glow_cmd::cmd_health(&client, mode)?
         }
-        Commands::Context => {
-            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
-            let client = glow::GlowClient::new(&glow_url);
-            glow_cmd::cmd_context(&client, mode)?
-        }
-        Commands::Emulate {
-            target_profile_id,
-            ttl,
-        } => {
-            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
-            let client = glow::GlowClient::new(&glow_url);
-            glow_cmd::cmd_emulate(&client, &target_profile_id, ttl, mode)?
-        }
-        Commands::Unemulate => {
-            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
-            let client = glow::GlowClient::new(&glow_url);
-            glow_cmd::cmd_unemulate(&client, mode)?
-        }
+        // ``Commands::Context`` / ``Emulate`` / ``Unemulate`` removed —
+        // context lives at POST /<artifact>/context on every artifact;
+        // emulate/unemulate only exist on /profile. Reach them via
+        // generic dispatch (``glow profiles context``,
+        // ``glow profiles emulate <profile_id>``, ``glow profiles
+        // unemulate``) — see the Profiles intercept in
+        // dispatch_resource_helper for the ergonomic emulate shape.
+
         // ``Commands::Generate`` removed — was a wrapper that hit a
         // non-existent /generate top-level route. Generate is per-
         // artifact (POST /<artifact>/generate). Reach via
@@ -546,11 +527,8 @@ pub fn run() -> Result<()> {
         // ``Commands::Stream`` / ``Connect`` / ``Disconnect`` removed —
         // hit non-existent /stream, /connect, /disconnect top-level
         // routes. Streaming is per-artifact: ``glow <art> watch <run_id>``.
-        Commands::Problem { kind, message } => {
-            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
-            let client = glow::GlowClient::new(&glow_url);
-            glow_cmd::cmd_problem(&client, &kind, &message, mode)?
-        }
+        // ``Commands::Problem`` removed — POST /<artifact>/problem is
+        // the real surface; reach via generic dispatch on any artifact.
 
         // ── Shell completions ────────────────────────────────
         Commands::Completions { shell } => {
@@ -722,6 +700,20 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
                 println!("  audio_download / image_download / file_download / video_download");
                 println!("  text_download / call_download / file_preview");
                 println!("  generate / generations / refresh / export / watch / resolve / title / context / problem");
+                println!();
+            }
+            resource::Resource::Profiles => {
+                println!("{}:", "Profile-only ops".bold());
+                println!(
+                    "  {:14} {}",
+                    "emulate".bold(),
+                    "glow profiles emulate <profile_id> [--ttl-minutes N]".dimmed(),
+                );
+                println!(
+                    "  {:14} {}",
+                    "unemulate".bold(),
+                    "glow profiles unemulate".dimmed(),
+                );
                 println!();
             }
             _ => {}
@@ -943,6 +935,36 @@ fn dispatch_resource_helper(
                 page_offset,
                 mode,
             )?;
+            Ok(Some(()))
+        }
+        // glow profiles emulate <profile_id> [--ttl-minutes N]
+        //   → POST /profile/emulate {target_profile_id, ttl_minutes}
+        // ``emulate`` and ``unemulate`` live only on the profile
+        // artifact on the API; this helper preserves the old
+        // top-level ``glow emulate <id>`` UX (positional + flag)
+        // now that the top-level wrapper is gone.
+        (Profiles, "emulate") if !rest.is_empty() && !rest[0].starts_with("--") => {
+            // Defer to generic dispatch if user passed --body.
+            if parse_flag(rest, "--body")?.is_some() {
+                return Ok(None);
+            }
+            let target_profile_id = &rest[0];
+            let ttl_minutes = parse_flag(&rest[1..], "--ttl-minutes")?
+                .map(|s| s.parse::<u32>())
+                .transpose()
+                .context("--ttl-minutes must be an integer")?
+                .unwrap_or(120);
+            helpers::cmd_profile_emulate(client, target_profile_id, ttl_minutes, mode)?;
+            Ok(Some(()))
+        }
+        // glow profiles unemulate → POST /profile/unemulate {}
+        // (Trivial helper, but symmetric with emulate so the prompt
+        // line + colored success message match.)
+        (Profiles, "unemulate") if rest.iter().all(|a| a.starts_with("--")) => {
+            if parse_flag(rest, "--body")?.is_some() {
+                return Ok(None);
+            }
+            helpers::cmd_profile_unemulate(client, mode)?;
             Ok(Some(()))
         }
         // glow simulations list [--cohort <id>] [--page-size N]

@@ -129,56 +129,13 @@ impl GlowClient {
         )
     }
 
-    // ── Identity & emulation ────────────────────────────────
-
-    /// Get current user context and identity
-    pub fn context(&self) -> Result<Value> {
-        api_request(
-            &self.http,
-            reqwest::Method::POST,
-            &self.url("/context"),
-            Some(json!({})),
-            self.auth(),
-        )
-    }
-
-    /// Emulate another user profile
-    pub fn emulate(&self, target_profile_id: &str, ttl_minutes: u32) -> Result<Value> {
-        api_request(
-            &self.http,
-            reqwest::Method::POST,
-            &self.url("/emulate"),
-            Some(json!({
-                "target_profile_id": target_profile_id,
-                "ttl_minutes": ttl_minutes,
-            })),
-            self.auth(),
-        )
-    }
-
-    /// Stop emulating and return to own profile
-    pub fn unemulate(&self) -> Result<Value> {
-        api_request(
-            &self.http,
-            reqwest::Method::POST,
-            &self.url("/unemulate"),
-            Some(json!({})),
-            self.auth(),
-        )
-    }
-
-    // ── Problem reporting ─────────────────────────────────────
-
-    /// Report a problem
-    pub fn problem(&self, problem_type: &str, message: &str) -> Result<Value> {
-        api_request(
-            &self.http,
-            reqwest::Method::POST,
-            &self.url("/problem"),
-            Some(json!({ "type": problem_type, "message": message })),
-            self.auth(),
-        )
-    }
+    // ``context`` / ``emulate`` / ``unemulate`` / ``problem`` removed
+    // in Cleanup D — these aren't top-level routes:
+    //   * /context → POST /<artifact>/context on every artifact
+    //   * /problem → POST /<artifact>/problem on every artifact
+    //   * /emulate, /unemulate → POST /profile/{emulate,unemulate}
+    //     (profile artifact only)
+    // Callers use ``resource_action(api_path, action, body)`` instead.
 
     // ``generate`` removed — no top-level /generate route on the API.
     // Generation is per-artifact: POST /{artifact}/generate. Callers
@@ -541,78 +498,11 @@ mod tests {
         mock.assert();
     }
 
-    // (Removed test_connect / test_disconnect — /connect and
-    // /disconnect aren't real API routes; the methods are gone.)
-
-    #[test]
-    fn test_problem() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("POST", "/problem")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"problem_id": "prob-1", "success": true}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client.problem("bug", "Something went wrong").unwrap();
-        assert_eq!(result["problem_id"], "prob-1");
-        mock.assert();
-    }
-
-    // ── Context / emulate ───────────────────────────────────
-
-    #[test]
-    fn test_context() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("POST", "/context")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"profile_id": "p-1", "name": "Alice", "role": "admin"}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client.context().unwrap();
-        assert_eq!(result["profile_id"], "p-1");
-        assert_eq!(result["name"], "Alice");
-        mock.assert();
-    }
-
-    #[test]
-    fn test_emulate() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("POST", "/emulate")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(
-                r#"{"allowed": true, "grant_id": "g-1", "expires_at": "2026-03-28T16:00:00Z"}"#,
-            )
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client.emulate("p-2", 120).unwrap();
-        assert_eq!(result["allowed"], true);
-        assert!(result["grant_id"].is_string());
-        mock.assert();
-    }
-
-    #[test]
-    fn test_unemulate() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("POST", "/unemulate")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"emulating": false}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client.unemulate().unwrap();
-        assert_eq!(result["emulating"], false);
-        mock.assert();
-    }
+    // (Removed test_connect / test_disconnect / test_context /
+    // test_emulate / test_unemulate / test_problem — none of /connect,
+    // /disconnect, /context, /emulate, /unemulate, /problem are real
+    // top-level API routes. Per-artifact equivalents are exercised
+    // via ``resource_action(api_path, action, ...)``.)
 
     // (Removed test_generate / test_generate_with_body /
     // test_stream_url_construction — top-level /generate and /stream
