@@ -32,62 +32,14 @@ pub(crate) fn cmd_resource_action(
     Ok(())
 }
 
-// ── Context / Emulate / Generate ──────────────────────────────
-
-pub(crate) fn cmd_context(client: &GlowClient, mode: OutputMode) -> Result<()> {
-    use colored::Colorize;
-
-    let response = client.context()?;
-    output::print_result(mode, &response, |resp| {
-        println!("{}", "Context".bold());
-        if let Some(name) = resp.get("name").and_then(|v| v.as_str()) {
-            println!("  Name:       {}", name.bold());
-        }
-        if let Some(id) = resp.get("profile_id").and_then(|v| v.as_str()) {
-            println!("  Profile ID: {}", id.dimmed());
-        }
-        if let Some(role) = resp.get("role").and_then(|v| v.as_str()) {
-            println!("  Role:       {}", role);
-        }
-        if let Some(true) = resp.get("emulating").and_then(|v| v.as_bool()) {
-            println!("  {}", "Currently emulating another user".yellow());
-        }
-    });
-    Ok(())
-}
-
-pub(crate) fn cmd_emulate(
-    client: &GlowClient,
-    target_profile_id: &str,
-    ttl: u32,
-    mode: OutputMode,
-) -> Result<()> {
-    use colored::Colorize;
-
-    let response = client.emulate(target_profile_id, ttl)?;
-    output::print_result(mode, &response, |resp| {
-        println!(
-            "{} Now emulating profile {}",
-            "OK".green().bold(),
-            target_profile_id.dimmed(),
-        );
-        if let Some(ttl) = resp.get("ttl").and_then(|v| v.as_u64()) {
-            println!("  TTL: {}s", ttl);
-        }
-    });
-    Ok(())
-}
-
-pub(crate) fn cmd_unemulate(client: &GlowClient, mode: OutputMode) -> Result<()> {
-    use colored::Colorize;
-
-    let response = client.unemulate()?;
-    output::print_result(mode, &response, |resp| {
-        let _ = resp; // used for JSON mode
-        println!("{} Stopped emulating", "OK".green().bold());
-    });
-    Ok(())
-}
+// ── Generate (per-artifact, with --wait) ──────────────────────
+//
+// ``cmd_context`` / ``cmd_emulate`` / ``cmd_unemulate`` removed
+// in Cleanup D — context lives at POST /<art>/context on every
+// artifact; emulate/unemulate exist only on /profile. Reach via
+// generic dispatch (``glow profiles context``, ``glow profiles
+// emulate <id>``, ``glow profiles unemulate``). Ergonomic shape
+// for emulate lives in helpers::cmd_profile_emulate.
 
 /// `glow <art> generate --wait [--body '{...}']` — trigger the
 /// per-artifact generate (POST /<api_path>/generate) then block on
@@ -237,24 +189,10 @@ enum TerminalKind {
 // stream concept on the API; per-artifact watch is the canonical
 // "give me events for this run" surface.
 
-pub(crate) fn cmd_problem(
-    client: &GlowClient,
-    problem_type: &str,
-    message: &str,
-    mode: OutputMode,
-) -> Result<()> {
-    use colored::Colorize;
-
-    let response = client.problem(problem_type, message)?;
-    output::print_result(mode, &response, |resp| {
-        if let Some(id) = resp.get("problem_id").and_then(|v| v.as_str()) {
-            println!("{} Problem reported: {}", "OK".green().bold(), id.dimmed());
-        } else {
-            println!("{} Problem reported", "OK".green().bold());
-        }
-    });
-    Ok(())
-}
+// ``cmd_problem`` removed in Cleanup D — POST /problem isn't a real
+// route. Problem reporting lives per-artifact at POST /<art>/problem;
+// reach via generic dispatch on any artifact, e.g.
+// ``glow system problem --body '{"type":"bug","message":"..."}'``.
 
 // ``cmd_stream`` removed — hit a non-existent /stream top-level route.
 // Per-artifact streaming is ``glow <art> watch <run_id>``, which

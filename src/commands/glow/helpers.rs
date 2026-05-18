@@ -191,6 +191,33 @@ pub fn cmd_simulations_list(
     cmd_resource_action(client, "simulation", "search", Some(&body_str), mode)
 }
 
+// ── profiles emulate / unemulate ────────────────────────────────
+
+/// `glow profiles emulate <profile_id> [--ttl-minutes N]`
+/// → POST /profile/emulate { target_profile_id, ttl_minutes }
+///
+/// Emulation only exists on the profile artifact on the API; this is
+/// the ergonomic shape that replaced the (broken) top-level
+/// ``glow emulate`` command in Cleanup D.
+pub fn cmd_profile_emulate(
+    client: &GlowClient,
+    target_profile_id: &str,
+    ttl_minutes: u32,
+    mode: OutputMode,
+) -> Result<()> {
+    let body = json!({
+        "target_profile_id": target_profile_id,
+        "ttl_minutes": ttl_minutes,
+    });
+    let body_str = serde_json::to_string(&body)?;
+    cmd_resource_action(client, "profile", "emulate", Some(&body_str), mode)
+}
+
+/// `glow profiles unemulate` → POST /profile/unemulate {}
+pub fn cmd_profile_unemulate(client: &GlowClient, mode: OutputMode) -> Result<()> {
+    cmd_resource_action(client, "profile", "unemulate", Some("{}"), mode)
+}
+
 // ``cmd_groups_history`` removed in Cleanup B — now reachable as
 // ``glow system groups [--body '{"page_size":N,"date_from":...}']``
 // via the generic dispatch since System is back in the resource
