@@ -182,7 +182,12 @@ pub const NAMESPACES: &[CliNamespace] = &[
 
 // ── Media types ──────────────────────────────────────────────
 
-/// Media types that can be nested under any resource
+/// Media types that can be nested under any resource. Six modalities
+/// (text, call, file, audio, video, image) each support a small set of
+/// ops (download / upload / preview / etc.) — surfaced by the api as
+/// `<resource>/<modality>_<op>` paths. The CLI nests them as
+/// `glow <resource> <modality> <op>` for cleaner ergonomics + docs
+/// rendering.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MediaType {
     File,
@@ -190,6 +195,7 @@ pub enum MediaType {
     Text,
     Audio,
     Video,
+    Call,
 }
 
 impl MediaType {
@@ -200,6 +206,7 @@ impl MediaType {
             "text" => Some(MediaType::Text),
             "audio" => Some(MediaType::Audio),
             "video" => Some(MediaType::Video),
+            "call" => Some(MediaType::Call),
             _ => None,
         }
     }
@@ -211,12 +218,13 @@ impl MediaType {
             MediaType::Text => "text",
             MediaType::Audio => "audio",
             MediaType::Video => "video",
+            MediaType::Call => "call",
         }
     }
 
     #[allow(dead_code)]
     pub fn all_slugs() -> &'static [&'static str] {
-        &["file", "image", "text", "audio", "video"]
+        &["file", "image", "text", "audio", "video", "call"]
     }
 }
 
@@ -305,6 +313,7 @@ mod tests {
         assert_eq!(MediaType::from_str("text"), Some(MediaType::Text));
         assert_eq!(MediaType::from_str("audio"), Some(MediaType::Audio));
         assert_eq!(MediaType::from_str("video"), Some(MediaType::Video));
+        assert_eq!(MediaType::from_str("call"), Some(MediaType::Call));
         assert_eq!(MediaType::from_str("unknown"), None);
     }
 
