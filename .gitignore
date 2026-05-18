@@ -1,5 +1,6 @@
 target/
 .DS_Store
+demo-output/
 
 # Claude Code
 .claude/worktrees/

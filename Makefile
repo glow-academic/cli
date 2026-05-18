@@ -10,7 +10,7 @@
 #   make release            → optimized build
 #   make install            → install to ~/.cargo/bin
 
-.PHONY: build run exec test test-unit test-integration fmt clippy check release install clean watch coverage help sync-types
+.PHONY: build run exec test test-unit test-integration fmt clippy check release install clean watch coverage help sync-types demo-record demo-record-all
 
 # Grab everything after the first word (the make target) as CLI args
 RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -73,9 +73,18 @@ sync-types: ## Fetch the OpenAPI spec and regenerate Rust types
 	@echo "{\"glow-api\":{\"version\":\"$$(curl -sf $(GLOW_API_URL)/ | jq -r .version)\",\"synced_at\":\"$$(date -u +%%Y-%%m-%%dT%%H:%%M:%%SZ)\"}}" | jq . > api-versions.json
 	@echo "✅ Types updated. Run 'cargo build' to check for breaking changes."
 
+# Record VHS terminal demos into demo-output/*.mp4.
+# Usage: make demo-record TOPIC=start-overview
+demo-record:
+	@./scripts/render-tapes.sh $(TOPIC)
+
+demo-record-all:
+	@./scripts/render-tapes.sh
+
 # Remove build artifacts
 clean:
 	cargo clean
+	rm -rf demo-output
 
 # Auto-rebuild on file changes (requires: cargo install cargo-watch)
 watch:
@@ -103,6 +112,8 @@ help:
 	@echo "  clean            Remove build artifacts"
 	@echo "  watch            Auto-rebuild on file changes (needs cargo-watch)"
 	@echo "  coverage         Run tests with coverage report (needs cargo-llvm-cov)"
+	@echo "  demo-record      Record one VHS tape: make demo-record TOPIC=start-overview"
+	@echo "  demo-record-all  Record every tape in tapes/"
 
 # Catch trailing args from "make run ..." so Make doesn't error on them
 %:
