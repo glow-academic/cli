@@ -77,8 +77,11 @@ enum Commands {
     /// server-side call is best-effort — local clear always runs.
     Logout,
 
-    /// Check Glow instance health
-    Health,
+    // ``Health`` removed in Cleanup E — there is no top-level /health
+    // route. The old command hit GET / (a public liveness ping that
+    // returns {service, version, status}), which is misleadingly named.
+    // The real health artifact is POST /system/health — reach via
+    // ``glow system health`` through generic dispatch.
 
     // ``Context`` removed — no top-level /context route. Every artifact
     // has its own POST /<art>/context (returns a ComposedContextResponse).
@@ -486,11 +489,10 @@ pub fn run() -> Result<()> {
                 );
             }
         }
-        Commands::Health => {
-            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
-            let client = glow::GlowClient::new(&glow_url);
-            glow_cmd::cmd_health(&client, mode)?
-        }
+        // ``Commands::Health`` removed in Cleanup E — see comment on
+        // the enum variant. Use ``glow system health`` for the real
+        // health artifact (POST /system/health).
+
         // ``Commands::Context`` / ``Emulate`` / ``Unemulate`` removed —
         // context lives at POST /<artifact>/context on every artifact;
         // emulate/unemulate only exist on /profile. Reach them via

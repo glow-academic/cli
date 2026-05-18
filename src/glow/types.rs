@@ -3,21 +3,13 @@
 // types_gen.rs is auto-generated from the glow-api OpenAPI spec.
 // Add aliases or custom types here.
 
-/// Pinned API version this CLI was built against (from api-versions.json via sync-types)
-pub const PINNED_API_VERSION: &str = "2.6.0";
+// ``PINNED_API_VERSION`` removed in Cleanup E — only check_api_version
+// (also removed) read it. Canonical pinned version lives in
+// ``api-versions.json`` (rewritten by ``make sync-types``).
 
 #[allow(unused_imports)]
 pub use super::api::latest::*;
 
-// ── CLI-specific types (not in OpenAPI) ──────────────────────────
-
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HealthResponse {
-    pub status: String,
-    #[serde(default)]
-    pub version: Option<String>,
-    #[serde(default)]
-    pub service: Option<String>,
-}
+// ``HealthResponse`` removed in Cleanup E along with cmd_health /
+// GlowClient::health. The OpenAPI-generated ``HealthResponse`` in
+// api/latest.rs covers the real /system/health artifact when needed.

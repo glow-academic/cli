@@ -388,35 +388,6 @@ pub(crate) fn cmd_media_preview(
     Ok(())
 }
 
-// ── Health ────────────────────────────────────────────────────
-
-pub(crate) fn cmd_health(client: &GlowClient, mode: OutputMode) -> Result<()> {
-    use colored::Colorize;
-
-    let response = client.health()?;
-
-    // Check API version compatibility
-    if let Some(ref server_version) = response.version {
-        crate::api_common::check_api_version(
-            server_version,
-            crate::glow::types::PINNED_API_VERSION,
-            "Glow API",
-        );
-    }
-
-    output::print_result(mode, &response, |resp| {
-        let indicator = if resp.status == "ok" {
-            "●".green()
-        } else {
-            "●".red()
-        };
-        println!("{} Glow instance: {}", indicator, resp.status.bold());
-        if let Some(ref svc) = resp.service {
-            println!("  Service: {}", svc);
-        }
-        if let Some(ref v) = resp.version {
-            println!("  Version: {}", v.dimmed());
-        }
-    });
-    Ok(())
-}
+// ``cmd_health`` removed in Cleanup E — the top-level command hit
+// GET / (root liveness), not /health. The real health artifact is
+// reached via generic dispatch on ``glow system health``.
