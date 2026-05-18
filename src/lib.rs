@@ -95,28 +95,17 @@ enum Commands {
     /// Stop emulating and return to your own profile
     Unemulate,
 
-    /// Generate content for a group.
-    ///
-    /// With ``--wait``: block on the per-artifact watch SSE stream
-    /// after firing the trigger, until a terminal lifecycle event
-    /// (``.completed`` / ``.failed``) arrives. Pair with ``--artifact``
-    /// to scope the watch route (defaults to ``attempt``).
-    Generate {
-        /// Group ID to generate for
-        group_id: String,
-        /// JSON body for additional options
-        #[arg(long)]
-        body: Option<String>,
-        /// Block until the run terminates instead of returning the
-        /// trigger response immediately.
-        #[arg(long)]
-        wait: bool,
-        /// Artifact scope for the watch stream (only meaningful with
-        /// ``--wait``). Singular API path: ``attempt`` / ``scenario``
-        /// / ``persona`` / etc. Defaults to ``attempt``.
-        #[arg(long, default_value = "attempt")]
-        artifact: String,
-    },
+    // ``Generate``, ``Stream``, ``Connect``, ``Disconnect`` removed —
+    // they all hit non-existent top-level routes on the API
+    // (/generate, /stream, /connect, /disconnect). The actual API:
+    //   * Generate is per-artifact: POST /<artifact>/generate.
+    //     Reach via ``glow <art> generate [--wait]`` — see the
+    //     ``generate`` intercept in dispatch_resource_helper for the
+    //     --wait flag plumbing.
+    //   * Streaming is per-artifact: ``glow <art> watch <run_id>``
+    //     opens the SSE filtered to a run.
+    //   * Connect/disconnect for session-scoped streams didn't exist
+    //     on the API and had no live callers.
 
     /// MCP — talk to the Glow instance's Model Context Protocol
     /// endpoint at ``/mcp/``. Currently a JSON-RPC client thin enough
@@ -124,38 +113,6 @@ enum Commands {
     Mcp {
         #[command(subcommand)]
         command: McpCommands,
-    },
-
-
-    /// Stream events via SSE (Server-Sent Events)
-    Stream {
-        /// Artifact type to stream
-        #[arg(long)]
-        artifact: String,
-        /// Operation to stream (e.g. create, update, delete)
-        #[arg(long)]
-        operation: String,
-        /// Filter by entity ID
-        #[arg(long)]
-        entity_id: Option<String>,
-        /// Cursor for resuming from a position
-        #[arg(long)]
-        cursor: Option<String>,
-        /// Event type filter (comma-separated)
-        #[arg(long)]
-        types: Option<String>,
-        /// Max events per batch (1-200)
-        #[arg(long)]
-        limit: Option<u32>,
-    },
-
-    /// Create a stream session (returns session ID)
-    Connect,
-
-    /// Destroy a stream session
-    Disconnect {
-        /// Session ID to destroy
-        sid: String,
     },
 
     /// Report a problem
@@ -561,29 +518,14 @@ pub fn run() -> Result<()> {
             let client = glow::GlowClient::new(&glow_url);
             glow_cmd::cmd_unemulate(&client, mode)?
         }
-        Commands::Generate {
-            group_id,
-            body,
-            wait,
-            artifact,
-        } => {
-            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
-            let client = glow::GlowClient::new(&glow_url);
-            if wait {
-                glow_cmd::cmd_generate_and_wait(
-                    &client,
-                    &group_id,
-                    body.as_deref(),
-                    &artifact,
-                    mode,
-                )?
-            } else {
-                glow_cmd::cmd_generate(&client, &group_id, body.as_deref(), mode)?
-            }
-        }
+        // ``Commands::Generate`` removed — was a wrapper that hit a
+        // non-existent /generate top-level route. Generate is per-
+        // artifact (POST /<artifact>/generate). Reach via
+        // ``glow <art> generate [--wait] [--body '{...}']`` — the
+        // ``--wait`` flag is intercepted in dispatch_resource (see
+        // the generate intercept).
         // ``Commands::Groups`` removed in Cleanup B. Now reachable as
-        // ``glow system groups`` via the generic dispatch (System is
-        // back in the resource macro).
+        // ``glow system groups`` via the generic dispatch.
         Commands::Mcp { command } => {
             let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
             let client = glow::GlowClient::new(&glow_url);
@@ -601,37 +543,9 @@ pub fn run() -> Result<()> {
         // ``glow attempts chat live <chat_id>`` /
         // ``glow attempts chat voice <chat_id>`` via the sub-op
         // namespace intercept in dispatch_resource.
-        Commands::Stream {
-            artifact,
-            operation,
-            entity_id,
-            cursor,
-            types,
-            limit,
-        } => {
-            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
-            let client = glow::GlowClient::new(&glow_url);
-            glow_cmd::cmd_stream(
-                &client,
-                &artifact,
-                &operation,
-                entity_id.as_deref(),
-                cursor.as_deref(),
-                types.as_deref(),
-                limit,
-                mode,
-            )?
-        }
-        Commands::Connect => {
-            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
-            let client = glow::GlowClient::new(&glow_url);
-            glow_cmd::cmd_connect(&client, mode)?
-        }
-        Commands::Disconnect { sid } => {
-            let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
-            let client = glow::GlowClient::new(&glow_url);
-            glow_cmd::cmd_disconnect(&client, &sid, mode)?
-        }
+        // ``Commands::Stream`` / ``Connect`` / ``Disconnect`` removed —
+        // hit non-existent /stream, /connect, /disconnect top-level
+        // routes. Streaming is per-artifact: ``glow <art> watch <run_id>``.
         Commands::Problem { kind, message } => {
             let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
             let client = glow::GlowClient::new(&glow_url);
@@ -1039,6 +953,30 @@ fn dispatch_resource_helper(
                 .transpose()
                 .context("--page-size must be an integer")?;
             helpers::cmd_simulations_list(client, cohort.as_deref(), page_size, mode)?;
+            Ok(Some(()))
+        }
+        // ── generate --wait (any resource) ───────────────────
+        // Per-artifact ``POST /<art>/generate`` works via generic
+        // dispatch already; the ``--wait`` flag here turns the
+        // fire-and-forget trigger into a blocking call that watches
+        // the returned run_id until terminal. Body is built from the
+        // rest of the args (--body and/or --key value pairs) exactly
+        // like the non-wait path.
+        (_, "generate") if rest.iter().any(|a| a == "--wait") => {
+            // Strip --wait from the body-building args so it doesn't
+            // get folded into the JSON payload.
+            let scrubbed: Vec<String> = rest
+                .iter()
+                .filter(|a| a.as_str() != "--wait")
+                .cloned()
+                .collect();
+            let body = build_resource_body(&scrubbed)?;
+            commands::glow::cmd_generate_and_wait_dispatch(
+                client,
+                resource.api_path(),
+                body.as_deref(),
+                mode,
+            )?;
             Ok(Some(()))
         }
         // Anything else — let generic dispatch handle it.

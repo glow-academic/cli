@@ -167,30 +167,6 @@ impl GlowClient {
         )
     }
 
-    // ── Session management ──────────────────────────────────
-
-    /// Create a stream session (returns session ID)
-    pub fn connect(&self) -> Result<Value> {
-        api_request(
-            &self.http,
-            reqwest::Method::POST,
-            &self.url("/connect"),
-            Some(json!({})),
-            self.auth(),
-        )
-    }
-
-    /// Destroy a stream session
-    pub fn disconnect(&self, sid: &str) -> Result<Value> {
-        api_request(
-            &self.http,
-            reqwest::Method::POST,
-            &self.url("/disconnect"),
-            Some(json!({ "sid": sid })),
-            self.auth(),
-        )
-    }
-
     // ── Problem reporting ─────────────────────────────────────
 
     /// Report a problem
@@ -204,20 +180,9 @@ impl GlowClient {
         )
     }
 
-    /// Generate content for a group
-    pub fn generate(&self, group_id: &str, body: Option<Value>) -> Result<Value> {
-        let mut payload = body.unwrap_or_else(|| json!({}));
-        if let Some(obj) = payload.as_object_mut() {
-            obj.insert("group_id".to_string(), json!(group_id));
-        }
-        api_request(
-            &self.http,
-            reqwest::Method::POST,
-            &self.url("/generate"),
-            Some(payload),
-            self.auth(),
-        )
-    }
+    // ``generate`` removed — no top-level /generate route on the API.
+    // Generation is per-artifact: POST /{artifact}/generate. Callers
+    // should use ``resource_action(api_path, "generate", body)``.
 
     // ── Per-resource media operations ──────────────────────────
     //
@@ -435,55 +400,19 @@ impl GlowClient {
         Ok(resp)
     }
 
-    // ── Streaming ─────────────────────────────────────────────
-
-    /// SSE stream — returns raw response for line-by-line reading.
-    pub fn stream(
-        &self,
-        artifact: &str,
-        operation: &str,
-        entity_id: Option<&str>,
-        cursor: Option<&str>,
-        types: Option<&str>,
-        limit: Option<u32>,
-    ) -> Result<blocking::Response> {
-        let mut params = vec![
-            format!("artifact={}", artifact),
-            format!("operation={}", operation),
-        ];
-        if let Some(id) = entity_id {
-            params.push(format!("entity_id={}", id));
-        }
-        if let Some(c) = cursor {
-            params.push(format!("cursor={}", c));
-        }
-        if let Some(t) = types {
-            params.push(format!("types={}", t));
-        }
-        if let Some(l) = limit {
-            params.push(format!("limit={}", l));
-        }
-        let url = format!("{}?{}", self.url("/stream"), params.join("&"));
-
-        let resp = self
-            .authed_request(reqwest::Method::GET, &url)
-            .header("Accept", "text/event-stream")
-            .send()
-            .with_context(|| format!("Failed to connect to SSE stream at {}", url))?;
-
-        if !resp.status().is_success() {
-            let status = resp.status();
-            let text = resp.text().unwrap_or_default();
-            anyhow::bail!("SSE stream error (HTTP {}): {}", status, text);
-        }
-
-        Ok(resp)
-    }
+    // ``stream`` removed — no top-level /stream route on the API.
+    // Per-artifact streaming is GET /{artifact}/watch?run_id=...,
+    // exposed via ``watch_run`` above.
 }
 
 // ── SSE helper ────────────────────────────────────────────────
 
 /// Read SSE events from a response and call the handler for each data line.
+///
+/// Kept (with ``#[allow(dead_code)]``) as the simple variant alongside
+/// ``read_sse_events_with_names`` — useful when callers don't care about
+/// event-name terminal detection.
+#[allow(dead_code)]
 pub fn read_sse_events(response: blocking::Response, mut handler: impl FnMut(&str)) -> Result<()> {
     let reader = std::io::BufReader::new(response);
     for line in reader.lines() {
@@ -612,39 +541,8 @@ mod tests {
         mock.assert();
     }
 
-    // ── Connect / disconnect / problem ─────────────────────
-
-    #[test]
-    fn test_connect() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("POST", "/connect")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"sid": "sess-abc123"}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client.connect().unwrap();
-        assert_eq!(result["sid"], "sess-abc123");
-        mock.assert();
-    }
-
-    #[test]
-    fn test_disconnect() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("POST", "/disconnect")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"success": true}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client.disconnect("sess-abc123").unwrap();
-        assert_eq!(result["success"], true);
-        mock.assert();
-    }
+    // (Removed test_connect / test_disconnect — /connect and
+    // /disconnect aren't real API routes; the methods are gone.)
 
     #[test]
     fn test_problem() {
@@ -662,7 +560,7 @@ mod tests {
         mock.assert();
     }
 
-    // ── Context / emulate / generate ────────────────────────
+    // ── Context / emulate ───────────────────────────────────
 
     #[test]
     fn test_context() {
@@ -716,61 +614,11 @@ mod tests {
         mock.assert();
     }
 
-    #[test]
-    fn test_generate() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("POST", "/generate")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"job_id": "j-1", "status": "queued"}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client.generate("grp-1", None).unwrap();
-        assert_eq!(result["job_id"], "j-1");
-        mock.assert();
-    }
-
-    #[test]
-    fn test_generate_with_body() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("POST", "/generate")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"job_id": "j-2", "status": "queued"}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client
-            .generate("grp-1", Some(json!({"count": 10})))
-            .unwrap();
-        assert_eq!(result["job_id"], "j-2");
-        mock.assert();
-    }
-
-    #[test]
-    fn test_stream_url_construction() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("GET", "/stream")
-            .match_query(mockito::Matcher::AllOf(vec![
-                mockito::Matcher::UrlEncoded("artifact".into(), "personas".into()),
-                mockito::Matcher::UrlEncoded("operation".into(), "create".into()),
-            ]))
-            .with_status(200)
-            .with_header("content-type", "text/event-stream")
-            .with_body("data: {\"event\": \"created\"}\n\n")
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let resp = client
-            .stream("personas", "create", None, None, None, None)
-            .unwrap();
-        assert!(resp.status().is_success());
-        mock.assert();
-    }
+    // (Removed test_generate / test_generate_with_body /
+    // test_stream_url_construction — top-level /generate and /stream
+    // aren't real API routes. Per-artifact generate is exercised via
+    // ``resource_action(api_path, "generate", ...)`` and per-artifact
+    // watch is exercised via ``watch_run``.)
 
     // ── Per-resource media ────────────────────────────────────
 
