@@ -114,6 +114,19 @@ define_resources! {
     // ── Session / interactive (top-level CRUD on the API) ─────
     (Attempts,     "attempts",     "attempt",     "Simulation attempts"),
     (Tests,        "tests",        "test",        "Test sessions"),
+
+    // ── System namespace ──────────────────────────────────────
+    // Not a CRUD artifact — system/<op> is a flat 1-level-per-op
+    // surface (POST /system/activity, /system/health, /system/sessions,
+    // /system/groups, /system/pricing, /system/{audio,image,file,
+    // video,text,call}_download, /system/file_preview, /system/watch,
+    // /system/export, /system/refresh, /system/resolve, /system/title,
+    // /system/generations, /system/context, /system/generate,
+    // /system/problem). Adding it as a Resource lets all 17 system
+    // ops reach the generic dispatch — ``glow system activity`` etc.
+    // (Pre-cleanup B these were a scattered set of top-level Clap
+    // commands and a Groups subcommand group; consolidated here.)
+    (System,       "system",       "system",      "System views + cross-artifact ops (activity, health, sessions, groups, pricing, downloads, ...)"),
 }
 
 // ── Media types ──────────────────────────────────────────────
@@ -194,9 +207,8 @@ mod tests {
     #[test]
     fn test_all_slugs_count() {
         assert_eq!(Resource::all().len(), Resource::all_slugs().len());
-        // 19 CRUD resources after the singular→plural rename + view-artifact removal.
-        // Phase 4 will re-introduce views/nested as subcommands of their parent.
-        assert!(Resource::all().len() >= 19);
+        // 19 CRUD resources + System namespace = 20 after Cleanup B.
+        assert!(Resource::all().len() >= 20);
     }
 
     #[test]

@@ -191,33 +191,11 @@ pub fn cmd_simulations_list(
     cmd_resource_action(client, "simulation", "search", Some(&body_str), mode)
 }
 
-// ── groups (view, system-namespaced) ────────────────────────────
-
-/// `glow groups history [--limit N] [--date-from ISO] [--date-to ISO]`
-/// → POST /system/groups with { limit?, date_from?, date_to? }
-///
-/// Lives outside the Resource enum (groups is a system view, not a
-/// CRUD artifact) so it gets its own top-level Clap subcommand.
-pub fn cmd_groups_history(
-    client: &GlowClient,
-    limit: Option<u32>,
-    date_from: Option<&str>,
-    date_to: Option<&str>,
-    mode: OutputMode,
-) -> Result<()> {
-    let mut body = json!({});
-    if let Some(n) = limit {
-        body["page_size"] = json!(n);
-    }
-    if let Some(d) = date_from {
-        body["date_from"] = json!(d);
-    }
-    if let Some(d) = date_to {
-        body["date_to"] = json!(d);
-    }
-    let body_str = serde_json::to_string(&body)?;
-    cmd_resource_action(client, "system", "groups", Some(&body_str), mode)
-}
+// ``cmd_groups_history`` removed in Cleanup B — now reachable as
+// ``glow system groups [--body '{"page_size":N,"date_from":...}']``
+// via the generic dispatch since System is back in the resource
+// macro. If a sugary positional shape is wanted later, add it as
+// a (Resource::System, "groups") helper intercept.
 
 // Silence the unused-import warning when only a subset compiles.
 #[allow(dead_code)]
