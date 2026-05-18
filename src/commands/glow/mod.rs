@@ -89,46 +89,15 @@ pub(crate) fn cmd_unemulate(client: &GlowClient, mode: OutputMode) -> Result<()>
     Ok(())
 }
 
-pub(crate) fn cmd_generate(
+/// `glow <art> generate --wait [--body '{...}']` — trigger the
+/// per-artifact generate (POST /<api_path>/generate) then block on
+/// the watch SSE filtered to the returned run_id. Replaces the
+/// removed top-level ``glow generate`` (which hit a non-existent
+/// /generate route).
+pub(crate) fn cmd_generate_and_wait_dispatch(
     client: &GlowClient,
-    group_id: &str,
-    body_str: Option<&str>,
-    mode: OutputMode,
-) -> Result<()> {
-    use colored::Colorize;
-
-    let body = match body_str {
-        Some(s) => Some(
-            serde_json::from_str::<serde_json::Value>(s)
-                .map_err(|e| anyhow::anyhow!("Invalid JSON for --body: {}", e))?,
-        ),
-        None => None,
-    };
-
-    let response = client.generate(group_id, body)?;
-    output::print_result(mode, &response, |resp| {
-        if let Some(job_id) = resp.get("job_id").and_then(|v| v.as_str()) {
-            println!(
-                "{} Generation queued: {}",
-                "OK".green().bold(),
-                job_id.dimmed()
-            );
-        }
-        if let Some(status) = resp.get("status").and_then(|v| v.as_str()) {
-            println!("  Status: {}", status);
-        }
-    });
-    Ok(())
-}
-
-/// Like ``cmd_generate`` but extracts the ``run_id`` from the response
-/// and blocks on ``cmd_watch_run`` until the run reaches a terminal
-/// lifecycle state. Powers ``glow generate --wait``.
-pub(crate) fn cmd_generate_and_wait(
-    client: &GlowClient,
-    group_id: &str,
-    body_str: Option<&str>,
     artifact_api_path: &str,
+    body_str: Option<&str>,
     mode: OutputMode,
 ) -> Result<()> {
     use colored::Colorize;
@@ -141,11 +110,17 @@ pub(crate) fn cmd_generate_and_wait(
         None => None,
     };
 
-    let response = client.generate(group_id, body)?;
+    // Trigger via the same generic POST the body-only path uses.
+    let response = client.resource_action(artifact_api_path, "generate", body)?;
+
     // Surface the trigger response first (run_id, group_id, etc.) so
     // the user has the handles even if the watch fails midway.
     let run_id = response
         .get("run_id")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    let group_id = response
+        .get("group_id")
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
     output::print_result(mode, &response, |resp| {
@@ -157,8 +132,13 @@ pub(crate) fn cmd_generate_and_wait(
     let Some(rid) = run_id else {
         anyhow::bail!("generate response had no ``run_id`` to watch");
     };
-    eprintln!("{} Watching {}/watch run_id={} …", "·".dimmed(), artifact_api_path, rid);
-    cmd_watch_run(client, artifact_api_path, &rid, Some(group_id), mode)
+    eprintln!(
+        "{} Watching /{}/watch run_id={} …",
+        "·".dimmed(),
+        artifact_api_path,
+        rid
+    );
+    cmd_watch_run(client, artifact_api_path, &rid, group_id.as_deref(), mode)
 }
 
 /// Stream the per-artifact watch endpoint scoped to a single run,
@@ -252,33 +232,10 @@ enum TerminalKind {
     Failed,
 }
 
-pub(crate) fn cmd_connect(client: &GlowClient, mode: OutputMode) -> Result<()> {
-    use colored::Colorize;
-
-    let response = client.connect()?;
-    output::print_result(mode, &response, |resp| {
-        if let Some(sid) = resp.get("sid").and_then(|v| v.as_str()) {
-            println!("{} Session created: {}", "OK".green().bold(), sid.bold());
-            println!("  Use with: glow stream --artifact <type> --operation <op>");
-            println!("  Destroy with: glow disconnect {}", sid);
-        }
-    });
-    Ok(())
-}
-
-pub(crate) fn cmd_disconnect(client: &GlowClient, sid: &str, mode: OutputMode) -> Result<()> {
-    use colored::Colorize;
-
-    let response = client.disconnect(sid)?;
-    output::print_result(mode, &response, |_| {
-        println!(
-            "{} Session destroyed: {}",
-            "OK".green().bold(),
-            sid.dimmed()
-        );
-    });
-    Ok(())
-}
+// ``cmd_connect`` / ``cmd_disconnect`` removed — hit non-existent
+// /connect and /disconnect top-level routes. There's no session-scoped
+// stream concept on the API; per-artifact watch is the canonical
+// "give me events for this run" surface.
 
 pub(crate) fn cmd_problem(
     client: &GlowClient,
@@ -299,40 +256,10 @@ pub(crate) fn cmd_problem(
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
-pub(crate) fn cmd_stream(
-    client: &GlowClient,
-    artifact: &str,
-    operation: &str,
-    entity_id: Option<&str>,
-    cursor: Option<&str>,
-    types: Option<&str>,
-    limit: Option<u32>,
-    mode: OutputMode,
-) -> Result<()> {
-    let response = client.stream(artifact, operation, entity_id, cursor, types, limit)?;
-
-    match mode {
-        OutputMode::Json => {
-            crate::glow::read_sse_events(response, |data| {
-                println!("{}", data);
-            })?;
-        }
-        OutputMode::Human => {
-            use colored::Colorize;
-            println!(
-                "{} Streaming {} {} events...\n",
-                "●".green(),
-                artifact.bold(),
-                operation,
-            );
-            crate::glow::read_sse_events(response, |data| {
-                println!("{}", data);
-            })?;
-        }
-    }
-    Ok(())
-}
+// ``cmd_stream`` removed — hit a non-existent /stream top-level route.
+// Per-artifact streaming is ``glow <art> watch <run_id>``, which
+// uses ``cmd_watch_run`` above and hits the real ``/<art>/watch`` SSE
+// endpoint.
 
 // ── Per-resource media operations ────────────────────────────
 
