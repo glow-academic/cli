@@ -38,6 +38,20 @@ impl GlowClient {
         format!("{}{}", self.base_url, path)
     }
 
+    /// Public accessor for the base URL — the WS layer needs this to
+    /// build the socket.io connect URL without going through the HTTP
+    /// path helpers.
+    pub fn base_url(&self) -> &str {
+        &self.base_url
+    }
+
+    /// Public accessor for the stored bearer token (if any). Mirrors
+    /// what ``self.auth()`` does internally; exposed so the WS layer
+    /// can forward the same JWT through socket.io's auth handshake.
+    pub fn token(&self) -> Option<&str> {
+        self.token.as_deref()
+    }
+
     fn auth(&self) -> Auth<'_> {
         match &self.token {
             Some(t) => Auth::Bearer(t),
