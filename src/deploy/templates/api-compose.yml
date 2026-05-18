@@ -35,7 +35,11 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-mypassword}
       - POSTGRES_DB=glowapi
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      # Postgres 18+ expects the mount at /var/lib/postgresql (not /data) —
+      # data lives in a major-version subdir (`18/docker`) so pg_upgrade
+      # can hard-link across versions without crossing mount boundaries.
+      # See https://github.com/docker-library/postgres/pull/1259
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-myuser} -d glowapi"]
       interval: 5s
@@ -46,12 +50,16 @@ services:
       - internal
 
   # --------------------
-  # DB Init (one-shot)
+  # DB Init (one-shot, atomic)
   # --------------------
-  # Runs the python seed runner against the live DB on first deploy.
-  # Idempotent: if the target DB already has public tables, exits 0
-  # silently — so it's safe to keep in the compose graph permanently
-  # and re-runs on every `compose up` no-op.
+  # Runs `python -m database.init` — seeds a staging DB and then
+  # ALTER DATABASE RENAMEs it into place. Either the live DB ends up
+  # fully seeded (marker row present in _glow_seed_complete) or it's
+  # untouched and the staging DB is dropped. Idempotent: re-runs see
+  # the marker and exit 0.
+  #
+  # The instance's glow-deploy.yaml is mounted read-only so the seed
+  # modules can resolve ai.providers / ai.models / ai.roles.
   db-init:
     image: ${API_REGISTRY:-ghcr.io/glow-academic}/api:${API_VERSION:?API_VERSION is required}
     restart: "no"
@@ -61,15 +69,21 @@ services:
       - SEED_SETUP=${SEED_SETUP:-fresh}
       - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
       - AUTH_SECRET=${SECRET_KEY:-dev-secret-key-change-in-production}
+      # globals.py picks /app/uploads when DOCKER_ENV=1 (otherwise it
+      # resolves to /uploads which appuser can't write to).
+      - DOCKER_ENV=1
       # Keycloak isn't up yet at first-deploy seeding time, and the
       # seed runner never needs to round-trip through it.
       - SKIP_KEYCLOAK_SYNC=1
+    volumes:
+      # Seed modules read providers/models/roles from this file.
+      - ../glow-deploy.yaml:/app/glow-deploy.yaml:ro
     depends_on:
       database:
         condition: service_healthy
       redis:
         condition: service_started
-    command: ["python", "-m", "database.scripts.runner", "--setup", "${SEED_SETUP:-fresh}"]
+    command: ["python", "-m", "database.init", "--setup", "${SEED_SETUP:-fresh}"]
     networks:
       - internal
 
@@ -255,7 +269,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      # First boot: gunicorn worker waits on keycloak's first-boot
+      # warmup (~60-90s) before serving. Grace period covers that.
+      start_period: 150s
     depends_on:
       pgbouncer:
         condition: service_healthy
@@ -311,7 +327,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      # First boot: gunicorn worker waits on keycloak's first-boot
+      # warmup (~60-90s) before serving. Grace period covers that.
+      start_period: 150s
     depends_on:
       pgbouncer:
         condition: service_healthy
@@ -336,12 +354,22 @@ services:
       - APP_PREFIX=${APP_PREFIX:-}
       - ACTIVE_ENV=${ACTIVE_ENV:-blue}
       - ACTIVE_KC_ENV=${ACTIVE_KC_ENV:-blue}
+    # Host port mapping. In api_only / local dev, this is how the user
+    # reaches the api. In airgapped/exposed, an external reverse proxy
+    # (Traefik) routes via the shared glow_net network and you can
+    # override API_HTTP_PORT to "127.0.0.1:0" (random) or empty if you
+    # don't want a host port at all.
+    ports:
+      - "${API_HTTP_PORT:-127.0.0.1:8000}:80"
     volumes:
-      - ./web/default.conf.template:/etc/nginx/templates/default.conf.template:ro
-      - ./web/generated:/etc/nginx/conf.d/generated:rw
+      - ./default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      # Directory mount (not single-file) — docker-gen writes upstreams.conf
+      # via rename, which requires write access to the parent dir.
+      - ./generated:/etc/nginx/conf.d/generated:rw
     depends_on:
       - server-blue
       - server-green
+      - docker-gen
     networks:
       - internal
       - public_net
@@ -357,10 +385,10 @@ services:
       - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-glow-default}
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./web/templates:/etc/docker-gen/templates:ro
-      - ./web/generated:/etc/nginx/conf.d/generated:rw
+      - ./upstreams.tmpl:/etc/docker-gen/templates/upstreams.tmpl:ro
+      - ./generated:/etc/nginx/conf.d/generated:rw
     command: >
-      -notify-sighup ${COMPOSE_PROJECT_NAME}-nginx
+      -notify-sighup ${COMPOSE_PROJECT_NAME:-glow-default}-nginx
       -watch
       /etc/docker-gen/templates/upstreams.tmpl
       /etc/nginx/conf.d/generated/upstreams.conf
