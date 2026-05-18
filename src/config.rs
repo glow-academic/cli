@@ -19,7 +19,6 @@ pub struct Instance {
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
-    pub api_url: Option<String>,
     pub glow_url: Option<String>,
     pub client_id: Option<String>,
     pub org_id: Option<String>,
@@ -75,27 +74,27 @@ mod tests {
     #[test]
     fn test_parse_full_config() {
         let toml = r#"
-            api_url = "https://custom.api.com"
             glow_url = "https://glow.example.com"
+            client_id = "glow-cli"
         "#;
         let config = Config::parse(toml).unwrap();
-        assert_eq!(config.api_url.unwrap(), "https://custom.api.com");
         assert_eq!(config.glow_url.unwrap(), "https://glow.example.com");
+        assert_eq!(config.client_id.unwrap(), "glow-cli");
     }
 
     #[test]
     fn test_parse_partial_config() {
-        let toml = r#"api_url = "https://custom.api.com""#;
+        let toml = r#"glow_url = "https://glow.example.com""#;
         let config = Config::parse(toml).unwrap();
-        assert_eq!(config.api_url.unwrap(), "https://custom.api.com");
-        assert!(config.glow_url.is_none());
+        assert_eq!(config.glow_url.unwrap(), "https://glow.example.com");
+        assert!(config.client_id.is_none());
     }
 
     #[test]
     fn test_parse_empty_config() {
         let config = Config::parse("").unwrap();
-        assert!(config.api_url.is_none());
         assert!(config.glow_url.is_none());
+        assert!(config.client_id.is_none());
     }
 
     #[test]
@@ -182,7 +181,7 @@ mod tests {
         let path = dir.path().join("config.toml");
 
         let config = Config {
-            api_url: Some("https://api.test.com".into()),
+            glow_url: Some("https://glow.test.com".into()),
             active_instance: Some("dev".into()),
             instances: {
                 let mut m = HashMap::new();
