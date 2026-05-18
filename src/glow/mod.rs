@@ -97,17 +97,10 @@ impl GlowClient {
         Ok(())
     }
 
-    // ── Health ────────────────────────────────────────────────
-
-    pub fn health(&self) -> Result<types::HealthResponse> {
-        api_request(
-            &self.http,
-            reqwest::Method::GET,
-            &self.url("/"),
-            None,
-            Auth::None,
-        )
-    }
+    // ``health`` removed in Cleanup E — the method hit GET / (root
+    // liveness), not a real /health route. The health artifact lives
+    // at POST /system/health and is reached via
+    // ``resource_action("system", "health", ...)``.
 
     // ── Generic resource CRUD (v5 routes) ────────────────────
     //
@@ -424,25 +417,9 @@ pub fn read_sse_events_with_names(
 mod tests {
     use super::*;
 
-    // ── Health ───────────────────────────────────────────────
-
-    #[test]
-    fn test_health_success() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("GET", "/")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"service": "glow-api", "version": "2.4.0", "status": "ok"}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client.health().unwrap();
-        assert_eq!(result.status, "ok");
-        assert_eq!(result.service, Some("glow-api".into()));
-        assert_eq!(result.version, Some("2.4.0".into()));
-        mock.assert();
-    }
+    // (Removed test_health_success — GET / liveness is no longer
+    // wrapped; the real health artifact is exercised through
+    // resource_action.)
 
     // ── Resource action (v5 routes) ────────────────────────
 
