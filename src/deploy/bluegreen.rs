@@ -58,14 +58,21 @@ pub fn bring_up_api_target(project_dir: &Path, project_name: &str, target_env: &
     let server = format!("server-{target_env}");
     let keycloak = format!("keycloak-{target_env}");
 
-    println!("  · bringing up {server} + {keycloak}");
-    runtime::up(project_dir, project_name, &[&server, &keycloak])?;
+    println!("  · bringing up {server} + {keycloak} + docker-gen");
+    // docker-gen watches the docker socket and regenerates the nginx
+    // upstreams.conf when server-* / keycloak-* containers appear.
+    // Without it, nginx is stuck pointing at "127.0.0.1:1 down" from
+    // the seed file and proxies return 502.
+    runtime::up(project_dir, project_name, &[&server, &keycloak, "docker-gen"])?;
 
     println!("  · waiting for {keycloak} to become healthy (up to 3min)");
     healthcheck::wait_healthy(project_name, &keycloak, &keycloak, Duration::from_secs(180))?;
 
-    println!("  · waiting for {server} to become healthy (up to 2min)");
-    healthcheck::wait_healthy(project_name, &server, &server, Duration::from_secs(120))?;
+    // First-boot servers retry against keycloak (which itself may still
+    // be warming up) for ~60-90s before becoming healthy. Give 4min on
+    // first deploy; subsequent deploys are usually <30s.
+    println!("  · waiting for {server} to become healthy (up to 4min)");
+    healthcheck::wait_healthy(project_name, &server, &server, Duration::from_secs(240))?;
 
     Ok(())
 }
