@@ -7,9 +7,7 @@
 //   4. Exchange the authorization code for tokens
 //   5. Store tokens locally, keyed by server URL
 //
-// Supports N concurrent sessions — one per server URL:
-//   - 1 LearnLoop API token (central platform)
-//   - N Glow instance tokens (one per instance)
+// Supports N concurrent sessions — one per Glow instance URL.
 //
 // In Python terms: like authlib or oauthlib
 // In TS terms:     like openid-client
@@ -381,7 +379,7 @@ fn exchange_code(
         ("redirect_uri", redirect_uri),
         ("client_id", client_id),
     ];
-    // Glow instances require client_secret; LearnLoop API does not
+    // Glow instances require client_secret on the token exchange
     if let Some(secret) = client_secret {
         params.push(("client_secret", secret));
     }
@@ -404,8 +402,7 @@ fn exchange_code(
 
 // ── Public API ────────────────────────────────────────────────
 
-/// Run the full OAuth login flow for a given server.
-/// Works for both the LearnLoop API and any Glow instance.
+/// Run the full OAuth login flow against a Glow instance.
 #[allow(dead_code)]
 pub fn login(server_url: &str, client_id: &str) -> Result<StoredToken> {
     login_with_secret(server_url, client_id, None)

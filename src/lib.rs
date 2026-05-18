@@ -29,11 +29,7 @@ use output::OutputMode;
 #[derive(Parser)]
 #[command(name = "glow", about = "Glow CLI — manage your platform", version)]
 struct Cli {
-    /// LearnLoop API URL (central platform)
-    #[arg(long, env = "GLOW_API_URL")]
-    api_url: Option<String>,
-
-    /// Glow instance URL
+    /// Glow instance URL (overrides config + ``$GLOW_INSTANCE_URL``).
     #[arg(long, env = "GLOW_INSTANCE_URL")]
     instance_url: Option<String>,
 
