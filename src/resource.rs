@@ -129,6 +129,57 @@ define_resources! {
     (System,       "system",       "system",      "System views + cross-artifact ops (activity, health, sessions, groups, pricing, downloads, ...)"),
 }
 
+// ── CLI namespaces (nested view artifacts) ──────────────────
+//
+// Three CLI parents (attempts/tests/system) own a URL namespace where
+// view artifacts live as nested ops. The api paths use an underscore
+// prefix convention (`/attempt/chat_get`, `/test/invocation_run`,
+// `/system/health`) so the wire format alone can't tell you which
+// actions belong to which view — the CLI declares the grouping here,
+// which makes it discoverable via `--dump-cli-spec` for tooling that
+// needs to render nested commands (docs gen, IDE completions, etc.).
+//
+// own_actions = actions invoked directly on the parent (no view prefix).
+// views       = view artifacts whose actions are prefixed in the wire
+//               path. CLI invocation is `glow <parent> <view> <action>`;
+//               wire call is `POST /<parent>/<view>_<action>`.
+
+#[derive(Debug, Clone, Copy)]
+pub struct CliNamespace {
+    pub name: &'static str,
+    pub own_actions: &'static [&'static str],
+    pub views: &'static [&'static str],
+}
+
+pub const NAMESPACES: &[CliNamespace] = &[
+    CliNamespace {
+        name: "attempts",
+        own_actions: &[
+            "get", "search", "archive", "complete", "context", "draft", "drafts",
+            "export", "generate", "generations", "group", "problem", "refresh",
+            "start", "stop", "title", "watch",
+        ],
+        views: &["chat", "home", "practice", "dashboard", "reports", "leaderboard"],
+    },
+    CliNamespace {
+        name: "tests",
+        own_actions: &[
+            "get", "search", "archive", "complete", "context", "draft", "drafts",
+            "export", "feedback", "generate", "generations", "grade", "group",
+            "problem", "refresh", "start", "stop", "title", "watch",
+        ],
+        views: &["benchmark", "invocation"],
+    },
+    CliNamespace {
+        name: "system",
+        own_actions: &[
+            "context", "export", "generate", "generations", "group", "problem",
+            "refresh", "resolve", "title", "watch",
+        ],
+        views: &["activity", "health", "pricing", "session", "group"],
+    },
+];
+
 // ── Media types ──────────────────────────────────────────────
 
 /// Media types that can be nested under any resource
