@@ -7,6 +7,6 @@ Set FontSize 18
 Set Padding 16
 Set TypingSpeed 35ms
 
-Type "glow attempts audio upload --help"
+Type "glow attempts --help"
 Enter
 Sleep 2s

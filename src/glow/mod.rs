@@ -681,8 +681,8 @@ mod tests {
         let reader = std::io::BufReader::new(cursor);
         for line in reader.lines() {
             let line = line.unwrap();
-            if line.starts_with("data: ") {
-                events.push(line[6..].to_string());
+            if let Some(payload) = line.strip_prefix("data: ") {
+                events.push(payload.to_string());
             }
         }
         assert_eq!(events, vec!["hello", "world"]);
