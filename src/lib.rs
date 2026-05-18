@@ -366,6 +366,19 @@ pub fn build_cli_spec() -> serde_json::Value {
         let media_types: Vec<&str> = resource::MediaType::all_slugs().to_vec();
         obj.insert("media_types".into(), json!(media_types));
 
+        // Nested view-artifact namespaces. Docs gen + IDE tooling use
+        // this to render `glow attempts chat get` style commands with
+        // proper parent/view/action structure.
+        let namespaces: Vec<serde_json::Value> = resource::NAMESPACES
+            .iter()
+            .map(|n| json!({
+                "name": n.name,
+                "own_actions": n.own_actions,
+                "views": n.views,
+            }))
+            .collect();
+        obj.insert("namespaces".into(), json!(namespaces));
+
         obj.insert("media_actions".into(), json!([
             { "name": "upload", "about": "Upload a file via multipart form", "args": [
                 { "name": "file", "long": "--file", "required": true, "help": "Path to file to upload" }
