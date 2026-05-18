@@ -101,6 +101,7 @@ pub fn run(name: &str) -> Result<DeployConfig> {
         client_origin: Some(origin.clone()),
         api_version: None,
         client_version: None,
+        client_http_port: None,
         origin: Some(origin),
         ai: AiConfig {
             providers: vec![AiProvider {

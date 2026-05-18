@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Thin wrapper so VHS tapes can type `glow ...` and have it resolve to
+# this repo's freshly-built debug binary (without showing the
+# ./target/debug/glow path in the recording).
+# render-tapes.sh prepends `tapes/bin` to PATH before invoking vhs.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+exec "$REPO_ROOT/target/debug/glow" "$@"

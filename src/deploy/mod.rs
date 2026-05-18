@@ -269,7 +269,7 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
                 .unwrap_or_else(|| ct.clone()),
             project_name: instance.client_project_name(),
             glow_network: instance.shared_network(),
-            client_http_port: 80,
+            client_http_port: cfg.client_http_port.unwrap_or(80),
             domain,
             public_api_url,
             internal_api_base: format!("http://{}-nginx:80", instance.api_project_name()),
