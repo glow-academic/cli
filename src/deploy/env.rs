@@ -60,9 +60,12 @@ const CLIENT_OWNED_KEYS: &[&str] = &[
     "INTERNAL_API_BASE",
     "NEXT_PUBLIC_API_BASE",
     "AUTH_SECRET",
-    "AUTH_KEYCLOAK_ID",
-    "AUTH_KEYCLOAK_SECRET",
-    "KEYCLOAK_PUBLIC_URL",
+    // The academic client uses a custom `glow` OIDC provider that reads
+    // AUTH_ISSUER / AUTH_CLIENT_ID / AUTH_CLIENT_SECRET (not the NextAuth
+    // built-in Keycloak provider's AUTH_KEYCLOAK_* names).
+    "AUTH_ISSUER",
+    "AUTH_CLIENT_ID",
+    "AUTH_CLIENT_SECRET",
     "NEXTAUTH_URL",
     "AUTH_TRUST_HOST",
     "MCP_BACKEND",
@@ -118,15 +121,22 @@ pub struct ClientEnvInputs {
     /// AUTH_SECRET — must match the api's SECRET_KEY (NextAuth uses it
     /// to verify JWTs minted by the api).
     pub auth_secret: String,
-    /// Keycloak OIDC client id. Defaults to `glow-client`.
-    pub auth_keycloak_id: String,
-    /// Keycloak OIDC client secret — same value as the api's
-    /// AUTH_CLIENT_SECRET (PBKDF2-derived from SECRET_KEY).
-    pub auth_keycloak_secret: String,
-    /// Public Keycloak URL. Per topology:
-    ///   airgapped → ${client_origin}/auth   (proxied by client nginx)
-    ///   exposed   → ${api_origin}/auth      (Keycloak is on api domain)
-    pub keycloak_public_url: String,
+    /// OIDC issuer URL the academic client's `glow` provider validates
+    /// tokens against. Must equal the `iss` claim the api mints, which
+    /// is ORIGIN-derived. Per topology:
+    ///   airgapped → ${client_origin}   (api proxied via client nginx)
+    ///   exposed   → ${api_origin}      (api on its own domain)
+    /// Caveat: in local airgapped on a single host, the client container
+    /// can't fetch /.well-known/openid-configuration from a localhost
+    /// URL (localhost = container itself). Override AUTH_ISSUER in .env
+    /// to a container-reachable URL for local-only testing, accepting
+    /// that the iss-claim check will then fail in NextAuth.
+    pub auth_issuer: String,
+    /// OIDC client id. Defaults to `glow-client`.
+    pub auth_client_id: String,
+    /// OIDC client secret — same value as the api's AUTH_CLIENT_SECRET
+    /// (PBKDF2-derived from SECRET_KEY).
+    pub auth_client_secret: String,
     /// NEXTAUTH_URL — public base URL of the client itself, used for
     /// constructing OAuth callback URLs.
     pub nextauth_url: String,
@@ -254,20 +264,20 @@ pub fn render_client(path: &Path, inputs: &ClientEnvInputs) -> Result<()> {
     upsert_in(
         &mut env,
         CLIENT_OWNED_KEYS,
-        "AUTH_KEYCLOAK_ID",
-        &inputs.auth_keycloak_id,
+        "AUTH_ISSUER",
+        &inputs.auth_issuer,
     );
     upsert_in(
         &mut env,
         CLIENT_OWNED_KEYS,
-        "AUTH_KEYCLOAK_SECRET",
-        &inputs.auth_keycloak_secret,
+        "AUTH_CLIENT_ID",
+        &inputs.auth_client_id,
     );
     upsert_in(
         &mut env,
         CLIENT_OWNED_KEYS,
-        "KEYCLOAK_PUBLIC_URL",
-        &inputs.keycloak_public_url,
+        "AUTH_CLIENT_SECRET",
+        &inputs.auth_client_secret,
     );
     upsert_in(
         &mut env,

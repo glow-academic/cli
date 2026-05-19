@@ -260,7 +260,7 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
     let client_target = if deploy_client {
         let ct = state.next_client_env().to_string();
         let cv = args.client_version.clone().unwrap();
-        let (public_api_url, kc_public_url) = env::derive_client_public_urls(&cfg);
+        let (public_api_url, _kc_public_url) = env::derive_client_public_urls(&cfg);
         let client_origin = cfg.effective_client_origin();
         // Strip scheme for DOMAIN (used as nginx server_name).
         let domain = client_origin
@@ -271,6 +271,15 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
         // Reuse the api's SECRET_KEY + AUTH_CLIENT_SECRET so NextAuth
         // can verify api-minted JWTs and the OIDC handshake works.
         let (auth_secret, auth_kc_secret) = env::read_api_shared_secrets(&instance.api_env_file())?;
+        // The academic client's `glow` OIDC provider issuer is the api's
+        // ORIGIN-derived URL — public-api URL for both airgapped (api
+        // proxied via client nginx) and exposed (api on its own domain).
+        // Falls back to client_origin when somehow empty.
+        let auth_issuer = if public_api_url.is_empty() {
+            client_origin.clone()
+        } else {
+            public_api_url.clone()
+        };
         let client_inputs = env::ClientEnvInputs {
             client_version: cv.clone(),
             active_client_env: state
@@ -284,9 +293,9 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
             public_api_url,
             internal_api_base: format!("http://{}-nginx:80", instance.api_project_name()),
             auth_secret,
-            auth_keycloak_id: "glow-client".into(),
-            auth_keycloak_secret: auth_kc_secret,
-            keycloak_public_url: kc_public_url,
+            auth_issuer,
+            auth_client_id: "glow-client".into(),
+            auth_client_secret: auth_kc_secret,
             nextauth_url: client_origin.clone(),
             mcp_backend: format!("{}-nginx:80", instance.api_project_name()),
         };
