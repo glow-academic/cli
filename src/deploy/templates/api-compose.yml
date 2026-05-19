@@ -257,6 +257,11 @@ services:
       - REDIS_URL=redis://redis:6379
       - KEYCLOAK_INTERNAL_URL=http://nginx:80${APP_PREFIX:-}
       - KEYCLOAK_REALM=${KEYCLOAK_REALM:-master}
+      # API needs to login as the KC admin to sync brokers / clients.
+      # KC's admin password is randomly generated and persisted in .env;
+      # without these, the api falls back to `admin`/`admin` and 401s.
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-admin}
       - GRACE_PERIOD_MINUTES=${GRACE_PERIOD_MINUTES:-60}
     labels:
       - "com.docker.compose.service=server-blue"
@@ -315,6 +320,11 @@ services:
       - REDIS_URL=redis://redis:6379
       - KEYCLOAK_INTERNAL_URL=http://nginx:80${APP_PREFIX:-}
       - KEYCLOAK_REALM=${KEYCLOAK_REALM:-master}
+      # API needs to login as the KC admin to sync brokers / clients.
+      # KC's admin password is randomly generated and persisted in .env;
+      # without these, the api falls back to `admin`/`admin` and 401s.
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN:-admin}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-admin}
       - GRACE_PERIOD_MINUTES=${GRACE_PERIOD_MINUTES:-60}
     labels:
       - "com.docker.compose.service=server-green"
