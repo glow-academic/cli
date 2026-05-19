@@ -294,6 +294,11 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
             internal_api_base: format!("http://{}-nginx:80", instance.api_project_name()),
             auth_secret,
             auth_issuer,
+            // Container-reachable api URL — same alias the client nginx
+            // already uses for MCP/api/auth proxying. Works in local
+            // (single host) AND prod (the shared docker net is private
+            // either way).
+            auth_issuer_internal: format!("http://{}-nginx:80", instance.api_project_name()),
             auth_client_id: "glow-client".into(),
             auth_client_secret: auth_kc_secret,
             nextauth_url: client_origin.clone(),
