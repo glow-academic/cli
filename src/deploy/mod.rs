@@ -28,6 +28,7 @@ pub mod healthcheck;
 pub mod instance;
 pub mod migrations;
 pub mod preflight;
+pub mod proxy_hints;
 pub mod runtime;
 pub mod wizard;
 
@@ -127,7 +128,7 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
 
     // Write both stacks' files. Idempotent — picks up any template
     // changes that ship with a CLI upgrade.
-    compose::write_api_stack(&instance.dir)?;
+    compose::write_api_stack(&instance.dir, cfg.topology)?;
     if deploy_client {
         compose::write_client_stack(&instance.dir)?;
     }
@@ -288,7 +289,10 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
                 .unwrap_or_else(|| ct.clone()),
             project_name: instance.client_project_name(),
             glow_network: instance.shared_network(),
-            client_http_port: cfg.client_http_port.unwrap_or(80),
+            client_http_port: cfg
+                .client_http_port
+                .clone()
+                .unwrap_or_else(|| "127.0.0.1:18080".into()),
             domain,
             public_api_url,
             internal_api_base: format!("http://{}-nginx:80", instance.api_project_name()),
@@ -358,13 +362,17 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
         }
 
         println!("\n✓ first deploy complete — {} is live", args.name);
+        let (public_url, published) = published_endpoint(&cfg);
         if let Some(ct) = &client_target {
             println!("  api color: {target_env}   client color: {ct}");
-            println!("  open: {}", cfg.effective_client_origin());
         } else {
             println!("  api color: {target_env}");
-            println!("  open: {}", cfg.effective_api_origin());
         }
+        if !public_url.is_empty() {
+            println!("  open: {public_url}");
+        }
+        println!("  bound: {published}");
+        proxy_hints::print_proxy_hints(&public_url, &published);
         return Ok(());
     }
 
@@ -422,7 +430,37 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
         "\n✓ redeploy complete — {} is live on {target_env}",
         args.name
     );
+    let (public_url, _published) = published_endpoint(&cfg);
+    if !public_url.is_empty() {
+        println!("  open: {public_url}");
+    }
     Ok(())
+}
+
+/// (public_url, published-host-port) for the current deploy. `public_url`
+/// is what the user typed in glow-deploy.yaml; `published` is what the
+/// stack is actually bound to (env-override aware).
+fn published_endpoint(cfg: &DeployConfig) -> (String, String) {
+    use crate::deploy::config::Topology;
+    match cfg.topology {
+        Topology::Airgapped | Topology::Exposed => {
+            let port = cfg
+                .client_http_port
+                .clone()
+                .unwrap_or_else(|| "127.0.0.1:18080".into());
+            (cfg.effective_client_origin(), port)
+        }
+        Topology::ApiOnly => {
+            // No client stack. api_only uses API_HTTP_PORT env (compose
+            // template default `127.0.0.1:18081`) — we don't model that
+            // in the config struct, so report the default and let the
+            // user override via .env if they need to.
+            (
+                cfg.effective_api_origin(),
+                "127.0.0.1:18081".into(),
+            )
+        }
+    }
 }
 
 // ── STOP / START / DESTROY ─────────────────────────────────────────

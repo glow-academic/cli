@@ -364,13 +364,12 @@ services:
       - APP_PREFIX=${APP_PREFIX:-}
       - ACTIVE_ENV=${ACTIVE_ENV:-blue}
       - ACTIVE_KC_ENV=${ACTIVE_KC_ENV:-blue}
-    # Host port mapping. In api_only / local dev, this is how the user
-    # reaches the api. In airgapped/exposed, an external reverse proxy
-    # (Traefik) routes via the shared glow_net network and you can
-    # override API_HTTP_PORT to "127.0.0.1:0" (random) or empty if you
-    # don't want a host port at all.
-    ports:
-      - "${API_HTTP_PORT:-127.0.0.1:6060}:80"
+    # No `ports:` on this nginx by default — in airgapped the api is
+    # reached internally by the client nginx via the shared docker
+    # network. For api_only / exposed topologies (or to debug airgapped
+    # by curl), the CLI writes a docker-compose.override.yml that adds
+    # a host-port binding. Keeps airgapped clean of host-port clutter
+    # so the stack coexists with anything already on the host.
     volumes:
       - ./default.conf.template:/etc/nginx/templates/default.conf.template:ro
       # Directory mount (not single-file) — docker-gen writes upstreams.conf

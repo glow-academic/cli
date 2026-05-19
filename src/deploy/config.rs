@@ -49,13 +49,18 @@ pub struct DeployConfig {
     #[serde(default)]
     pub client_version: Option<String>,
 
-    /// Host port for the client nginx to bind. Defaults to 80 when unset
-    /// (fits a fresh host with nothing else on 80). Set to a free port
-    /// when running behind a reverse proxy (Traefik/Caddy/etc.) that
-    /// already owns 80 — your proxy then forwards to this port.
+    /// Host port (or `<ip>:<port>` spec) the client nginx publishes on.
+    /// Default when unset: `127.0.0.1:18080` — localhost-bound, high
+    /// port, safe to coexist with anything else on the host. Override
+    /// examples:
+    ///   "18080"               → 0.0.0.0:18080 (reachable from other hosts)
+    ///   "0.0.0.0:18080"       → same, explicit
+    ///   "10.0.0.5:18080"      → bind to a specific interface
+    ///   "80"                  → take the privileged port (needs root)
+    /// The right value usually matches what your reverse proxy expects.
     /// Unused in `api_only` topology.
     #[serde(default)]
-    pub client_http_port: Option<u16>,
+    pub client_http_port: Option<String>,
 
     /// Legacy single-domain field. Read-only fallback for old configs:
     /// if set and `client_origin`/`api_origin` are not, it maps to

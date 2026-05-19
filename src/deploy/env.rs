@@ -107,7 +107,7 @@ pub struct ClientEnvInputs {
     pub glow_network: String,
     /// Public port the client nginx listens on (typically 80 for a
     /// fronting reverse proxy to forward to).
-    pub client_http_port: u16,
+    pub client_http_port: String,
     /// The client's public domain (no scheme), used by nginx server_name.
     pub domain: String,
     /// Public URL the browser uses to call the api. Per topology:
@@ -317,7 +317,7 @@ pub fn render_client(path: &Path, inputs: &ClientEnvInputs) -> Result<()> {
         &mut env,
         CLIENT_OWNED_KEYS,
         "CLIENT_HTTP_PORT",
-        &inputs.client_http_port.to_string(),
+        &inputs.client_http_port,
     );
 
     write(path, &env)
