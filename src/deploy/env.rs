@@ -64,6 +64,7 @@ const CLIENT_OWNED_KEYS: &[&str] = &[
     // AUTH_ISSUER / AUTH_CLIENT_ID / AUTH_CLIENT_SECRET (not the NextAuth
     // built-in Keycloak provider's AUTH_KEYCLOAK_* names).
     "AUTH_ISSUER",
+    "AUTH_ISSUER_INTERNAL",
     "AUTH_CLIENT_ID",
     "AUTH_CLIENT_SECRET",
     "NEXTAUTH_URL",
@@ -132,6 +133,14 @@ pub struct ClientEnvInputs {
     /// to a container-reachable URL for local-only testing, accepting
     /// that the iss-claim check will then fail in NextAuth.
     pub auth_issuer: String,
+    /// Container-reachable URL the Next.js server uses for token /
+    /// userinfo / jwks calls — bypasses the browser-facing `issuer`
+    /// for endpoints the client backend hits directly. Typically the
+    /// api-nginx alias on the shared docker network (same value as
+    /// MCP_BACKEND with an `http://` prefix). Defaults to AUTH_ISSUER
+    /// on the client side, so production with real DNS needs no
+    /// override.
+    pub auth_issuer_internal: String,
     /// OIDC client id. Defaults to `glow-client`.
     pub auth_client_id: String,
     /// OIDC client secret — same value as the api's AUTH_CLIENT_SECRET
@@ -266,6 +275,12 @@ pub fn render_client(path: &Path, inputs: &ClientEnvInputs) -> Result<()> {
         CLIENT_OWNED_KEYS,
         "AUTH_ISSUER",
         &inputs.auth_issuer,
+    );
+    upsert_in(
+        &mut env,
+        CLIENT_OWNED_KEYS,
+        "AUTH_ISSUER_INTERNAL",
+        &inputs.auth_issuer_internal,
     );
     upsert_in(
         &mut env,
