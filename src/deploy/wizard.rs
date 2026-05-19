@@ -25,7 +25,7 @@ pub fn run(name: &str) -> Result<DeployConfig> {
 
     let origin: String = Input::with_theme(&theme)
         .with_prompt("Public origin URL (where clients connect)")
-        .default("http://localhost:6000".into())
+        .default("http://localhost:6060".into())
         .interact_text()
         .context("origin prompt")?;
 
