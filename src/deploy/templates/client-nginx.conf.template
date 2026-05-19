@@ -129,9 +129,10 @@ server {
 
     # Keycloak auth proxy — needed for OIDC login in airgapped topology.
     # Routes through API's nginx which handles blue/green Keycloak routing.
-    # GLOW_NGINX is the API's nginx alias on the shared deployment network.
+    # MCP_BACKEND is the API nginx alias on the shared deployment network
+    # (same hostname:port used by MCP / api / OIDC discovery routes above).
     location ^~ /auth/ {
-        set $kc_backend "${GLOW_NGINX}";
+        set $kc_backend "${MCP_BACKEND}";
         proxy_pass         http://$kc_backend;
         proxy_http_version 1.1;
         proxy_set_header   Host              $host;
