@@ -2,8 +2,8 @@
 //!
 //! The migration logic itself lives in the api image — `/app/database/`
 //! has `migrate/add/v{version}_{N}_{name}.sql` and `migrate/remove/...`
-//! plus a runner (`make migrate-docker TYPE=add|remove`). The CLI's job
-//! is just to invoke that runner inside the running container at the
+//! plus an in-image python runner (`database.scripts.migrate`). The CLI's
+//! job is just to invoke that runner inside the running container at the
 //! right moments in the deploy timeline:
 //!
 //!   - **add migrations**: BEFORE we promote the new color (so the new
@@ -13,6 +13,12 @@
 //!
 //! Both are idempotent — the runner records applied migrations in
 //! `migrations.applied` and skips ones that already ran.
+//!
+//! We used to invoke `make migrate-docker TYPE=add|remove` here, but the
+//! runtime image has no `make` and the host script the Makefile target
+//! delegated to was a docker-compose-orchestrator (wrong shape for an
+//! exec-into-container call). The python module replaces both, using the
+//! same asyncpg connection the api itself uses.
 
 use anyhow::Result;
 use std::path::Path;
@@ -23,14 +29,11 @@ use crate::deploy::runtime;
 /// Safe to call multiple times; runner skips applied entries.
 pub fn run_add(project_dir: &Path, project_name: &str, server_service: &str) -> Result<()> {
     println!("  · applying add migrations (idempotent)");
-    // The api image has `make migrate-docker TYPE=add` wired to the
-    // python runner; running through make gives us a stable interface
-    // even as the runner internals evolve.
     runtime::exec_capture(
         project_dir,
         project_name,
         server_service,
-        &["make", "migrate-docker", "TYPE=add"],
+        &["python", "-m", "database.scripts.migrate", "add"],
     )?;
     Ok(())
 }
@@ -43,7 +46,7 @@ pub fn run_remove(project_dir: &Path, project_name: &str, server_service: &str) 
         project_dir,
         project_name,
         server_service,
-        &["make", "migrate-docker", "TYPE=remove"],
+        &["python", "-m", "database.scripts.migrate", "remove"],
     )?;
     Ok(())
 }
