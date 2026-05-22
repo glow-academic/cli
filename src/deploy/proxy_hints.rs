@@ -76,10 +76,7 @@ fn host_from_url(url: &str) -> String {
     if url.is_empty() {
         return "<your-domain.example.com>".into();
     }
-    let after_scheme = url
-        .split_once("://")
-        .map(|(_, rest)| rest)
-        .unwrap_or(url);
+    let after_scheme = url.split_once("://").map(|(_, rest)| rest).unwrap_or(url);
     after_scheme
         .trim_end_matches('/')
         .split('/')
@@ -105,8 +102,14 @@ mod tests {
 
     #[test]
     fn host_strips_scheme_and_path() {
-        assert_eq!(host_from_url("https://glow.example.com"), "glow.example.com");
-        assert_eq!(host_from_url("https://glow.example.com/"), "glow.example.com");
+        assert_eq!(
+            host_from_url("https://glow.example.com"),
+            "glow.example.com"
+        );
+        assert_eq!(
+            host_from_url("https://glow.example.com/"),
+            "glow.example.com"
+        );
         assert_eq!(host_from_url("http://localhost:7070"), "localhost:7070");
     }
 

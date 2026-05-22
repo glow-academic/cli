@@ -455,10 +455,7 @@ fn published_endpoint(cfg: &DeployConfig) -> (String, String) {
             // template default `127.0.0.1:18081`) — we don't model that
             // in the config struct, so report the default and let the
             // user override via .env if they need to.
-            (
-                cfg.effective_api_origin(),
-                "127.0.0.1:18081".into(),
-            )
+            (cfg.effective_api_origin(), "127.0.0.1:18081".into())
         }
     }
 }

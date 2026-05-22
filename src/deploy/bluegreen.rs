@@ -63,7 +63,11 @@ pub fn bring_up_api_target(project_dir: &Path, project_name: &str, target_env: &
     // upstreams.conf when server-* / keycloak-* containers appear.
     // Without it, nginx is stuck pointing at "127.0.0.1:1 down" from
     // the seed file and proxies return 502.
-    runtime::up(project_dir, project_name, &[&server, &keycloak, "docker-gen"])?;
+    runtime::up(
+        project_dir,
+        project_name,
+        &[&server, &keycloak, "docker-gen"],
+    )?;
 
     println!("  · waiting for {keycloak} to become healthy (up to 3min)");
     healthcheck::wait_healthy(project_name, &keycloak, &keycloak, Duration::from_secs(180))?;

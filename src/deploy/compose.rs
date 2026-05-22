@@ -48,8 +48,7 @@ pub fn write_api_stack(instance_dir: &Path, topology: Topology) -> Result<()> {
     // docker-gen writes generated/upstreams.conf via rename, which
     // requires a directory mount (not a single-file mount).
     let generated = dir.join("generated");
-    fs::create_dir_all(&generated)
-        .with_context(|| format!("mkdir {}", generated.display()))?;
+    fs::create_dir_all(&generated).with_context(|| format!("mkdir {}", generated.display()))?;
     fs::write(dir.join("docker-compose.yml"), API_COMPOSE)
         .with_context(|| format!("write api compose to {}", dir.display()))?;
     fs::write(dir.join("default.conf.template"), API_NGINX_CONF)
@@ -74,7 +73,9 @@ pub fn write_api_stack(instance_dir: &Path, topology: Topology) -> Result<()> {
                      ports:\n      \
                        - \"${API_HTTP_PORT:-127.0.0.1:18081}:80\"\n",
             )
-            .with_context(|| format!("write api compose override to {}", override_path.display()))?;
+            .with_context(|| {
+                format!("write api compose override to {}", override_path.display())
+            })?;
         }
     }
     Ok(())

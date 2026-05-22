@@ -101,7 +101,7 @@ pub fn run(name: &str) -> Result<DeployConfig> {
         client_origin: Some(origin.clone()),
         api_version: None,
         client_version: None,
-        client_http_port: None,  // CLI default applies (127.0.0.1:18080)
+        client_http_port: None, // CLI default applies (127.0.0.1:18080)
         origin: Some(origin),
         ai: AiConfig {
             providers: vec![AiProvider {
