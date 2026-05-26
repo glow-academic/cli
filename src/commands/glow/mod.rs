@@ -13,6 +13,24 @@ pub(crate) fn cmd_resource_action(
     body_str: Option<&str>,
     mode: OutputMode,
 ) -> Result<()> {
+    cmd_resource_action_ext(client, resource, action, body_str, mode, None, false, &[])
+}
+
+/// Extended dispatch — adds ``--file`` (multipart upload, with body
+/// args folded into form fields) and ``--show-headers`` (print response
+/// headers before the JSON body). The simpler ``cmd_resource_action``
+/// remains the default entry point; this exists so ``lib.rs`` can route
+/// based on the presence of those flags without churning every helper.
+pub(crate) fn cmd_resource_action_ext(
+    client: &GlowClient,
+    resource: &str,
+    action: &str,
+    body_str: Option<&str>,
+    mode: OutputMode,
+    file_path: Option<&str>,
+    show_headers: bool,
+    extra_form_fields: &[(String, String)],
+) -> Result<()> {
     let body = match body_str {
         Some(s) => Some(
             serde_json::from_str::<serde_json::Value>(s)
@@ -21,13 +39,59 @@ pub(crate) fn cmd_resource_action(
         None => None,
     };
 
-    let response = client.resource_action(resource, action, body)?;
+    if let Some(path) = file_path {
+        // Multipart upload — body args (if any) are folded into form fields
+        // alongside the file. Useful for soft/accept idempotency_key params
+        // on upload endpoints, e.g.
+        // ``glow attempts audio_upload --file rec.webm --soft true``.
+        let response =
+            client.resource_action_multipart(resource, action, path, extra_form_fields)?;
+        output::print_result(mode, &response, |resp| {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(resp).unwrap_or_else(|_| format!("{:?}", resp))
+            );
+        });
+        return Ok(());
+    }
 
+    if show_headers {
+        let (headers, response) = client.resource_action_with_headers(resource, action, body)?;
+        // Headers first so the cache demo can call out X-Cache-Hit /
+        // X-Bypass-Cache before the response body scrolls past.
+        for (k, v) in headers.iter() {
+            let key = k.as_str();
+            if key.starts_with("x-")
+                || key == "cache-control"
+                || key == "content-type"
+                || key == "content-length"
+            {
+                if let Ok(val) = v.to_str() {
+                    println!("{}: {}", key, val);
+                }
+            }
+        }
+        println!();
+        output::print_result(mode, &response, |resp| {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(resp).unwrap_or_else(|_| format!("{:?}", resp))
+            );
+        });
+        return Ok(());
+    }
+
+    let response = client.resource_action(resource, action, body)?;
     output::print_result(mode, &response, |resp| {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(resp).unwrap_or_else(|_| format!("{:?}", resp))
-        );
+        // Known shapes (search tables, detail views, write/ack summaries)
+        // get pretty output; everything else (and any unexpected/error
+        // payload) falls back to the raw JSON.
+        if !crate::render::render(resource, action, resp) {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(resp).unwrap_or_else(|_| format!("{:?}", resp))
+            );
+        }
     });
     Ok(())
 }

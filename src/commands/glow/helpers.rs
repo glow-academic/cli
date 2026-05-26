@@ -168,6 +168,27 @@ pub fn cmd_personas_search(
     cmd_resource_action(client, "persona", "search", Some(&body_str), mode)
 }
 
+// ── generic get (positional id) ─────────────────────────────────
+
+/// `glow <artifact> get <id>` → POST /<art>/get with `{ <id_field>: id }`.
+///
+/// The detail endpoints take the id in the body, but the generic dispatch
+/// can't carry it: ``--id`` is reserved for media ops (it's stripped from the
+/// body in ``parse_params``), so without this helper users had to hand-write
+/// ``--body '{"id":"…"}'``. ``id_field`` is ``attempt_id`` for attempts and
+/// plain ``id`` for the content artifacts.
+pub fn cmd_resource_get(
+    client: &GlowClient,
+    api_path: &str,
+    id_field: &str,
+    id: &str,
+    mode: OutputMode,
+) -> Result<()> {
+    let body = json!({ id_field: id });
+    let body_str = serde_json::to_string(&body)?;
+    cmd_resource_action(client, api_path, "get", Some(&body_str), mode)
+}
+
 // ── simulations ─────────────────────────────────────────────────
 
 /// `glow simulations list [--cohort <id>] [--page-size N]` — sugar for search.

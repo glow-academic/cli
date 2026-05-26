@@ -17,7 +17,17 @@ use reqwest::blocking;
 
 pub(crate) enum Auth<'a> {
     None,
-    Bearer(&'a str),
+    /// Bearer token + optional ``X-E2E-Profile-Id`` for the auth-bypass
+    /// path (mirrors what Playwright's ``authAs(context, profileId)``
+    /// does on the browser side). The profile id is added as a header so
+    /// the backend's identity middleware impersonates the right profile
+    /// while still requiring the bypass token in ``Authorization``. Set
+    /// via ``GLOW_TOKEN`` + ``GLOW_E2E_PROFILE_ID`` env vars — see
+    /// ``GlowClient::new`` for the env wiring.
+    Bearer {
+        token: &'a str,
+        e2e_profile_id: Option<&'a str>,
+    },
 }
 
 // ── Shared request helpers ───────────────────────────────────
@@ -25,7 +35,16 @@ pub(crate) enum Auth<'a> {
 fn apply_auth(req: blocking::RequestBuilder, auth: Auth) -> blocking::RequestBuilder {
     match auth {
         Auth::None => req,
-        Auth::Bearer(token) => req.header("Authorization", format!("Bearer {}", token)),
+        Auth::Bearer {
+            token,
+            e2e_profile_id,
+        } => {
+            let mut req = req.header("Authorization", format!("Bearer {}", token));
+            if let Some(pid) = e2e_profile_id {
+                req = req.header("X-E2E-Profile-Id", pid);
+            }
+            req
+        }
     }
 }
 

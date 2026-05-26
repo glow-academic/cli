@@ -18,19 +18,43 @@ pub struct GlowClient {
     base_url: String,
     http: blocking::Client,
     token: Option<String>,
+    /// Optional ``X-E2E-Profile-Id`` to send alongside the bearer when
+    /// the auth-bypass path is enabled server-side. Set via
+    /// ``GLOW_E2E_PROFILE_ID`` env var — used by VHS recording flows
+    /// so a tape can impersonate any seeded profile without going
+    /// through the OAuth redirect. Mirrors Playwright's
+    /// ``authAs(context, profileId)`` in ``e2e/helpers/auth.ts``.
+    e2e_profile_id: Option<String>,
 }
 
 impl GlowClient {
     pub fn new(base_url: &str) -> Self {
-        // Auto-load OAuth token from stored auth for this Glow instance
-        let token = crate::auth::get_token(base_url)
+        // ``GLOW_TOKEN`` env wins over the stored OAuth token — gives
+        // VHS/CI flows a way to skip the login dance entirely. Mirrors
+        // how Playwright reads ``E2E_BYPASS_TOKEN`` from env without
+        // requiring a real OAuth round-trip. The stored token remains
+        // the canonical path for interactive ``glow login`` users.
+        let token = std::env::var("GLOW_TOKEN")
             .ok()
-            .map(|t| t.access_token);
+            .filter(|s| !s.is_empty())
+            .or_else(|| {
+                crate::auth::get_token(base_url)
+                    .ok()
+                    .map(|t| t.access_token)
+            });
+
+        // ``GLOW_E2E_PROFILE_ID`` impersonates a specific seeded profile
+        // when the bypass token is in use. No effect when the backend's
+        // ``E2E_BYPASS_TOKEN`` env isn't set — server-side gate.
+        let e2e_profile_id = std::env::var("GLOW_E2E_PROFILE_ID")
+            .ok()
+            .filter(|s| !s.is_empty());
 
         GlowClient {
             base_url: base_url.trim_end_matches('/').to_string(),
             http: blocking::Client::new(),
             token,
+            e2e_profile_id,
         }
     }
 
@@ -54,16 +78,25 @@ impl GlowClient {
 
     fn auth(&self) -> Auth<'_> {
         match &self.token {
-            Some(t) => Auth::Bearer(t),
+            Some(t) => Auth::Bearer {
+                token: t,
+                e2e_profile_id: self.e2e_profile_id.as_deref(),
+            },
             None => Auth::None,
         }
     }
 
-    /// Build an authenticated request (for custom requests like uploads)
+    /// Build an authenticated request (for custom requests like uploads).
+    /// Sets ``X-E2E-Profile-Id`` alongside the bearer when the env-driven
+    /// impersonation is active — keeps multipart upload paths consistent
+    /// with the JSON request path that goes through ``apply_auth``.
     fn authed_request(&self, method: reqwest::Method, url: &str) -> blocking::RequestBuilder {
         let mut req = self.http.request(method, url);
         if let Some(ref t) = self.token {
             req = req.header("Authorization", format!("Bearer {}", t));
+        }
+        if let Some(ref pid) = self.e2e_profile_id {
+            req = req.header("X-E2E-Profile-Id", pid);
         }
         req
     }
@@ -120,6 +153,76 @@ impl GlowClient {
             Some(body.unwrap_or_else(|| json!({}))),
             self.auth(),
         )
+    }
+
+    /// Same as ``resource_action`` but also returns the response headers
+    /// (the ``X-Cache-Hit`` / ``X-Bypass-Cache`` family the data-layer
+    /// demos surface). JSON body decode happens here so callers get a
+    /// fully-typed ``Value`` alongside the headers.
+    pub fn resource_action_with_headers(
+        &self,
+        resource: &str,
+        action: &str,
+        body: Option<Value>,
+    ) -> Result<(reqwest::header::HeaderMap, Value)> {
+        let url = self.url(&format!("/{}/{}", resource, action));
+        let resp = api_request_raw(
+            &self.http,
+            reqwest::Method::POST,
+            &url,
+            Some(body.unwrap_or_else(|| json!({}))),
+            self.auth(),
+        )?;
+        let headers = resp.headers().clone();
+        let value = resp
+            .json::<Value>()
+            .context("Failed to parse API response (json body)")?;
+        Ok((headers, value))
+    }
+
+    /// Multipart POST to ``/{resource}/{action}`` with a single ``file``
+    /// part. Mirrors the dynamic-dispatch URL shape so commands like
+    /// ``glow documents file_upload --file foo.pdf`` and ``glow attempts
+    /// audio_upload --file rec.webm`` work without a bespoke endpoint
+    /// helper per artifact. Extra form fields can be passed via
+    /// ``extra_fields`` (e.g. ``[("idempotency_key", "..."), ("soft", "true")]``).
+    pub fn resource_action_multipart(
+        &self,
+        resource: &str,
+        action: &str,
+        file_path: &str,
+        extra_fields: &[(String, String)],
+    ) -> Result<Value> {
+        let path = std::path::Path::new(file_path);
+        let filename = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("file")
+            .to_string();
+        let data = std::fs::read(file_path)
+            .with_context(|| format!("Failed to read file: {}", file_path))?;
+
+        let part = blocking::multipart::Part::bytes(data).file_name(filename);
+        let mut form = blocking::multipart::Form::new().part("file", part);
+        for (k, v) in extra_fields {
+            form = form.text(k.clone(), v.clone());
+        }
+
+        let url = self.url(&format!("/{}/{}", resource, action));
+        let resp = self
+            .authed_request(reqwest::Method::POST, &url)
+            .multipart(form)
+            .send()
+            .with_context(|| format!("Failed to upload to {}", url))?;
+
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let text = resp.text().unwrap_or_default();
+            anyhow::bail!("Upload failed (HTTP {}): {}", status, text);
+        }
+
+        resp.json::<Value>()
+            .context("Failed to parse upload response")
     }
 
     // ``context`` / ``emulate`` / ``unemulate`` / ``problem`` removed
@@ -696,6 +799,7 @@ mod tests {
             base_url: "http://localhost".into(),
             http: blocking::Client::new(),
             token: None,
+            e2e_profile_id: None,
         };
         matches!(client.auth(), Auth::None);
     }
@@ -706,7 +810,8 @@ mod tests {
             base_url: "http://localhost".into(),
             http: blocking::Client::new(),
             token: Some("tok".into()),
+            e2e_profile_id: None,
         };
-        matches!(client.auth(), Auth::Bearer(_));
+        matches!(client.auth(), Auth::Bearer { .. });
     }
 }

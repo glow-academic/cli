@@ -19,6 +19,7 @@ mod config;
 mod deploy;
 mod glow;
 mod output;
+mod render;
 mod resource;
 mod serve;
 
@@ -651,6 +652,15 @@ pub fn run() -> Result<()> {
 
         // ── Generic resource dispatch ────────────────────────
         Commands::Resource(args) => {
+            // ``--json`` is a global flag, but ``Resource`` is an
+            // ``external_subcommand`` so clap captures every trailing arg
+            // raw — a late ``glow personas search --json`` never reaches
+            // the global parser, leaving ``cli.json`` false. Honor it here:
+            // detect ``--json`` anywhere in the captured args, force JSON
+            // mode, and strip it so it can't leak into the --key/value body
+            // parsing (where a bare flag would error or pollute the body).
+            let mode = OutputMode::resolve(cli.json || args.iter().any(|a| a == "--json"));
+            let args: Vec<String> = args.into_iter().filter(|a| a != "--json").collect();
             let glow_url = resolve_glow_url(cli.instance_url.as_deref(), &cfg);
             let client = glow::GlowClient::new(&glow_url);
             dispatch_resource(&client, &args, mode)?
@@ -866,11 +876,32 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
         return Ok(());
     }
 
-    let body = build_resource_body(&args[2..])?;
+    let rest = &args[2..];
+    let body = build_resource_body(rest)?;
+    let file_path = parse_flag(rest, "--file")?;
+    let show_headers = rest.iter().any(|a| a == "--show-headers");
+
+    // When uploading, fold ``--key value`` params into multipart form
+    // fields alongside the file (so e.g. ``--soft true --idempotency_key
+    // <uuid>`` works for soft-accept upload endpoints).
+    let extra_form_fields: Vec<(String, String)> = if file_path.is_some() {
+        parse_params(rest)?.into_iter().collect()
+    } else {
+        Vec::new()
+    };
 
     // Wire the singular ``api_path`` here — ``cli_name`` is plural for
     // the user, ``api_path`` is what the frozen API actually exposes.
-    commands::glow::cmd_resource_action(client, resource.api_path(), action, body.as_deref(), mode)
+    commands::glow::cmd_resource_action_ext(
+        client,
+        resource.api_path(),
+        action,
+        body.as_deref(),
+        mode,
+        file_path.as_deref(),
+        show_headers,
+        &extra_form_fields,
+    )
 }
 
 /// Per-(resource, action) ergonomic helpers. Returns ``Ok(Some(()))``
@@ -973,6 +1004,24 @@ fn dispatch_resource_helper(
                 return Ok(None);
             }
             helpers::cmd_personas_search(client, name.as_deref(), page_size, page_offset, mode)?;
+            Ok(Some(()))
+        }
+        // glow <artifact> get <id> — positional id sugar for the detail
+        // endpoints (which take the id in the body). ``--id`` can't be used
+        // because it's reserved for media ops, so without this the user had
+        // to hand-write ``--body '{"id":"…"}'``. Every artifact keys the id as
+        // plain ``id`` except attempts (``attempt_id``) and tests (``test_id``).
+        (_, "get") if !rest.is_empty() && !rest[0].starts_with("--") => {
+            // Defer to generic dispatch if the user hand-wrote a body.
+            if parse_flag(rest, "--body")?.is_some() {
+                return Ok(None);
+            }
+            let id_field = match resource {
+                Attempts => "attempt_id",
+                Tests => "test_id",
+                _ => "id",
+            };
+            helpers::cmd_resource_get(client, resource.api_path(), id_field, &rest[0], mode)?;
             Ok(Some(()))
         }
         // glow profiles emulate <profile_id> [--ttl-minutes N]
@@ -1347,6 +1396,7 @@ fn parse_params(args: &[String]) -> Result<Vec<(String, String)>> {
         "--filename",
         "--size",
         "--offset",
+        "--show-headers",
     ];
     let mut pairs = Vec::new();
     let mut i = 0;
