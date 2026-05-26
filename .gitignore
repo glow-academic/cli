@@ -1,6 +1,15 @@
 target/
 .DS_Store
+
+# Rendered demo videos — keep the repo lean. The .tape sources + render
+# scripts are tracked; the generated videos are not. Render locally with
+# `make demo-record`. To attach a specific clip to docs, force-add it:
+# `git add -f docs/whatever.mp4`.
 demo-output/
+*.mp4
+*.gif
+*.mov
+*.webm
 
 # Claude Code
 .claude/worktrees/

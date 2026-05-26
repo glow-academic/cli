@@ -10,7 +10,7 @@
 #   make release            → optimized build
 #   make install            → install to ~/.cargo/bin
 
-.PHONY: build run exec test test-unit test-integration fmt clippy check release install clean watch coverage help sync-types demo-record demo-record-all
+.PHONY: build run exec test test-unit test-integration fmt clippy check release install clean watch coverage help sync-types demo-record demo-record-all demo-polish
 
 # Grab everything after the first word (the make target) as CLI args
 RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -81,6 +81,16 @@ demo-record:
 demo-record-all:
 	@./scripts/render-tapes.sh
 
+# Polish already-recorded raw demos into <name>.polished.mp4 on a soft gradient
+# background (same treatment + 1856x1156 framing as the web client's Playwright
+# demos). render-tapes.sh already polishes on record; this re-polishes without
+# re-recording. Skips files that are themselves polished.
+demo-polish:
+	@for f in demo-output/*.mp4; do \
+		case "$$f" in *.polished.mp4) continue;; esac; \
+		node scripts/polish-video.mjs "$$f"; \
+	done
+
 # Remove build artifacts
 clean:
 	cargo clean
@@ -112,8 +122,9 @@ help:
 	@echo "  clean            Remove build artifacts"
 	@echo "  watch            Auto-rebuild on file changes (needs cargo-watch)"
 	@echo "  coverage         Run tests with coverage report (needs cargo-llvm-cov)"
-	@echo "  demo-record      Record one VHS tape: make demo-record TOPIC=start-overview"
-	@echo "  demo-record-all  Record every tape in tapes/"
+	@echo "  demo-record      Record one VHS tape (+polish): make demo-record TOPIC=start-overview"
+	@echo "  demo-record-all  Record every tape in tapes/ (+polish)"
+	@echo "  demo-polish      Re-polish raw demo-output/*.mp4 onto gradient bg (no re-record)"
 
 # Catch trailing args from "make run ..." so Make doesn't error on them
 %:

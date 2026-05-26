@@ -1,20 +1,28 @@
 Output demo-output/health-refresh.mp4
 
 Set Shell "bash"
-Set Width 1200
-Set Height 720
-Set FontSize 18
-Set Padding 16
+Set Width 1600
+Set Height 900
+Set FontSize 24
+Set Padding 20
 Set TypingSpeed 35ms
 
-Type "glow system health --help"
+# Auth + instance URL come from scripts/render-tapes.sh (bypass token) — these
+# are REAL calls against the local instance, not --help.
+
+Sleep 800ms
+
+# Rebuild the hourly materialized views; the response lists the cache tags it
+# invalidated.
+Type "glow system refresh"
 Enter
-Sleep 2s
+Sleep 3500ms
 
 Type "clear"
 Enter
-Sleep 500ms
+Sleep 400ms
 
-Type "glow system refresh --help"
+# Re-read health — now reflecting the freshly-rebuilt views.
+Type "glow system health"
 Enter
-Sleep 2s
+Sleep 3000ms
