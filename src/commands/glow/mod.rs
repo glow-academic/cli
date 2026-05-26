@@ -21,6 +21,10 @@ pub(crate) fn cmd_resource_action(
 /// headers before the JSON body). The simpler ``cmd_resource_action``
 /// remains the default entry point; this exists so ``lib.rs`` can route
 /// based on the presence of those flags without churning every helper.
+// Dispatch shim that mirrors the wire call's parameters (resource, action,
+// body, file, headers, form fields); grouping them into a struct would add
+// indirection without clarity, so allow the arg count here.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn cmd_resource_action_ext(
     client: &GlowClient,
     resource: &str,
