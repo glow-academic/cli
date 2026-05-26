@@ -51,6 +51,12 @@ pub fn render(resource: &str, action: &str, resp: &Value) -> bool {
     if render_status(resource, action, resp) {
         return true;
     }
+    // 5. Generic fallback for simple shapes (a list, an object with one list +
+    //    scalars, or a flat object) so unmapped endpoints still feel native.
+    //    Bails (→ raw JSON) on genuinely nested/complex blobs.
+    if render_generic(resp) {
+        return true;
+    }
     false
 }
 
@@ -767,6 +773,151 @@ fn selected_all(resp: &Value, section: &str, value_key: &str) -> Vec<String> {
         .unwrap_or_default()
 }
 
+// ── Generic fallback (simple shapes) ─────────────────────────────
+
+/// Render simple, unmapped responses so they still feel native: a bare list
+/// of objects → table; an object with exactly one list-of-objects + scalar
+/// siblings → a key-value header + that table; a flat scalar object →
+/// key-value panel. Returns ``false`` (→ raw JSON) for genuinely complex
+/// shapes (nested objects, more than one collection), where JSON reads better.
+fn render_generic(resp: &Value) -> bool {
+    match resp {
+        Value::Array(items) if !items.is_empty() && items.iter().all(Value::is_object) => {
+            generic_table(None, items, None);
+            true
+        }
+        Value::Object(map) => {
+            // Friendly empty-list case: ``{ "entries": [] }`` → "No entries."
+            if map.len() == 1 {
+                if let Some((k, Value::Array(a))) = map.iter().next() {
+                    if a.is_empty() {
+                        println!("{}", format!("No {}.", k).dimmed());
+                        return true;
+                    }
+                }
+            }
+
+            let mut collections: Vec<(&String, &Vec<Value>)> = Vec::new();
+            let mut nested = 0usize;
+            let mut scalars: Vec<(&String, &Value)> = Vec::new();
+            for (k, v) in map {
+                match v {
+                    Value::Array(a) if !a.is_empty() && a.iter().all(Value::is_object) => {
+                        collections.push((k, a))
+                    }
+                    Value::Array(_) => {} // empty / scalar arrays: ignore
+                    Value::Object(_) => nested += 1,
+                    _ => scalars.push((k, v)),
+                }
+            }
+            // Too complex for a clean table/panel — let raw JSON speak.
+            if nested > 0 || collections.len() > 1 {
+                return false;
+            }
+
+            if let Some((_key, items)) = collections.first() {
+                // Scalar siblings as a small header, then the one collection.
+                // (The collection key name — "items"/"entries" — adds no value
+                // as a header; the table + row count speak for themselves.)
+                for (k, v) in &scalars {
+                    if !v.is_null() && !is_noise_key(k) {
+                        println!("  {:<16} {}", k.dimmed(), cell(v));
+                    }
+                }
+                generic_table(None, items, map.get("total_count"));
+                true
+            } else {
+                // Flat object → key-value panel (only if it has real content).
+                let printable: Vec<_> = scalars
+                    .iter()
+                    .filter(|(k, v)| !v.is_null() && !is_noise_key(k))
+                    .collect();
+                if printable.is_empty() {
+                    return false;
+                }
+                for (k, v) in printable {
+                    println!("  {:<16} {}", k.dimmed(), cell(v));
+                }
+                true
+            }
+        }
+        _ => false,
+    }
+}
+
+/// Build + print a table for an arbitrary list of objects: columns are the
+/// union of item keys (capped), rows are scalar-rendered cells.
+fn generic_table(label: Option<&str>, items: &[Value], total: Option<&Value>) {
+    use std::collections::BTreeSet;
+    const MAX_COLS: usize = 6;
+    const MAX_ROWS: usize = 50;
+
+    let mut cols: Vec<String> = Vec::new();
+    let mut seen: BTreeSet<String> = BTreeSet::new();
+    for it in items.iter().take(MAX_ROWS) {
+        if let Some(obj) = it.as_object() {
+            for k in obj.keys() {
+                if seen.insert(k.clone()) && cols.len() < MAX_COLS {
+                    cols.push(k.clone());
+                }
+            }
+        }
+    }
+    if cols.is_empty() {
+        return;
+    }
+
+    let mut builder = Builder::default();
+    builder.push_record(cols.iter().map(|c| c.to_uppercase().dimmed().to_string()));
+    for it in items.iter().take(MAX_ROWS) {
+        builder.push_record(cols.iter().map(|c| cell(it.get(c).unwrap_or(&Value::Null))));
+    }
+    let mut table = builder.build();
+    table.with(Style::blank());
+    if let Some(l) = label {
+        println!("{}", l.to_uppercase().dimmed());
+    }
+    println!("{}", table);
+
+    let shown = items.len().min(MAX_ROWS);
+    let total = total
+        .and_then(Value::as_u64)
+        .map(|t| t as usize)
+        .unwrap_or(shown);
+    let row = if shown == 1 { "row" } else { "rows" };
+    let footer = if total > shown {
+        format!("{} of {} rows", shown, total)
+    } else {
+        format!("{} {}", shown, row)
+    };
+    println!("\n{}", footer.dimmed());
+}
+
+/// Render a JSON scalar for a table cell / key-value line. Arrays and objects
+/// collapse to a compact marker; ISO timestamps shorten to their date.
+fn cell(v: &Value) -> String {
+    match v {
+        Value::Null => "-".dimmed().to_string(),
+        Value::Bool(b) => b.to_string(),
+        Value::Number(n) => n.to_string(),
+        Value::String(s) => {
+            // ``2026-05-26T…`` → ``2026-05-26``.
+            if s.len() >= 10 && s.as_bytes()[4] == b'-' && s.contains('T') {
+                date_part(Some(s))
+            } else {
+                truncate(s, 40)
+            }
+        }
+        Value::Array(a) => format!("[{}]", a.len()).dimmed().to_string(),
+        Value::Object(_) => "{…}".dimmed().to_string(),
+    }
+}
+
+/// Envelope bookkeeping keys that add noise to a generic header/panel.
+fn is_noise_key(k: &str) -> bool {
+    matches!(k, "actor_name" | "total_count" | "snapshot_key")
+}
+
 // ── Shared table printing ────────────────────────────────────────
 
 /// Build + print the table, then a dimmed "N of M <noun>s" footer.
@@ -1160,12 +1311,53 @@ mod tests {
             "groups",
             &json!({ "data": [{ "group_id": "g1" }] })
         ));
-        // Unrecognized → false so the caller dumps JSON.
+        // A flat object is now caught by the generic fallback (step 5).
+        assert!(render("persona", "weird_action", &json!({ "anything": 1 })));
+        // Genuinely complex/odd shapes still bail → caller dumps raw JSON.
         assert!(!render(
             "persona",
             "weird_action",
-            &json!({ "anything": 1 })
+            &json!({ "a": { "nested": 1 }, "items": [{ "x": 1 }] })
         ));
+        assert!(!render("persona", "weird_action", &json!("just a string")));
+    }
+
+    // ── Generic fallback ─────────────────────────────────────────
+
+    #[test]
+    fn render_generic_handles_simple_shapes_and_bails_on_complex() {
+        // Object with one list + scalars (e.g. ``generations``) → table.
+        let listish = json!({
+            "actor_name": "Admin",
+            "items": [{ "group_id": "g1", "created_at": "2026-05-26T10:00:00Z" }],
+            "total_count": 1
+        });
+        assert!(render_generic(&listish));
+        // Bare array of objects → table.
+        assert!(render_generic(&json!([{ "a": 1 }, { "a": 2 }])));
+        // Empty single-list object → friendly "No <key>." line.
+        assert!(render_generic(&json!({ "entries": [] })));
+        // Flat scalar object → key-value panel.
+        assert!(render_generic(&json!({ "title": "Hello", "ok": true })));
+        // Nested objects / multiple collections → bail to raw JSON.
+        assert!(!render_generic(
+            &json!({ "profile": { "x": 1 }, "items": [{ "a": 1 }] })
+        ));
+        assert!(!render_generic(&json!({
+            "a": [{ "x": 1 }],
+            "b": [{ "y": 2 }]
+        })));
+        // Nothing printable → bail.
+        assert!(!render_generic(&json!({ "actor_name": "Admin" })));
+    }
+
+    #[test]
+    fn cell_formats_scalars_and_collapses_containers() {
+        assert_eq!(cell(&json!("2026-05-26T10:00:00Z")), "2026-05-26");
+        assert_eq!(cell(&json!(42)), "42");
+        assert_eq!(cell(&json!(true)), "true");
+        assert_eq!(cell(&json!([1, 2, 3])), "[3]".dimmed().to_string());
+        assert_eq!(cell(&json!({ "k": 1 })), "{…}".dimmed().to_string());
     }
 
     #[test]
