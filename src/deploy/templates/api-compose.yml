@@ -191,14 +191,24 @@ services:
   # Volume Init Service
   # --------------------
   volume-init:
-    image: busybox:1.36   # tiny, has cp ‑a
+    # Use the api image (not busybox) so the in-image seed bake at
+    # ``/app/seed/uploads`` is available without a host bind. The
+    # Dockerfile bakes seed assets at this NON-volume path so the
+    # runtime mount target (``/app/uploads``) stays empty in the image
+    # — that's what avoids Docker 29's copy-up ``file exists`` collision
+    # when sibling services (server-blue/green, keycloak) mount the same
+    # named volume. See ``core/Dockerfile`` (COPY uploads/ ./seed/uploads/)
+    # for the source of truth.
+    image: ${API_REGISTRY:-ghcr.io/glow-academic}/api:${API_VERSION:?API_VERSION is required}
+    user: "0:0"   # root for chown to UID 1001
+    entrypoint: []
     volumes:
       # writable named volumes
       - uploads:/app/uploads
       - history:/app/history
 
-      # read‑only seed folders that live in your repo
-      - ./uploads:/seed/uploads:ro
+      # history seed lives in the operator's instance directory; uploads
+      # seed lives in-image at /app/seed/uploads (see Dockerfile).
       - ./history:/seed/history:ro
     command: >
       sh -c '
@@ -206,10 +216,9 @@ services:
 
         # Copy uploads if the volume is still empty
         if [ -z "$$(ls -A /app/uploads 2>/dev/null)" ]; then
-          echo "[init] Seeding uploads volume…"
-          # Only copy if source directory exists and has content
-          if [ -d "/seed/uploads" ] && [ -n "$$(ls -A /seed/uploads 2>/dev/null)" ]; then
-            cp -a /seed/uploads/. /app/uploads/
+          echo "[init] Seeding uploads volume from /app/seed/uploads…"
+          if [ -d "/app/seed/uploads" ] && [ -n "$$(ls -A /app/seed/uploads 2>/dev/null)" ]; then
+            cp -a /app/seed/uploads/. /app/uploads/
           fi
         fi
 

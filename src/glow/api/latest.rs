@@ -1,6 +1,6 @@
-// Auto-generated from GLOW API OpenAPI spec v2.15.38
+// Auto-generated from GLOW API OpenAPI spec v1.0.50
 // Do not edit manually — regenerated on each API release.
-// Schemas: 1377
+// Schemas: 1388
 
 use serde::{Deserialize, Serialize};
 
@@ -51,14 +51,14 @@ pub struct ActivityRequest {
     pub page_offset: Option<i64>,
     #[serde(default)]
     pub summary_profile_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActivityResources {
     #[serde(default)]
-    pub profiles: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub profiles: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -473,6 +473,12 @@ pub struct ArchiveAttemptsRequest {
     pub profile_ids_filter: Option<Vec<String>>,
     #[serde(default)]
     pub infinite_mode: Option<bool>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -481,6 +487,8 @@ pub struct ArchiveAttemptsResponse {
     pub updated_count: Option<i64>,
     #[serde(default)]
     pub profile_ids_to_invalidate: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -488,12 +496,20 @@ pub struct ArchiveTestsRequest {
     pub test_ids: Vec<String>,
     #[serde(default)]
     pub archived: Option<bool>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArchiveTestsResponse {
     #[serde(default)]
     pub updated_count: Option<i64>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -550,9 +566,16 @@ pub struct ArtifactSessionGroup {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AttemptCompleteRequest {
-    pub attempt_id: String,
+    #[serde(default)]
+    pub attempt_id: Option<String>,
     #[serde(default)]
     pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -560,6 +583,8 @@ pub struct AttemptCompleteResponse {
     pub success: bool,
     pub completion_id: String,
     pub attempt_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -644,6 +669,12 @@ pub struct AttemptResponsePayload {
     pub chat_id: String,
     pub question_id: String,
     pub option_ids: Vec<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -654,6 +685,12 @@ pub struct AttemptStartRequest {
     pub practice_id: Option<String>,
     #[serde(default)]
     pub infinite_mode: Option<bool>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -662,16 +699,26 @@ pub struct AttemptStartResponse {
     pub chat_id: String,
     #[serde(default)]
     pub department_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AttemptStopRequest {
     pub group_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AttemptStopResponse {
     pub success: bool,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -690,6 +737,8 @@ pub struct AudioStartInternalResult {
     pub attempt_id: String,
     pub conversation_id: String,
     pub group_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -697,6 +746,8 @@ pub struct AudioStopInternalResult {
     pub chat_id: String,
     #[serde(default)]
     pub stopped: Option<bool>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -704,6 +755,8 @@ pub struct AudioUploadAttemptApiResponse {
     pub audio_id: String,
     pub audios_id: String,
     pub upload_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -983,6 +1036,8 @@ pub struct BenchmarkRequest {
     pub history_sort_by: Option<String>,
     #[serde(default)]
     pub history_sort_order: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1005,87 +1060,206 @@ pub struct BenchmarkResponse {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_agent_csv_agent_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_auth_csv_auth_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_cohort_csv_cohort_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_department_csv_department_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_document_csv_document_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_eval_csv_eval_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_field_csv_field_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_model_csv_model_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_parameter_csv_parameter_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_persona_csv_persona_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_profile_csv_profile_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_provider_csv_provider_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_rubric_csv_rubric_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_scenario_csv_scenario_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_setting_csv_setting_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_simulation_csv_simulation_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_parse_tool_csv_tool_csv_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1098,26 +1272,72 @@ pub struct Body_upload_audio_attempt_audio_upload_post {
     pub name: Option<String>,
     #[serde(default)]
     pub description: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_upload_file_document_file_upload_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Body_upload_image_document_image_upload_post {
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_upload_image_scenario_image_upload_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_upload_text_document_text_upload_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Body_upload_video_scenario_video_upload_post {
-    pub file: String,
+    #[serde(default)]
+    pub file: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1242,6 +1462,8 @@ pub struct ChatAnalysesRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -1261,14 +1483,24 @@ pub struct ChatAnalysisItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatAudioRequest {
     pub chat_id: String,
-    pub message_id: String,
-    pub audios_id: String,
+    #[serde(default)]
+    pub message_id: Option<String>,
+    #[serde(default)]
+    pub audios_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatAudioResponse {
     pub success: bool,
     pub attempt_audio_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1276,6 +1508,12 @@ pub struct ChatCompleteRequest {
     pub chat_id: String,
     #[serde(default)]
     pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1283,6 +1521,8 @@ pub struct ChatCompleteResponse {
     pub success: bool,
     pub completion_id: String,
     pub chat_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1482,6 +1722,8 @@ pub struct ChatFeedbackRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -1563,6 +1805,8 @@ pub struct ChatHintsRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -1609,6 +1853,8 @@ pub struct ChatImprovementsRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -1632,6 +1878,8 @@ pub struct ChatMessageRequest {
     pub auto_link_parent: Option<bool>,
     #[serde(default)]
     pub audios_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1804,6 +2052,12 @@ pub struct ChatScenarioResource {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatSilenceRequest {
     pub chat_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1859,16 +2113,25 @@ pub struct ChatSimulationOperational {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatSpeakRequest {
-    pub audio: String,
     #[serde(default)]
     pub conversation_id: Option<String>,
     #[serde(default)]
     pub chat_id: Option<String>,
+    #[serde(default)]
+    pub audio: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatSpeakResponse {
     pub accepted: bool,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1887,6 +2150,8 @@ pub struct ChatStrengthsRequest {
     pub strengths: Vec<ChatStrengthItem>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -1922,6 +2187,12 @@ pub struct ChatVideoResource {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatVoiceRequest {
     pub chat_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2166,14 +2437,18 @@ pub struct ComposedContextResponse {
     #[serde(rename = "type")]
     pub r#type: String,
     pub description: String,
-    pub entries: Vec<DocsResponse>,
-    pub resources: Vec<DocsResponse>,
-    pub permission_docs: Vec<OperationInfo>,
-    pub api_operations: Vec<OperationInfo>,
     pub profile: ProfileSummary,
     pub caller_permissions: CallerPermissions,
     #[serde(default)]
     pub artifact: Option<DocsResponse>,
+    #[serde(default)]
+    pub entries: Option<Vec<DocsResponse>>,
+    #[serde(default)]
+    pub resources: Option<Vec<DocsResponse>>,
+    #[serde(default)]
+    pub permission_docs: Option<Vec<OperationInfo>>,
+    #[serde(default)]
+    pub api_operations: Option<Vec<OperationInfo>>,
     #[serde(default)]
     pub page_metadata: Option<DocsApiResponse>,
     #[serde(default)]
@@ -2205,9 +2480,12 @@ pub struct ContinuationOption {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateAgentApiRequest {
-    pub agents: Vec<CreateAgentItem>,
+    #[serde(default)]
+    pub agents: Option<Vec<CreateAgentItem>>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -2351,6 +2629,8 @@ pub struct CreateAuthApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -2404,6 +2684,8 @@ pub struct CreateCohortApiRequest {
     pub cohorts: Vec<CreateCohortItem>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -2459,6 +2741,8 @@ pub struct CreateDepartmentApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -2500,6 +2784,8 @@ pub struct CreateDocumentApiRequest {
     pub documents: Vec<CreateDocumentItem>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -2552,6 +2838,8 @@ pub struct CreateEvalApiRequest {
     pub evals: Vec<CreateEvalItem>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -2608,6 +2896,8 @@ pub struct CreateFeedbackApiRequest {
     pub feedback: Option<String>,
     #[serde(default)]
     pub run_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2615,6 +2905,8 @@ pub struct CreateFieldApiRequest {
     pub fields: Vec<CreateFieldItem>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -2663,6 +2955,8 @@ pub struct CreateGradeApiRequest {
     pub score: Option<i64>,
     #[serde(default)]
     pub full: Option<bool>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2692,6 +2986,8 @@ pub struct CreateInvocationApiRequest {
     pub temperature_level_ids: Option<Vec<String>>,
     #[serde(default)]
     pub modality_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -2705,6 +3001,8 @@ pub struct CreateModelApiRequest {
     pub models: Option<Vec<CreateModelItem>>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -2766,6 +3064,8 @@ pub struct CreateParameterApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -2816,6 +3116,8 @@ pub struct CreatePersonaApiRequest {
     pub personas: Option<Vec<CreatePersonaItem>>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -2883,6 +3185,8 @@ pub struct CreateProfileApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -2935,6 +3239,8 @@ pub struct CreateProviderApiRequest {
     pub providers: Vec<CreateProviderItem>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -2990,6 +3296,8 @@ pub struct CreateRubricApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -3043,6 +3351,8 @@ pub struct CreateScenarioApiRequest {
     pub scenarios: Vec<CreateScenarioItem>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -3122,6 +3432,8 @@ pub struct CreateSettingApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -3188,6 +3500,8 @@ pub struct CreateSimulationApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -3237,6 +3551,8 @@ pub struct CreateToolApiRequest {
     pub tools: Vec<CreateToolItem>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -3482,6 +3798,8 @@ pub struct DashboardRequest {
     pub scenario_ids: Option<Vec<String>>,
     #[serde(default)]
     pub scenario_search: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3552,6 +3870,8 @@ pub struct DashboardTrendPoint {
 pub struct DecryptInvocationKeyApiRequest {
     pub invocation_id: String,
     pub key_id: String,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3568,6 +3888,8 @@ pub struct DecryptInvocationKeyApiResponse {
 pub struct DecryptProviderKeyApiRequest {
     pub provider_id: String,
     pub key_id: String,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3584,6 +3906,8 @@ pub struct DecryptProviderKeyApiResponse {
 pub struct DecryptSettingKeyApiRequest {
     pub setting_id: String,
     pub key_id: String,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -3623,6 +3947,8 @@ pub struct DeleteAgentApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -3658,6 +3984,8 @@ pub struct DeleteAuthApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -3704,6 +4032,8 @@ pub struct DeleteCohortApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -3735,6 +4065,8 @@ pub struct DeleteDepartmentApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -3781,6 +4113,8 @@ pub struct DeleteDocumentApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -3817,6 +4151,8 @@ pub struct DeleteEvalApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -3863,6 +4199,8 @@ pub struct DeleteFieldApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -3908,6 +4246,8 @@ pub struct DeleteModelApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -3952,6 +4292,8 @@ pub struct DeleteParameterApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -4004,6 +4346,8 @@ pub struct DeletePersonaApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -4048,6 +4392,8 @@ pub struct DeleteProfileApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -4091,6 +4437,8 @@ pub struct DeleteProviderApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -4131,6 +4479,8 @@ pub struct DeleteRubricApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -4176,6 +4526,8 @@ pub struct DeleteScenarioApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -4230,6 +4582,8 @@ pub struct DeleteSettingApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -4275,6 +4629,8 @@ pub struct DeleteSimulationApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -4316,6 +4672,8 @@ pub struct DeleteToolApiRequest {
     pub agent_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -4446,6 +4804,8 @@ pub struct DocsApiRequest {
     pub entity_id: Option<String>,
     #[serde(default)]
     pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub schema: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -4772,6 +5132,8 @@ pub struct DuplicateAgentApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -4789,6 +5151,8 @@ pub struct DuplicateAuthApiRequest {
     pub auth_id: String,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -4810,6 +5174,8 @@ pub struct DuplicateCohortApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -4827,6 +5193,8 @@ pub struct DuplicateDepartmentApiRequest {
     pub department_id: String,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -4848,6 +5216,8 @@ pub struct DuplicateDocumentApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -4865,6 +5235,8 @@ pub struct DuplicateEvalApiRequest {
     pub eval_id: String,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -4886,6 +5258,8 @@ pub struct DuplicateFieldApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -4903,6 +5277,8 @@ pub struct DuplicateModelApiRequest {
     pub model_id: String,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -4923,6 +5299,8 @@ pub struct DuplicateParameterApiRequest {
     pub parameter_id: String,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -4945,6 +5323,8 @@ pub struct DuplicatePersonaApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -4964,6 +5344,8 @@ pub struct DuplicateProfileApiRequest {
     pub target_profile_id: String,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -4988,6 +5370,8 @@ pub struct DuplicateProviderApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -5007,6 +5391,8 @@ pub struct DuplicateRubricApiRequest {
     pub rubric_id: String,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -5028,6 +5414,8 @@ pub struct DuplicateScenarioApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -5047,6 +5435,8 @@ pub struct DuplicateSettingApiRequest {
     pub setting_id: String,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -5068,6 +5458,8 @@ pub struct DuplicateSimulationApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -5085,6 +5477,8 @@ pub struct DuplicateToolApiRequest {
     pub tool_id: String,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -5120,9 +5514,16 @@ pub struct DynamicRubricData {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmulateProfileApiRequest {
-    pub target_profile_id: String,
+    #[serde(default)]
+    pub target_profile_id: Option<String>,
     #[serde(default)]
     pub ttl_minutes: Option<i64>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5134,6 +5535,8 @@ pub struct EmulateProfileApiResponse {
     pub grant_id: Option<String>,
     #[serde(default)]
     pub expires_at: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5361,6 +5764,12 @@ pub struct EvalSetup {
 pub struct ExportAgentApiRequest {
     #[serde(default)]
     pub agent_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5368,6 +5777,8 @@ pub struct ExportAgentApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5388,6 +5799,12 @@ pub struct ExportAttemptApiRequest {
     pub simulation_ids: Option<Vec<String>>,
     #[serde(default)]
     pub mode: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5395,12 +5812,16 @@ pub struct ExportAttemptApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportAuthApiRequest {
     #[serde(default)]
     pub auth_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5415,6 +5836,12 @@ pub struct ExportAuthApiResponse {
 pub struct ExportCohortApiRequest {
     #[serde(default)]
     pub cohort_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5422,12 +5849,20 @@ pub struct ExportCohortApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportDepartmentApiRequest {
     #[serde(default)]
     pub department_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5435,12 +5870,16 @@ pub struct ExportDepartmentApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportDocumentApiRequest {
     #[serde(default)]
     pub document_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5455,6 +5894,12 @@ pub struct ExportDocumentApiResponse {
 pub struct ExportEvalApiRequest {
     #[serde(default)]
     pub eval_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5462,12 +5907,20 @@ pub struct ExportEvalApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportFieldApiRequest {
     #[serde(default)]
     pub field_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5475,12 +5928,20 @@ pub struct ExportFieldApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportModelApiRequest {
     #[serde(default)]
     pub model_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5488,12 +5949,20 @@ pub struct ExportModelApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportParameterApiRequest {
     #[serde(default)]
     pub parameter_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5501,6 +5970,8 @@ pub struct ExportParameterApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5509,6 +5980,12 @@ pub struct ExportPersonaApiRequest {
     pub persona_id: Option<String>,
     #[serde(default)]
     pub snapshot_key: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
     #[serde(default)]
     pub search: Option<String>,
     #[serde(default)]
@@ -5524,12 +6001,16 @@ pub struct ExportPersonaApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportProfileApiRequest {
     #[serde(default)]
     pub profile_export_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5544,6 +6025,12 @@ pub struct ExportProfileApiResponse {
 pub struct ExportProviderApiRequest {
     #[serde(default)]
     pub provider_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5551,6 +6038,8 @@ pub struct ExportProviderApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5558,6 +6047,12 @@ pub struct ExportRubricApiRequest {
     pub rubric_id: String,
     #[serde(default)]
     pub chat_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5565,6 +6060,8 @@ pub struct ExportRubricApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5579,6 +6076,8 @@ pub struct ExportScenarioApiRequest {
     pub simulation_ids: Option<Vec<String>>,
     #[serde(default)]
     pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5593,6 +6092,12 @@ pub struct ExportScenarioApiResponse {
 pub struct ExportSettingApiRequest {
     #[serde(default)]
     pub setting_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5600,6 +6105,8 @@ pub struct ExportSettingApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5614,6 +6121,12 @@ pub struct ExportSimulationApiRequest {
     pub filter_cohort_ids: Option<Vec<String>>,
     #[serde(default)]
     pub filter_department_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5621,6 +6134,8 @@ pub struct ExportSimulationApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5632,6 +6147,12 @@ pub struct ExportSystemApiRequest {
     pub group_id: Option<String>,
     #[serde(default)]
     pub mode: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5639,6 +6160,8 @@ pub struct ExportSystemApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5653,6 +6176,12 @@ pub struct ExportTestApiRequest {
     pub draft_id: Option<String>,
     #[serde(default)]
     pub mode: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5660,12 +6189,20 @@ pub struct ExportTestApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportToolApiRequest {
     #[serde(default)]
     pub tool_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5673,6 +6210,8 @@ pub struct ExportToolApiResponse {
     pub file_id: String,
     pub file_name: String,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -5923,6 +6462,8 @@ pub struct FilePreviewScenarioApiRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileUploadDocumentApiResponse {
     pub file_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6108,6 +6649,8 @@ pub struct GenerationsAgentApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6143,6 +6686,8 @@ pub struct GenerationsAttemptApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6178,6 +6723,8 @@ pub struct GenerationsAuthApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6213,6 +6760,8 @@ pub struct GenerationsCohortApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6248,6 +6797,8 @@ pub struct GenerationsDepartmentApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6283,6 +6834,8 @@ pub struct GenerationsDocumentApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6318,6 +6871,8 @@ pub struct GenerationsEvalApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6353,6 +6908,8 @@ pub struct GenerationsFieldApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6388,6 +6945,8 @@ pub struct GenerationsModelApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6423,6 +6982,8 @@ pub struct GenerationsParameterApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6495,6 +7056,8 @@ pub struct GenerationsProfileApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6530,6 +7093,8 @@ pub struct GenerationsProviderApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6565,6 +7130,8 @@ pub struct GenerationsRubricApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6600,6 +7167,8 @@ pub struct GenerationsScenarioApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6635,6 +7204,8 @@ pub struct GenerationsSettingApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6670,6 +7241,8 @@ pub struct GenerationsSimulationApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6705,6 +7278,8 @@ pub struct GenerationsSystemApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6740,6 +7315,8 @@ pub struct GenerationsTestApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6775,6 +7352,8 @@ pub struct GenerationsToolApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6959,6 +7538,8 @@ pub struct GetAgentDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -6970,6 +7551,8 @@ pub struct GetAgentDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetAttemptDetailRequest {
     pub attempt_id: String,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7154,6 +7737,8 @@ pub struct GetAuthDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7235,6 +7820,8 @@ pub struct GetChatDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7510,6 +8097,8 @@ pub struct GetCohortDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7605,6 +8194,8 @@ pub struct GetDepartmentDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7741,6 +8332,8 @@ pub struct GetDocumentDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7876,6 +8469,8 @@ pub struct GetEvalDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -7984,6 +8579,8 @@ pub struct GetFieldDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8019,6 +8616,12 @@ pub struct GetHealthResponse {
     pub max_latency_ms: f64,
     pub latest_ok: bool,
     pub latest_error: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetHomeRequest {
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8157,6 +8760,8 @@ pub struct GetInvocationDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8332,6 +8937,8 @@ pub struct GetModelDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8438,6 +9045,8 @@ pub struct GetParameterDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8573,12 +9182,20 @@ pub struct GetPersonaDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetPersonaDraftsApiResponse {
     #[serde(default)]
     pub entries: Option<Vec<GetPersonaDraftResponse>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetPracticeRequest {
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8705,6 +9322,8 @@ pub struct GetProfileDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8826,6 +9445,8 @@ pub struct GetProviderDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8944,6 +9565,8 @@ pub struct GetRubricDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8966,6 +9589,8 @@ pub struct GetScenarioApiRequest {
     pub id: Option<String>,
     #[serde(default)]
     pub draft_id: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
     #[serde(default)]
     pub names: Option<App__infra__persona__types__SectionFilter>,
     #[serde(default)]
@@ -9108,6 +9733,8 @@ pub struct GetScenarioDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9119,6 +9746,8 @@ pub struct GetScenarioDraftsApiResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetSessionDetailRequest {
     pub session_id: String,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9259,7 +9888,7 @@ pub struct GetSettingDraftResponse {
     pub mcp: bool,
     pub active: bool,
     pub session_id: String,
-    pub agent_ids: Vec<String>,
+    pub system_ids: Vec<String>,
     pub auth_item_key_ids: Vec<String>,
     pub auth_ids: Vec<String>,
     pub color_ids: Vec<String>,
@@ -9278,7 +9907,7 @@ pub struct GetSettingDraftResponse {
     #[serde(default)]
     pub logins_ids: Option<Vec<String>>,
     #[serde(default)]
-    pub pending_agent_ids: Option<Vec<String>>,
+    pub pending_system_ids: Option<Vec<String>>,
     #[serde(default)]
     pub pending_auth_item_key_ids: Option<Vec<String>>,
     #[serde(default)]
@@ -9319,6 +9948,8 @@ pub struct GetSettingDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9457,6 +10088,8 @@ pub struct GetSimulationDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9532,6 +10165,8 @@ pub struct GetTestArtifactRequest {
     pub configs_search: Option<String>,
     #[serde(default)]
     pub configs_selected: Option<Vec<String>>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9834,6 +10469,8 @@ pub struct GetToolDraftsApiRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10610,6 +11247,8 @@ pub struct HealthRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -10721,6 +11360,11 @@ pub struct ImageDownloadAttemptApiRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImageDownloadDocumentApiRequest {
+    pub image_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImageDownloadGroupApiRequest {
     pub image_id: String,
 }
@@ -10741,9 +11385,19 @@ pub struct ImageEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImageUploadDocumentApiResponse {
+    pub image_id: String,
+    pub upload_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImageUploadScenarioApiResponse {
     pub image_id: String,
     pub upload_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -11272,6 +11926,8 @@ pub struct LeaderboardRequest {
     pub sort_by: Option<String>,
     #[serde(default)]
     pub sort_order: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -11366,6 +12022,8 @@ pub struct ListActivityRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub sort_order: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12075,6 +12733,8 @@ pub struct ListPricingRequest {
     pub sort_by: Option<String>,
     #[serde(default)]
     pub sort_order: Option<String>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13129,6 +13789,8 @@ pub struct ParseAgentCsvApiResponse {
     pub items: Vec<CreateAgentItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13137,6 +13799,8 @@ pub struct ParseAuthCsvApiResponse {
     pub items: Vec<CreateAuthItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13145,6 +13809,8 @@ pub struct ParseCohortCsvApiResponse {
     pub items: Vec<CreateCohortItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13153,6 +13819,8 @@ pub struct ParseDepartmentCsvApiResponse {
     pub items: Vec<CreateDepartmentItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13161,6 +13829,8 @@ pub struct ParseDocumentCsvApiResponse {
     pub items: Vec<CreateDocumentItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13169,6 +13839,8 @@ pub struct ParseEvalCsvApiResponse {
     pub items: Vec<CreateEvalItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13177,6 +13849,8 @@ pub struct ParseFieldCsvApiResponse {
     pub items: Vec<CreateFieldItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13185,6 +13859,8 @@ pub struct ParseModelCsvApiResponse {
     pub items: Vec<CreateModelItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13193,6 +13869,8 @@ pub struct ParseParameterCsvApiResponse {
     pub items: Vec<CreateParameterItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13201,6 +13879,8 @@ pub struct ParsePersonaCsvApiResponse {
     pub items: Vec<CreatePersonaItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13209,6 +13889,8 @@ pub struct ParseProfileCsvApiResponse {
     pub items: Vec<CreateProfileItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13217,6 +13899,8 @@ pub struct ParseProviderCsvApiResponse {
     pub items: Vec<CreateProviderItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13225,6 +13909,8 @@ pub struct ParseRubricCsvApiResponse {
     pub items: Vec<CreateRubricItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13233,6 +13919,8 @@ pub struct ParseScenarioCsvApiResponse {
     pub items: Vec<CreateScenarioItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13241,6 +13929,8 @@ pub struct ParseSettingCsvApiResponse {
     pub items: Vec<CreateSettingItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13249,6 +13939,8 @@ pub struct ParseSimulationCsvApiResponse {
     pub items: Vec<CreateSimulationItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13257,6 +13949,8 @@ pub struct ParseToolCsvApiResponse {
     pub items: Vec<CreateToolItem>,
     pub mapped_fields: Vec<String>,
     pub row_count: i64,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13269,6 +13963,8 @@ pub struct PatchAgentDraftApiRequest {
     pub input_draft_id: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
     #[serde(default)]
@@ -13340,6 +14036,8 @@ pub struct PatchAuthDraftApiRequest {
     pub input_draft_id: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
     #[serde(default)]
@@ -13503,6 +14201,8 @@ pub struct PatchCohortDraftApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -13542,6 +14242,8 @@ pub struct PatchDepartmentDraftApiRequest {
     pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -13598,6 +14300,8 @@ pub struct PatchDocumentDraftApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -13650,6 +14354,8 @@ pub struct PatchEvalDraftApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -13694,6 +14400,8 @@ pub struct PatchFieldDraftApiRequest {
     pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -13781,6 +14489,8 @@ pub struct PatchModelDraftApiRequest {
     pub input_draft_id: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
     #[serde(default)]
@@ -13887,6 +14597,8 @@ pub struct PatchParameterDraftApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -13949,6 +14661,8 @@ pub struct PatchPersonaDraftApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -13997,6 +14711,8 @@ pub struct PatchProfileDraftApiRequest {
     pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -14059,6 +14775,8 @@ pub struct PatchProviderDraftApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -14115,6 +14833,8 @@ pub struct PatchRubricDraftApiRequest {
     pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -14193,6 +14913,8 @@ pub struct PatchScenarioDraftApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -14213,6 +14935,8 @@ pub struct PatchSettingDraftApiRequest {
     pub input_draft_id: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
     #[serde(default)]
@@ -14329,6 +15053,8 @@ pub struct PatchSimulationDraftApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -14387,6 +15113,8 @@ pub struct PatchToolDraftApiRequest {
     pub pending_ids: Option<Vec<String>>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -14788,18 +15516,16 @@ pub struct PricingRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PricingResources {
     #[serde(default)]
-    pub agents: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub agents: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub models: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub models: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14891,6 +15617,8 @@ pub struct ProblemAttemptApiRequest {
     #[serde(rename = "type")]
     pub r#type: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15247,6 +15975,8 @@ pub struct ProblemSystemApiRequest {
     #[serde(rename = "type")]
     pub r#type: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15263,6 +15993,8 @@ pub struct ProblemTestApiRequest {
     #[serde(rename = "type")]
     pub r#type: String,
     pub message: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15729,6 +16461,18 @@ pub struct RefreshAgentApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshApiRequest {
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15739,6 +16483,8 @@ pub struct RefreshAuthApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15749,6 +16495,8 @@ pub struct RefreshCohortApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15759,6 +16507,8 @@ pub struct RefreshDepartmentApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15769,6 +16519,8 @@ pub struct RefreshDocumentApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15779,6 +16531,8 @@ pub struct RefreshEvalApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15789,6 +16543,8 @@ pub struct RefreshFieldApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15799,6 +16555,8 @@ pub struct RefreshModelApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15809,6 +16567,20 @@ pub struct RefreshParameterApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RefreshPersonaApiRequest {
+    #[serde(default)]
+    pub targets: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15819,6 +16591,8 @@ pub struct RefreshProfileApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15829,6 +16603,8 @@ pub struct RefreshProviderApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15848,6 +16624,8 @@ pub struct RefreshRubricApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15858,6 +16636,8 @@ pub struct RefreshScenarioApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15868,6 +16648,8 @@ pub struct RefreshSettingApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15878,6 +16660,8 @@ pub struct RefreshSimulationApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -15888,6 +16672,8 @@ pub struct RefreshToolApiRequest {
     pub idempotency_key: Option<String>,
     #[serde(default)]
     pub accept: Option<bool>,
+    #[serde(default)]
+    pub soft: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16183,6 +16969,8 @@ pub struct ReportsRequest {
     pub page_limit: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16336,6 +17124,8 @@ pub struct ResolveProblemApiRequest {
     pub problem_id: String,
     #[serde(default)]
     pub resolved: Option<bool>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16354,6 +17144,8 @@ pub struct ResponseAttemptApiResponse {
     pub is_correct: Option<bool>,
     #[serde(default)]
     pub response_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16637,6 +17429,18 @@ pub struct RunPricingItem {
     pub count: Option<i64>,
     #[serde(default)]
     pub pricing_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RunStatus {
+    pub run_id: String,
+    pub status: String,
+    #[serde(default)]
+    pub modality: Option<String>,
+    #[serde(default)]
+    pub resource_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub error: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17043,6 +17847,8 @@ pub struct SearchAgentApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17085,6 +17891,8 @@ pub struct SearchAttemptApiRequest {
     pub page: Option<i64>,
     #[serde(default)]
     pub page_size: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17099,6 +17907,8 @@ pub struct SearchAuthApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17123,6 +17933,8 @@ pub struct SearchCohortApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17133,6 +17945,8 @@ pub struct SearchDepartmentApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17155,6 +17969,8 @@ pub struct SearchDocumentApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17169,6 +17985,8 @@ pub struct SearchEvalApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17191,6 +18009,8 @@ pub struct SearchFieldApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17229,6 +18049,8 @@ pub struct SearchModelApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17251,6 +18073,8 @@ pub struct SearchParameterApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17305,6 +18129,8 @@ pub struct SearchProfileApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17325,6 +18151,8 @@ pub struct SearchProviderApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17343,6 +18171,8 @@ pub struct SearchRubricApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17367,6 +18197,14 @@ pub struct SearchScenarioApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SearchSettingApiRequest {
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17391,6 +18229,8 @@ pub struct SearchSimulationApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17413,6 +18253,8 @@ pub struct SearchTestApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17470,6 +18312,8 @@ pub struct SearchToolApiRequest {
     pub page_size: Option<i64>,
     #[serde(default)]
     pub page_offset: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18576,6 +19420,8 @@ pub struct StartTestApiResponse {
     pub invocation_id: Option<String>,
     #[serde(default)]
     pub benchmark_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18590,6 +19436,8 @@ pub struct StopTestApiResponse {
     pub success: bool,
     #[serde(default)]
     pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18605,11 +19453,19 @@ pub struct TestCompleteInternalResult {
     pub success: Option<bool>,
     #[serde(default)]
     pub completed_count: Option<i64>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TestCompletePayload {
     pub test_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18680,6 +19536,8 @@ pub struct TestInvocationCompleteInternalResult {
     pub completion_id: Option<String>,
     #[serde(default)]
     pub success: Option<bool>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18688,66 +19546,44 @@ pub struct TestInvocationCompletePayload {
     pub test_invocation_id: String,
     #[serde(default)]
     pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TestResources {
     #[serde(default)]
-    pub evals: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub evals: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub rubrics: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub rubrics: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub agents: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub agents: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub models: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub models: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub voices: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub voices: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub temperature_levels: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub temperature_levels: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub reasoning_levels: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub reasoning_levels: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub modalities: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub modalities: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub prompts: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub prompts: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub instructions: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub instructions: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub tools: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub tools: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub qualities: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub qualities: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub standard_groups: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub standard_groups: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
     #[serde(default)]
-    pub standards: Option<
-        std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>,
-    >,
+    pub standards: Option<std::collections::HashMap<String, std::collections::HashMap<String, serde_json::Value>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18759,6 +19595,8 @@ pub struct TestRunEndPayload {
     pub error: Option<bool>,
     #[serde(default)]
     pub message: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18774,6 +19612,8 @@ pub struct TestRunInternalResult {
     pub test_invocation_run_id: String,
     #[serde(default)]
     pub success: Option<bool>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18805,6 +19645,12 @@ pub struct TestRunPayload {
     pub run_id: String,
     #[serde(default)]
     pub test_invocation_trace_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18812,6 +19658,12 @@ pub struct TestStartPayload {
     pub eval_id: String,
     #[serde(default)]
     pub infinite_mode: Option<bool>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18829,6 +19681,12 @@ pub struct TestStatusSummary {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TestStopPayload {
     pub invocation_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18836,6 +19694,8 @@ pub struct TestTraceInternalResult {
     pub test_invocation_trace_id: String,
     #[serde(default)]
     pub success: Option<bool>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18864,6 +19724,12 @@ pub struct TestTracePayload {
     pub prompt_text: Option<String>,
     #[serde(default)]
     pub instructions: Option<Vec<String>>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18970,6 +19836,8 @@ pub struct TextDownloadToolApiRequest {
 pub struct TextUploadDocumentApiResponse {
     pub text_id: String,
     pub upload_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19812,7 +20680,14 @@ pub struct ToolResultItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UnemulateProfileApiRequest {
-    pub target_profile_id: String,
+    #[serde(default)]
+    pub target_profile_id: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
+    pub accept: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19820,6 +20695,8 @@ pub struct UnemulateProfileApiResponse {
     pub ok: bool,
     #[serde(default)]
     pub reason: Option<String>,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19850,6 +20727,8 @@ pub struct UpdateAgentApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -19948,6 +20827,8 @@ pub struct UpdateAuthApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -20057,6 +20938,8 @@ pub struct UpdateCohortApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -20155,6 +21038,8 @@ pub struct UpdateDepartmentApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -20238,6 +21123,8 @@ pub struct UpdateDocumentApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -20328,6 +21215,8 @@ pub struct UpdateEvalApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -20429,6 +21318,8 @@ pub struct UpdateFieldApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -20518,6 +21409,8 @@ pub struct UpdateModelApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -20635,6 +21528,8 @@ pub struct UpdateParameterApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -20724,6 +21619,8 @@ pub struct UpdatePersonaApiRequest {
     pub instruction_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -20857,6 +21754,8 @@ pub struct UpdateProfileApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -20942,6 +21841,8 @@ pub struct UpdateProviderApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -21034,6 +21935,8 @@ pub struct UpdateRubricApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -21142,6 +22045,8 @@ pub struct UpdateScenarioApiRequest {
     pub flag_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -21305,6 +22210,8 @@ pub struct UpdateSettingApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -21437,6 +22344,8 @@ pub struct UpdateSimulationApiRequest {
     #[serde(default)]
     pub idempotency_key: Option<String>,
     #[serde(default)]
+    pub soft: Option<bool>,
+    #[serde(default)]
     pub accept: Option<bool>,
 }
 
@@ -21536,6 +22445,8 @@ pub struct UpdateToolApiRequest {
     pub agent_search: Option<String>,
     #[serde(default)]
     pub idempotency_key: Option<String>,
+    #[serde(default)]
+    pub soft: Option<bool>,
     #[serde(default)]
     pub accept: Option<bool>,
 }
@@ -21647,6 +22558,31 @@ pub struct VideoEntry {
 pub struct VideoUploadScenarioApiResponse {
     pub video_id: String,
     pub upload_id: String,
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WatchApiRequest {
+    pub group_id: String,
+    #[serde(default)]
+    pub run_id: Option<String>,
+    #[serde(default)]
+    pub wait_for_complete: Option<bool>,
+    #[serde(default)]
+    pub timeout_seconds: Option<i64>,
+    #[serde(default)]
+    pub snapshot_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WatchApiResponse {
+    pub group_id: String,
+    pub runs: Vec<RunStatus>,
+    #[serde(default)]
+    pub timed_out: Option<bool>,
+    #[serde(default)]
+    pub waited_seconds: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

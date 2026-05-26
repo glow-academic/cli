@@ -29,6 +29,7 @@ instance), not `glow … --help`. These clips are embedded one-to-one in the doc
 | `activity-export`     | `glow system export --body '{"view":"activity"}'` → `glow system refresh` |
 | `home-export`         | `glow attempts search` → `glow attempts export --body '{"attempt_id":"…","view":"single"}'` |
 | `attempts-start`      | `glow attempts home` (a card's `home_id`) → `glow attempts start --body '{"home_id":"…"}'` (mints the attempt; no model calls) |
+| `attempts-complete`   | start (capture id) → `glow attempts complete --body '{"attempt_id":"…"}'` → `{completion_id, success:true}` (stateless grade; archives off-camera via `Hide`) |
 
 This is the full safe set — every other clip needs an unblock (below). Valid
 `system export` views: `activity`, `pricing`. `attempts export` needs an
@@ -50,8 +51,8 @@ exports just generate a server-side ZIP and return its name/row_count).
   '{"attempt_ids":[…],"archived":true}'` (no `attempt/delete` — that 404s; an
   extra attempt is legitimate data anyway, archive just tidies).
   - `attempts-start` ✅ DONE (mint only — no model calls).
-  - `attempts-complete` → `glow attempts complete --body '{"attempt_id":…}'` runs
-    the **rubric grader** (LLM grading = token cost) → DEFERRED with generate.
+  - `attempts-complete` ✅ DONE — `glow attempts complete --body '{"attempt_id":…}'`
+    is **stateless** (no model calls; verified in the API) → `{completion_id, success}`.
   - `attempts-stop` → truncate a **streaming** chat reply mid-response (needs a
     live AI response in flight, i.e. an active `generate`) → DEFERRED with generate.
 
