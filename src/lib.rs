@@ -390,22 +390,6 @@ pub fn build_cli_spec() -> serde_json::Value {
                 { "name": "id", "long": "--id", "required": true, "help": "Upload ID" },
                 { "name": "output", "long": "--output", "required": false, "help": "Output file path (stdout if omitted)" }
             ]},
-            { "name": "create", "about": "Initiate a TUS resumable upload", "args": [
-                { "name": "filename", "long": "--filename", "required": true, "help": "Filename for the upload" },
-                { "name": "size", "long": "--size", "required": false, "help": "Total file size in bytes" }
-            ]},
-            { "name": "chunk", "about": "Upload a chunk for a TUS upload", "args": [
-                { "name": "id", "long": "--id", "required": true, "help": "Upload ID" },
-                { "name": "file", "long": "--file", "required": true, "help": "Path to chunk data" },
-                { "name": "offset", "long": "--offset", "required": false, "help": "Byte offset (default: 0)" }
-            ]},
-            { "name": "status", "about": "Check TUS upload status", "args": [
-                { "name": "id", "long": "--id", "required": true, "help": "Upload ID" }
-            ]},
-            { "name": "finalize", "about": "Finalize a TUS upload", "args": [
-                { "name": "id", "long": "--id", "required": true, "help": "Upload ID" },
-                { "name": "body", "long": "--body", "required": false, "help": "Optional JSON body" }
-            ]},
             { "name": "discover", "about": "Discover available upload types", "args": [
                 { "name": "id", "long": "--id", "required": false, "help": "Optional upload ID" }
             ]},
@@ -535,11 +519,11 @@ pub fn run() -> Result<()> {
                 }
             }
         }
-        // ``Commands::Chats`` removed in Cleanup B. Live REPL +
-        // voice placeholder now live under the chat namespace at
-        // ``glow attempts chat live <chat_id>`` /
-        // ``glow attempts chat voice <chat_id>`` via the sub-op
-        // namespace intercept in dispatch_resource.
+        // ``Commands::Chats`` removed in Cleanup B. The live REPL now
+        // lives under the chat namespace at
+        // ``glow attempts chat live <chat_id>`` via the sub-op
+        // namespace intercept in dispatch_resource; every other chat
+        // op (voice/speak/silence/…) is a plain chat_<op> call.
         // ``Commands::Stream`` / ``Connect`` / ``Disconnect`` removed —
         // hit non-existent /stream, /connect, /disconnect top-level
         // routes. Streaming is per-artifact: ``glow <art> watch <run_id>``.
@@ -839,8 +823,7 @@ fn dispatch_resource(client: &glow::GlowClient, args: &[String], mode: OutputMod
     // discoverability the CLI surfaces these as ``glow attempts chat
     // <op>`` / ``glow tests invocation <op>`` (3-segment), then
     // re-dispatches as the joined action. Also handles the
-    // ``glow attempts chat live <chat_id>`` WS REPL and the
-    // ``glow attempts chat voice <chat_id>`` deferral message.
+    // ``glow attempts chat live <chat_id>`` WS REPL special case.
     if dispatch_subop_namespace(client, resource, action, &args[2..], mode)?.is_some() {
         return Ok(());
     }
@@ -1105,9 +1088,8 @@ fn dispatch_resource_helper(
 ///   ``glow attempts chat <op> [args]`` → POST /attempt/chat_<op>
 ///   ``glow tests invocation <op> [args]`` → POST /test/invocation_<op>
 ///
-/// Plus the two WS-only special cases under attempts.chat:
+/// Plus the WS-only special case under attempts.chat:
 ///   ``glow attempts chat live <chat_id>``  → socket.io REPL
-///   ``glow attempts chat voice <chat_id>`` → deferral message
 ///
 /// Returns ``Some(())`` if the call was handled (success or
 /// surfaced error), ``None`` to fall through to the generic
@@ -1131,9 +1113,11 @@ fn dispatch_subop_namespace(
         let subop = &rest[0];
         let subop_args = &rest[1..];
 
-        // WS-only: live REPL + voice placeholder. Pulled into the
-        // chat namespace from the (now removed) top-level Chats
-        // subcommand so all chat operations live in one place.
+        // WS-only special case: the live socket.io REPL. Pulled into
+        // the chat namespace from the (now removed) top-level Chats
+        // subcommand so all chat operations live in one place. Every
+        // other sub-op (including voice/speak/silence) is a plain
+        // chat_<op> call handled by the generic dispatch below.
         if subop == "live" {
             if subop_args.is_empty() {
                 anyhow::bail!(
@@ -1151,11 +1135,6 @@ fn dispatch_subop_namespace(
                 mode,
             )
             .map(|_| Some(()));
-        }
-        if subop == "voice" {
-            let placeholder = String::new();
-            let chat_id = subop_args.first().unwrap_or(&placeholder);
-            return helpers::cmd_chats_voice_placeholder(chat_id).map(|_| Some(()));
         }
 
         // General case: re-dispatch as action=chat_<subop>. Try the
@@ -1230,10 +1209,7 @@ fn print_chat_namespace_help() {
         ("improvements", "Per-message improvements"),
         ("analyses", "Overall analyses"),
         ("audio", "Attach an audio resource to a chat message"),
-        (
-            "voice",
-            "[deferred] WS voice REPL — needs cpal/rodio go-ahead",
-        ),
+        ("voice", "Open a voice session"),
         ("silence", "Silence the voice session"),
         ("speak", "Push a speak frame into the voice session"),
         (
@@ -1285,9 +1261,7 @@ fn dispatch_media(
     use commands::glow as glow_cmd;
 
     if args.is_empty() {
-        anyhow::bail!(
-            "Expected a media action. Available: upload, download, create, chunk, status, finalize, discover, preview"
-        );
+        anyhow::bail!("Expected a media action. Available: upload, download, discover, preview");
     }
 
     let action = args[0].as_str();
@@ -1303,39 +1277,14 @@ fn dispatch_media(
             let id = parse_flag(rest, "--id")?
                 .ok_or_else(|| anyhow::anyhow!("--id <upload_id> is required for download"))?;
             let output = parse_flag(rest, "--output")?;
-            glow_cmd::cmd_media_download(client, resource, media.slug(), &id, output.as_deref(), mode)
-        }
-        "create" => {
-            let filename = parse_flag(rest, "--filename")?
-                .ok_or_else(|| anyhow::anyhow!("--filename is required for TUS create"))?;
-            let size = parse_flag(rest, "--size")?
-                .map(|s| s.parse::<u64>())
-                .transpose()
-                .map_err(|_| anyhow::anyhow!("--size must be a number"))?;
-            glow_cmd::cmd_media_create(client, resource, media.slug(), &filename, size, mode)
-        }
-        "chunk" => {
-            let id = parse_flag(rest, "--id")?
-                .ok_or_else(|| anyhow::anyhow!("--id <upload_id> is required for chunk"))?;
-            let file = parse_flag(rest, "--file")?
-                .ok_or_else(|| anyhow::anyhow!("--file <path> is required for chunk"))?;
-            let offset = parse_flag(rest, "--offset")?
-                .map(|s| s.parse::<u64>())
-                .transpose()
-                .map_err(|_| anyhow::anyhow!("--offset must be a number"))?
-                .unwrap_or(0);
-            glow_cmd::cmd_media_chunk(client, resource, media.slug(), &id, &file, offset, mode)
-        }
-        "status" => {
-            let id = parse_flag(rest, "--id")?
-                .ok_or_else(|| anyhow::anyhow!("--id <upload_id> is required for status"))?;
-            glow_cmd::cmd_media_status(client, resource, media.slug(), &id, mode)
-        }
-        "finalize" => {
-            let id = parse_flag(rest, "--id")?
-                .ok_or_else(|| anyhow::anyhow!("--id <upload_id> is required for finalize"))?;
-            let body = parse_flag(rest, "--body")?;
-            glow_cmd::cmd_media_finalize(client, resource, media.slug(), &id, body.as_deref(), mode)
+            glow_cmd::cmd_media_download(
+                client,
+                resource,
+                media.slug(),
+                &id,
+                output.as_deref(),
+                mode,
+            )
         }
         "discover" => {
             let id = parse_flag(rest, "--id")?;
@@ -1347,7 +1296,7 @@ fn dispatch_media(
             glow_cmd::cmd_media_preview(client, resource, media.slug(), &id, mode)
         }
         other => anyhow::bail!(
-            "Unknown media action '{}'. Available: upload, download, create, chunk, status, finalize, discover, preview",
+            "Unknown media action '{}'. Available: upload, download, discover, preview",
             other,
         ),
     }

@@ -122,16 +122,28 @@ pub(crate) fn cmd_generate_and_wait_dispatch(
 ) -> Result<()> {
     use colored::Colorize;
 
-    let body = match body_str {
-        Some(s) => Some(
-            serde_json::from_str::<serde_json::Value>(s)
-                .map_err(|e| anyhow::anyhow!("Invalid JSON for --body: {}", e))?,
-        ),
-        None => None,
+    let mut body = match body_str {
+        Some(s) => serde_json::from_str::<serde_json::Value>(s)
+            .map_err(|e| anyhow::anyhow!("Invalid JSON for --body: {}", e))?,
+        None => serde_json::json!({}),
     };
 
+    // Force an ASYNC trigger. ``--wait`` blocks via the watch stream, so the
+    // POST must return immediately (run_id while the run executes in the
+    // background) — otherwise the trigger blocks server-side until the run
+    // finishes (the default ``wait_for_complete: true``), and by the time we
+    // attach to /watch the live, no-replay event hub has already gone quiet:
+    // zero frames, and the watch hangs forever. Overriding to false is correct
+    // for --wait regardless of what the caller put in --body.
+    if let serde_json::Value::Object(ref mut map) = body {
+        map.insert(
+            "wait_for_complete".to_string(),
+            serde_json::Value::Bool(false),
+        );
+    }
+
     // Trigger via the same generic POST the body-only path uses.
-    let response = client.resource_action(artifact_api_path, "generate", body)?;
+    let response = client.resource_action(artifact_api_path, "generate", Some(body))?;
 
     // Surface the trigger response first (run_id, group_id, etc.) so
     // the user has the handles even if the watch fails midway.
@@ -214,15 +226,36 @@ pub(crate) fn cmd_watch_run(
             }
         }
 
-        // Terminal detection on the event-name suffix. Matches both
-        // the per-modality variants (e.g. ``attempt.generate.audio.complete``)
-        // and the top-level lifecycle (``attempt.generate.completed``).
-        if event_name.ends_with(".completed") || event_name.ends_with(".complete") {
-            terminal_kind = Some(TerminalKind::Completed);
+        // Terminal detection keys on the envelope's ``event_type`` field
+        // inside the payload — NOT the SSE ``event:`` name, which our
+        // server never sets (every frame rides the default ``message``
+        // channel; ``event_type`` lives in the JSON so the client can
+        // wildcard-match — see the API's infra/stream/sse.py).
+        //
+        // The set mirrors the server's run-scoped terminal (``_is_run_terminal``
+        // in sse.py): the run's FINAL frame only. We deliberately do NOT match
+        // the bare ``.complete`` suffix — the generation lifecycle emits mid-run
+        // ``call.complete`` / ``text.complete`` frames, and matching those would
+        // declare the run done after the first tool call.
+        let et = serde_json::from_str::<serde_json::Value>(data)
+            .ok()
+            .and_then(|v| {
+                v.get("event_type")
+                    .and_then(|e| e.as_str())
+                    .map(String::from)
+            })
+            .unwrap_or_default();
+        // Suffix match, NOT equality: event_type is fully-qualified
+        // (``persona.generate.agent_completed``), so compare the tail.
+        if et.ends_with(".failed") || et.ends_with(".error") || et.ends_with("media_error") {
+            terminal_kind = Some(TerminalKind::Failed);
             return std::ops::ControlFlow::Break(());
         }
-        if event_name.ends_with(".failed") || event_name.ends_with(".error") {
-            terminal_kind = Some(TerminalKind::Failed);
+        if et.ends_with(".completed")
+            || et.ends_with("agent_completed")
+            || et.ends_with("media_complete")
+        {
+            terminal_kind = Some(TerminalKind::Completed);
             return std::ops::ControlFlow::Break(());
         }
         std::ops::ControlFlow::Continue(())
@@ -323,102 +356,6 @@ pub(crate) fn cmd_media_download(
             std::io::stdout().write_all(&bytes)?;
         }
     }
-    Ok(())
-}
-
-pub(crate) fn cmd_media_create(
-    client: &GlowClient,
-    resource: &str,
-    media_type: &str,
-    filename: &str,
-    size: Option<u64>,
-    mode: OutputMode,
-) -> Result<()> {
-    use colored::Colorize;
-
-    let response = client.media_create(resource, media_type, filename, size)?;
-    output::print_result(mode, &response, |resp| {
-        println!("{} TUS upload initiated", "OK".green().bold());
-        println!(
-            "{}",
-            serde_json::to_string_pretty(resp).unwrap_or_else(|_| format!("{:?}", resp))
-        );
-    });
-    Ok(())
-}
-
-pub(crate) fn cmd_media_chunk(
-    client: &GlowClient,
-    resource: &str,
-    media_type: &str,
-    upload_id: &str,
-    file_path: &str,
-    offset: u64,
-    mode: OutputMode,
-) -> Result<()> {
-    use colored::Colorize;
-
-    let data = std::fs::read(file_path)
-        .map_err(|e| anyhow::anyhow!("Failed to read file {}: {}", file_path, e))?;
-    let response = client.media_chunk(resource, media_type, upload_id, data, offset)?;
-    output::print_result(mode, &response, |resp| {
-        if let Some(new_offset) = resp.get("offset").and_then(|v| v.as_u64()) {
-            println!(
-                "{} Chunk uploaded, offset now {}",
-                "OK".green().bold(),
-                new_offset
-            );
-        }
-    });
-    Ok(())
-}
-
-pub(crate) fn cmd_media_status(
-    client: &GlowClient,
-    resource: &str,
-    media_type: &str,
-    upload_id: &str,
-    mode: OutputMode,
-) -> Result<()> {
-    let response = client.media_status(resource, media_type, upload_id)?;
-    output::print_result(mode, &response, |resp| {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(resp).unwrap_or_else(|_| format!("{:?}", resp))
-        );
-    });
-    Ok(())
-}
-
-pub(crate) fn cmd_media_finalize(
-    client: &GlowClient,
-    resource: &str,
-    media_type: &str,
-    upload_id: &str,
-    body_str: Option<&str>,
-    mode: OutputMode,
-) -> Result<()> {
-    use colored::Colorize;
-
-    let body = match body_str {
-        Some(s) => Some(
-            serde_json::from_str::<serde_json::Value>(s)
-                .map_err(|e| anyhow::anyhow!("Invalid JSON for --body: {}", e))?,
-        ),
-        None => None,
-    };
-    let response = client.media_finalize(resource, media_type, upload_id, body)?;
-    output::print_result(mode, &response, |resp| {
-        println!(
-            "{} Finalized upload {}",
-            "OK".green().bold(),
-            upload_id.dimmed()
-        );
-        println!(
-            "{}",
-            serde_json::to_string_pretty(resp).unwrap_or_else(|_| format!("{:?}", resp))
-        );
-    });
     Ok(())
 }
 

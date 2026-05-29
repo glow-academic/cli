@@ -30,6 +30,9 @@ instance), not `glow … --help`. These clips are embedded one-to-one in the doc
 | `home-export`         | `glow attempts search` → `glow attempts export --body '{"attempt_id":"…","view":"single"}'` |
 | `attempts-start`      | `glow attempts home` (a card's `home_id`) → `glow attempts start --body '{"home_id":"…"}'` (mints the attempt; no model calls) |
 | `attempts-complete`   | start (capture id) → `glow attempts complete --body '{"attempt_id":"…"}'` → `{completion_id, success:true}` (stateless grade; archives off-camera via `Hide`) |
+| `mcp-list-tools`       | `glow mcp list-tools` (17-tool table) |
+| `mcp-call`            | `glow mcp call search_content --args '{"artifact":"persona","page_size":3}'` (safe read-only tool) |
+| `mcp-overview`        | `glow mcp list-tools` → the call above |
 
 This is the full safe set — every other clip needs an unblock (below). Valid
 `system export` views: `activity`, `pricing`. `attempts export` needs an
@@ -37,9 +40,13 @@ This is the full safe set — every other clip needs an unblock (below). Valid
 exports just generate a server-side ZIP and return its name/row_count).
 
 ## Tier 2 — mutations (need a target + Hide/Show cleanup)
-- `agents-generate`, `generation-trigger`, `generation-wait` → `glow agents generate --body '{…}'`
-  (AI gen: slow, nondeterministic, costs tokens; clean up the produced draft).
-- `scenarios-generate` → `glow scenarios generate --body '{…}'`.
+- `agents-generate`, `generation-trigger`, `generation-wait`, `scenarios-generate`
+  → `glow <resource> generate --body '{"instructions":["<prompt>"],"wait_for_complete":<bool>}'`
+  (resource generate route body: `instructions: list[str]` + `wait_for_complete: bool`,
+  default true). `generation-wait` = `wait_for_complete:true` (blocks, returns the draft);
+  `generation-trigger` = `false` (returns a run id to `attempts watch`). AI gen: slow,
+  nondeterministic, **costs tokens** — needs API keys (user enabling). Clean up the
+  produced draft (`<resource> archive`/`delete`).
 - `evals-run` → `glow evals run --body '{…}'`.
 - `voice-upload` → audio upload via attempts; `documents-upload` → `glow documents …` upload (need a fixture file).
 - `tests-start` / `tests-stop` / `tests-grade` / `tests-decrypt` → `glow tests <action>`: `tests start` needs an `eval_id` (runs an eval = model calls/token cost); `grade`/`decrypt` need an `invocation_id` (+ `key_id`) from a run. DEFERRED with the generate clips (token cost).
@@ -59,10 +66,11 @@ exports just generate a server-side ZIP and return its name/row_count).
 ## Tier 3 — live streaming/realtime (gated on `generate` → deferred with it)
 `chat-live`, `realtime-chat-live` (`glow attempts chat live`), `streaming-cli`/`-connect`/`-overview`/`-terminal`, `realtime-connect` (`glow attempts watch <run_id>`), `invocation-trace`, `tools-invocation`. `attempts watch` streams a run's SSE *until a terminal event* — only meaningful while a **`generate` is in flight** (otherwise it just emits the terminal frame). So these need an active AI run = same bucket as generate. `attempts-stop` (truncate a streaming reply) is here too.
 
-## Tier 4 — MCP (blocked on auth)
-`mcp-overview`, `mcp-list-tools`, `mcp-call` — `glow mcp list-tools`/`call` return
-**HTTP 401**; `/mcp/` uses different auth than the resource endpoints. Unblock the
-MCP auth (or use a real session token), then: `list-tools`, then `call <tool> --args '{…}'`.
+## Tier 4 — MCP (RESOLVED ✅, all 3 recorded)
+Two fixes landed: (1) API — `McpOAuthMiddleware` now honors the E2E bypass via the
+shared `try_e2e_bypass` helper; (2) CLI — `mcp_jsonrpc` in `commands/glow/helpers.rs`
+now routes through `GlowClient::authed_request` (sends `GLOW_TOKEN` + `X-E2E-Profile-Id`)
+instead of the stored-login token. `glow mcp list-tools`/`call` now work with the bypass.
 
 ## Tier 5 — deploy / instance ops (need Docker / real infra; some destructive)
 `start-deploy`, `start-init` (interactive wizard), `topology-airgapped`/`-api-only`/`-exposed`,

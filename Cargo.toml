@@ -1,6 +1,6 @@
 [package]
 name = "cli"
-version = "1.0.8"
+version = "1.0.9"
 edition = "2021"
 default-run = "glow"
 
@@ -34,10 +34,9 @@ pbkdf2 = { version = "0.12", features = ["simple"] }
 sha2 = "0.10"
 base64 = "0.22"
 
-# WebSocket / socket.io client (Phase 5). Pure-Rust, no native deps —
-# safe to add without the audio-libs gate the goal command specified.
-# Voice (cpal/rodio) is deferred for explicit user go-ahead per the
-# original constraint.
+# WebSocket / socket.io client — backs the `glow attempts chat live`
+# REPL. Pure-Rust, no native audio deps (CLI-side mic capture is out of
+# scope; audio flows go through the HTTP chat_speak/chat_silence ops).
 rust_socketio = "0.6"
 
 [dev-dependencies]

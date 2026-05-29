@@ -5,32 +5,26 @@ Set Width 1600
 Set Height 900
 Set FontSize 24
 Set Padding 20
-Set TypingSpeed 35ms
+Set TypingSpeed 30ms
 
-Type "glow --help"
-Enter
-Sleep 2s
+Sleep 800ms
 
-Type "clear"
+# Zero to running is four commands — install, scaffold, deploy, verify:
+Type "echo '1) brew install glow-academic/tap/glow   # install the CLI'"
 Enter
-Sleep 500ms
+Sleep 900ms
+Type "echo '2) glow init my-school                   # scaffold glow-deploy.yaml'"
+Enter
+Sleep 900ms
+Type "echo '3) glow deploy --name my-school          # blue/green bring-up'"
+Enter
+Sleep 900ms
+Type "echo '4) glow status --name my-school          # confirm all green'"
+Enter
+Sleep 1500ms
 
-Type "glow init --help"
+# Steps 1–3 each have their own demo; here's step 4 against a live stack —
+# every service healthy.
+Type "glow status --name vhsdemo"
 Enter
-Sleep 2s
-
-Type "clear"
-Enter
-Sleep 500ms
-
-Type "glow status --help"
-Enter
-Sleep 2s
-
-Type "clear"
-Enter
-Sleep 500ms
-
-Type "glow deploy --help"
-Enter
-Sleep 2s
+Sleep 4000ms

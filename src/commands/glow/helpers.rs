@@ -269,7 +269,7 @@ pub fn cmd_chats_live(
     _mode: OutputMode,
 ) -> Result<()> {
     use colored::Colorize;
-    use std::io::{BufRead, Write};
+    use std::io::Write;
     use std::time::Duration;
 
     // ``client`` parameter is reserved for future fall-back HTTP
@@ -287,55 +287,90 @@ pub fn cmd_chats_live(
         "·".dimmed()
     );
 
-    let stdin = std::io::stdin();
     let mut stdout = std::io::stdout();
 
+    // Read stdin on a dedicated thread and forward lines over a channel.
+    // The previous design blocked the main loop on ``read_line``, so inbound
+    // events (the assistant's reply) only printed AFTER the next Enter — they
+    // never "streamed back inline". Decoupling stdin lets the main loop drain
+    // and print inbound events continuously while waiting for input. ``None``
+    // is the EOF/quit sentinel.
+    let (line_tx, line_rx) = std::sync::mpsc::channel::<Option<String>>();
+    std::thread::spawn(move || {
+        use std::io::BufRead as _;
+        let stdin = std::io::stdin();
+        loop {
+            let mut line = String::new();
+            match stdin.lock().read_line(&mut line) {
+                Ok(0) => {
+                    let _ = line_tx.send(None);
+                    break;
+                }
+                Ok(_) => {
+                    if line_tx.send(Some(line)).is_err() {
+                        break;
+                    }
+                }
+                Err(_) => {
+                    let _ = line_tx.send(None);
+                    break;
+                }
+            }
+        }
+    });
+
+    print!("{} ", ">".bold());
+    stdout.flush().ok();
+
     loop {
-        // Drain any pending inbound events first (non-blocking) so
-        // the user sees responses to the previous message before
-        // their next prompt.
+        // Drain inbound events continuously (not just between prompts) so the
+        // assistant's reply streams back inline as it arrives.
+        let mut printed_event = false;
         while let Some((name, payload)) =
-            crate::glow::ws::try_recv_with_timeout(&sock.events, Duration::from_millis(50))
+            crate::glow::ws::try_recv_with_timeout(&sock.events, Duration::from_millis(10))
         {
-            println!(
-                "{}: {}",
-                name.green().bold(),
-                serde_json::to_string(&payload).unwrap_or_default().dimmed(),
-            );
+            // Keep the live view readable: surface the message ``text`` when
+            // present (the chat bubble), else a compact one-line summary —
+            // never the full tool-definition blob the raw payload carries.
+            let text = payload.get("text").and_then(|t| t.as_str());
+            match text {
+                Some(t) => println!("\n{}  {}", name.green().bold(), t),
+                None => println!("\n{}", name.green().bold()),
+            }
+            printed_event = true;
+        }
+        if printed_event {
+            print!("{} ", ">".bold());
+            stdout.flush().ok();
         }
 
-        // Prompt for the next user message.
-        print!("{} ", ">".bold());
-        stdout.flush().ok();
-        let mut line = String::new();
-        let n = stdin
-            .lock()
-            .read_line(&mut line)
-            .context("Failed to read stdin")?;
-        if n == 0 {
-            // EOF — clean disconnect.
-            break;
-        }
-        let text = line.trim().to_string();
-        if text.is_empty() {
-            continue;
-        }
-        if text == ":quit" || text == ":q" {
-            break;
-        }
-
-        // Build the chat_message payload. Plural ``audios_id`` is
-        // intentionally absent — voice is on the deferred Phase 5
-        // sub-task. ``persona_id`` is forwarded when supplied so
-        // the user can attribute messages on multi-persona chats.
-        let mut payload = json!({ "chat_id": chat_id, "text": text });
-        if let Some(p) = persona_id {
-            payload["persona_id"] = json!(p);
+        // Non-blocking check for a typed line.
+        match line_rx.try_recv() {
+            Ok(None) => break, // EOF — clean disconnect.
+            Ok(Some(line)) => {
+                let text = line.trim().to_string();
+                if text == ":quit" || text == ":q" {
+                    break;
+                }
+                if !text.is_empty() {
+                    // Text-only REPL; ``persona_id`` is forwarded when supplied
+                    // so messages can be attributed on multi-persona chats.
+                    let mut payload = json!({ "chat_id": chat_id, "text": text });
+                    if let Some(p) = persona_id {
+                        payload["persona_id"] = json!(p);
+                    }
+                    if let Err(e) = sock.emit("attempt.chat_message", payload) {
+                        eprintln!("{} emit failed: {}", "·".red(), e);
+                    }
+                }
+                print!("{} ", ">".bold());
+                stdout.flush().ok();
+            }
+            Err(std::sync::mpsc::TryRecvError::Empty) => {}
+            Err(std::sync::mpsc::TryRecvError::Disconnected) => break,
         }
 
-        if let Err(e) = sock.emit("attempt.chat_message", payload) {
-            eprintln!("{} emit failed: {}", "·".red(), e);
-        }
+        std::thread::sleep(Duration::from_millis(40));
     }
 
     eprintln!("{} closing chat REPL", "·".dimmed());
@@ -367,20 +402,15 @@ fn mcp_jsonrpc(
         "method": method,
         "params": params,
     });
-    let _ = client; // base_url has the bearer-aware path; keep client param for symmetry
-    let bearer = crate::auth::get_token(base_url)
-        .ok()
-        .map(|t| t.access_token);
+    // Route through the client's env-aware auth so the bypass token
+    // (GLOW_TOKEN) + X-E2E-Profile-Id reach /mcp/ exactly as they do for
+    // resource endpoints — not the stored-login token from `glow login`.
     let url = format!("{}/mcp/", base_url.trim_end_matches('/'));
-    let mut req = reqwest::blocking::Client::new()
-        .post(&url)
+    let resp = client
+        .authed_request(reqwest::Method::POST, &url)
         .header("Content-Type", "application/json")
         .header("Accept", "application/json, text/event-stream")
-        .json(&envelope);
-    if let Some(t) = bearer {
-        req = req.header("Authorization", format!("Bearer {}", t));
-    }
-    let resp = req
+        .json(&envelope)
         .send()
         .with_context(|| format!("Failed to POST {}", url))?;
     if !resp.status().is_success() {
@@ -492,27 +522,5 @@ pub fn cmd_mcp_call(
             }
         }
     }
-    Ok(())
-}
-
-/// Placeholder for the voice REPL. Prints a clear deferral message
-/// with the suggested next-step so the user knows the WS scaffold
-/// is ready and what remains gated on their go-ahead.
-pub fn cmd_chats_voice_placeholder(chat_id: &str) -> Result<()> {
-    use colored::Colorize;
-    eprintln!(
-        "{} ``glow chats voice {}`` is deferred.",
-        "·".yellow().bold(),
-        chat_id,
-    );
-    eprintln!("  The Phase-5 voice REPL needs ``cpal`` (mic capture) +");
-    eprintln!("  ``rodio`` (playback) — both pull native deps (CoreAudio /");
-    eprintln!("  ALSA / WASAPI). The goal command explicitly gates these on");
-    eprintln!("  user confirmation, so the WS layer is in place but this");
-    eprintln!("  command is a no-op until that gate clears.");
-    eprintln!();
-    eprintln!("  Path forward: confirm the deps, then add the mic→upload→");
-    eprintln!("  emit→playback loop on top of ``glow::ws::GlowSocket`` —");
-    eprintln!("  the wire-up is straightforward once the deps land.");
     Ok(())
 }

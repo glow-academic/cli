@@ -7,22 +7,10 @@ Set FontSize 24
 Set Padding 20
 Set TypingSpeed 35ms
 
-Type "glow deploy --help"
-Enter
-Sleep 2s
+Sleep 800ms
 
-Type "clear"
+# After `glow deploy`, the instance is live — status reports each container's
+# health (api stack: database + servers + keycloak, blue/green aware).
+Type "glow status --name vhsdemo"
 Enter
-Sleep 500ms
-
-Type "glow status --help"
-Enter
-Sleep 2s
-
-Type "clear"
-Enter
-Sleep 500ms
-
-Type "glow logs --help"
-Enter
-Sleep 2s
+Sleep 4000ms

@@ -7,22 +7,18 @@ Set FontSize 24
 Set Padding 20
 Set TypingSpeed 35ms
 
-Type "glow backup --help"
+Sleep 800ms
+
+# A pg_dump runs inside the database container, gzipped onto the host.
+Type "glow backup create --name vhsdemo --label pre-migration"
 Enter
-Sleep 2s
+Sleep 6000ms
 
 Type "clear"
 Enter
-Sleep 500ms
+Sleep 400ms
 
-Type "glow backup create --help"
+# The backup is now on the host, ready for restore.
+Type "glow backup list --name vhsdemo"
 Enter
-Sleep 2s
-
-Type "clear"
-Enter
-Sleep 500ms
-
-Type "glow backup list --help"
-Enter
-Sleep 2s
+Sleep 3000ms

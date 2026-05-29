@@ -1,4 +1,4 @@
-// glow/ws.rs — socket.io client layer for live chat / voice flows.
+// glow/ws.rs — socket.io client layer for the live chat REPL.
 //
 // The Glow API speaks socket.io v4 over WebSocket; the FE transport
 // goes through it for all live operations (chat message, audio
@@ -13,11 +13,10 @@
 //   * Reconnect with bounded backoff so a transient drop doesn't kill
 //     a long-running chat session.
 //
-// **Status**: scaffold + chat-live REPL. The connect / emit / on-event
-// surface is implemented and wired into ``glow chats live <chat_id>``.
-// Voice (``glow chats voice``) is deliberately omitted — adding
-// ``cpal`` + ``rodio`` for mic capture / playback needs explicit user
-// go-ahead per the Phase-5 deps gate in the goal command.
+// **Status**: this layer backs the ``glow attempts chat live <chat_id>``
+// socket.io REPL — the connect / emit / on-event surface is implemented
+// and wired in. (Audio/voice flows go through the HTTP chat_speak /
+// chat_silence ops, not this module.)
 //
 // **Untested against a live server**: the WS layer compiles clean but
 // hasn't been exercised end-to-end with a running glow-academic-api
@@ -51,50 +50,6 @@ impl GlowSocket {
     pub fn connect(base_url: &str, token: Option<&str>) -> Result<Self> {
         let (tx, events) = mpsc::channel::<(String, Value)>();
 
-        // Capture-by-clone for the catch-all handler so each event
-        // can be forwarded onto the channel. The handler runs on
-        // rust_socketio's internal thread pool — sending on the
-        // channel is the only IO it performs.
-        let tx_any = tx.clone();
-        let on_any = move |payload: Payload, _socket: RawClient| {
-            // Payload can be either a JSON value or a binary blob.
-            // For the chat surface we only care about JSON; binary
-            // is currently only used by voice (deferred).
-            let value = match payload {
-                Payload::Text(values) => {
-                    // Text payload arrives as a Vec<Value>. The first
-                    // entry is typically the canonical event payload;
-                    // additional entries are extra args that the FE
-                    // rarely uses. Surface the whole list as an array
-                    // when there's more than one so callers don't
-                    // silently drop information.
-                    if values.len() == 1 {
-                        values.into_iter().next().unwrap_or(Value::Null)
-                    } else {
-                        Value::Array(values)
-                    }
-                }
-                Payload::Binary(bytes) => {
-                    // Surface binary length only — callers that need
-                    // the bytes should use the voice path (which has
-                    // its own handler with raw access).
-                    json!({ "binary_bytes": bytes.len() })
-                }
-                #[allow(deprecated)]
-                Payload::String(s) => {
-                    // rust_socketio's older string payload variant —
-                    // try to parse as JSON, fall back to wrapping.
-                    serde_json::from_str(&s).unwrap_or(Value::String(s))
-                }
-            };
-            // rust_socketio's catch-all handler emits "message" for
-            // the default event slot — but we want the actual event
-            // name. The library passes it via Event::Custom(name) for
-            // ``on_any``-style handlers; we route through ``on()`` per-
-            // name below instead and use a default fallback here.
-            let _ = tx_any.send(("(unmatched)".to_string(), value));
-        };
-
         // Build the client. The ``auth`` field is what we hand
         // socket.io as the connect-handshake payload — the server-
         // side handshake handler reads it for the bearer.
@@ -109,8 +64,37 @@ impl GlowSocket {
             })
             .on(Event::Error, |err, _| {
                 eprintln!("· socket.io error: {:?}", err);
-            })
-            .on("message", on_any);
+            });
+
+        // rust_socketio routes NAMED events to per-name handlers; the
+        // default "message" slot catch-all does NOT see them. So the
+        // server's ``attempt.chat_message.*`` / ``attempt.generate.*``
+        // frames were silently dropped — the REPL connected but never
+        // showed the assistant's reply. Register a forwarder PER event
+        // (handlers can't be attached after ``connect()``), carrying the
+        // real event name onto the channel so the REPL prints it inline.
+        const REPL_EVENTS: &[&str] = &[
+            "attempt.chat_message.started",
+            "attempt.chat_message.progress",
+            "attempt.chat_message.completed",
+            "attempt.chat_message.failed",
+            "attempt.generate.started",
+            "attempt.generate.completed",
+            "attempt.generate.failed",
+        ];
+        for &name in REPL_EVENTS {
+            let tx_ev = tx.clone();
+            builder = builder.on(name, move |payload, _socket: RawClient| {
+                let _ = tx_ev.send((name.to_string(), parse_socket_payload(payload)));
+            });
+        }
+
+        // Default "message" slot — anything not matched by a named
+        // handler above (kept so nothing is silently lost).
+        let tx_any = tx.clone();
+        builder = builder.on("message", move |payload, _socket: RawClient| {
+            let _ = tx_any.send(("message".to_string(), parse_socket_payload(payload)));
+        });
 
         if let Some(t) = token {
             builder = builder.auth(json!({ "token": t }));
@@ -153,6 +137,25 @@ impl GlowSocket {
         self.client
             .disconnect()
             .context("Failed to disconnect socket.io")
+    }
+}
+
+/// Normalize a rust_socketio ``Payload`` into a single JSON ``Value``.
+/// Text payloads arrive as a ``Vec<Value>`` (extra args after the first
+/// are rare) — collapse a single entry, else keep the array. Binary frames
+/// are surfaced as a length only (the chat REPL is text-only).
+fn parse_socket_payload(payload: Payload) -> Value {
+    match payload {
+        Payload::Text(values) => {
+            if values.len() == 1 {
+                values.into_iter().next().unwrap_or(Value::Null)
+            } else {
+                Value::Array(values)
+            }
+        }
+        Payload::Binary(bytes) => json!({ "binary_bytes": bytes.len() }),
+        #[allow(deprecated)]
+        Payload::String(s) => serde_json::from_str(&s).unwrap_or(Value::String(s)),
     }
 }
 

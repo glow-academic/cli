@@ -7,6 +7,11 @@ Set FontSize 24
 Set Padding 20
 Set TypingSpeed 35ms
 
-Type "glow scenarios generate --help"
+Sleep 800ms
+
+# Hand the generator a brief and it spins up draft scenarios — each pre-wired
+# with personas + objectives. The trigger returns a run_id; generation
+# continues in the background.
+Type `glow scenarios generate --body '{"prompt":"Three office-hours variants escalating in intensity"}'`
 Enter
-Sleep 2s
+Sleep 4500ms

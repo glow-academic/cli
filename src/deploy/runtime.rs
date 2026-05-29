@@ -171,30 +171,35 @@ pub fn ensure_network(name: &str) -> Result<()> {
 /// (`"healthy"` | `"starting"` | `"unhealthy"` | `"none"` | other). Used
 /// by the bluegreen monitor's grace-period polling.
 pub fn container_health(project_name: &str, service: &str) -> Result<String> {
-    // Compose names containers `<project>-<service>-1` by default.
-    let container = format!("{project_name}-{service}-1");
-    let out = Command::new("docker")
-        .args([
-            "inspect",
-            "--format",
-            "{{.State.Health.Status}}",
-            &container,
-        ])
-        .output()
-        .context("spawn docker inspect")?;
-    if !out.status.success() {
-        // Container doesn't exist yet — treat as "starting" rather than
-        // erroring out; caller's polling loop will keep waiting.
-        return Ok("starting".into());
+    // Default compose container names are `<project>-<service>-1`, but a
+    // service with an explicit `container_name:` (e.g. nginx) drops the `-1`
+    // index — try both forms.
+    for container in [
+        format!("{project_name}-{service}-1"),
+        format!("{project_name}-{service}"),
+    ] {
+        let out = Command::new("docker")
+            .args([
+                "inspect",
+                "--format",
+                // Guard `.State.Health`: a container with no HEALTHCHECK has a
+                // nil `.State.Health`, and `{{.State.Health.Status}}` then
+                // errors the template — which the old code misread as "missing"
+                // and reported "starting". Map the no-health case to "none"
+                // (callers, incl. wait_healthy, treat "none" as "up").
+                "{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}",
+                &container,
+            ])
+            .output()
+            .context("spawn docker inspect")?;
+        if out.status.success() {
+            let s = String::from_utf8_lossy(&out.stdout).trim().to_string();
+            return Ok(if s.is_empty() { "none".into() } else { s });
+        }
     }
-    let s = String::from_utf8_lossy(&out.stdout).trim().to_string();
-    // `<no value>` comes back when a container has no HEALTHCHECK defined;
-    // map it to "none" so callers can treat it as "ok, assume up".
-    if s.is_empty() || s == "<no value>" {
-        Ok("none".into())
-    } else {
-        Ok(s)
-    }
+    // No container under either name — doesn't exist yet (or an inactive
+    // blue/green standby). Treat as "starting" so polling loops keep waiting.
+    Ok("starting".into())
 }
 
 // ── private ────────────────────────────────────────────────────────

@@ -7,22 +7,21 @@ Set FontSize 24
 Set Padding 20
 Set TypingSpeed 35ms
 
-Type "glow mcp --help"
+# Auth + instance URL come from scripts/render-tapes.sh (bypass token) — these
+# are REAL calls against the local instance's MCP endpoint, not --help.
+
+Sleep 800ms
+
+# List the tools the instance exposes over MCP...
+Type "glow mcp list-tools"
 Enter
-Sleep 2s
+Sleep 3500ms
 
 Type "clear"
 Enter
-Sleep 500ms
+Sleep 400ms
 
-Type "glow mcp list-tools --help"
+# ...then invoke one — the same JSON-RPC envelope a real MCP client would send.
+Type `glow mcp call search_content --args '{"artifact":"persona","page_size":3}'`
 Enter
-Sleep 2s
-
-Type "clear"
-Enter
-Sleep 500ms
-
-Type "glow mcp call --help"
-Enter
-Sleep 2s
+Sleep 4000ms

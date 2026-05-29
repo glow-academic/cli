@@ -90,7 +90,11 @@ impl GlowClient {
     /// Sets ``X-E2E-Profile-Id`` alongside the bearer when the env-driven
     /// impersonation is active — keeps multipart upload paths consistent
     /// with the JSON request path that goes through ``apply_auth``.
-    fn authed_request(&self, method: reqwest::Method, url: &str) -> blocking::RequestBuilder {
+    pub(crate) fn authed_request(
+        &self,
+        method: reqwest::Method,
+        url: &str,
+    ) -> blocking::RequestBuilder {
         let mut req = self.http.request(method, url);
         if let Some(ref t) = self.token {
             req = req.header("Authorization", format!("Bearer {}", t));
@@ -295,104 +299,21 @@ impl GlowClient {
         api_request(&self.http, reqwest::Method::GET, &url, None, self.auth())
     }
 
-    /// TUS create (initiate resumable upload)
-    pub fn media_create(
-        &self,
-        resource: &str,
-        media_type: &str,
-        filename: &str,
-        size: Option<u64>,
-    ) -> Result<Value> {
-        let mut body = json!({ "filename": filename });
-        if let Some(s) = size {
-            body["size"] = json!(s);
-        }
-        let url = self.url(&format!("/{}/{}/create", resource, media_type));
-        api_request(
-            &self.http,
-            reqwest::Method::POST,
-            &url,
-            Some(body),
-            self.auth(),
-        )
-    }
-
-    /// TUS chunk upload
-    pub fn media_chunk(
-        &self,
-        resource: &str,
-        media_type: &str,
-        upload_id: &str,
-        data: Vec<u8>,
-        offset: u64,
-    ) -> Result<Value> {
-        let url = self.url(&format!("/{}/{}/{}/chunk", resource, media_type, upload_id));
-        let resp = self
-            .authed_request(reqwest::Method::PATCH, &url)
-            .header("Content-Type", "application/offset+octet-stream")
-            .header("Upload-Offset", offset.to_string())
-            .body(data)
-            .send()
-            .with_context(|| format!("Failed to upload chunk to {}", url))?;
-
-        if !resp.status().is_success() {
-            let status = resp.status();
-            let text = resp.text().unwrap_or_default();
-            anyhow::bail!("Chunk upload failed (HTTP {}): {}", status, text);
-        }
-
-        let new_offset = resp
-            .headers()
-            .get("Upload-Offset")
-            .and_then(|v| v.to_str().ok())
-            .and_then(|v| v.parse::<u64>().ok())
-            .unwrap_or(0);
-
-        Ok(json!({ "offset": new_offset }))
-    }
-
-    /// TUS status check
-    pub fn media_status(&self, resource: &str, media_type: &str, upload_id: &str) -> Result<Value> {
-        let url = self.url(&format!(
-            "/{}/{}/{}/status",
-            resource, media_type, upload_id
-        ));
-        api_request(&self.http, reqwest::Method::GET, &url, None, self.auth())
-    }
-
-    /// TUS finalize
-    pub fn media_finalize(
-        &self,
-        resource: &str,
-        media_type: &str,
-        upload_id: &str,
-        body: Option<Value>,
-    ) -> Result<Value> {
-        let url = self.url(&format!(
-            "/{}/{}/{}/finalize",
-            resource, media_type, upload_id
-        ));
-        api_request(
-            &self.http,
-            reqwest::Method::POST,
-            &url,
-            Some(body.unwrap_or_else(|| json!({}))),
-            self.auth(),
-        )
-    }
-
     /// Download a media file
-    pub fn media_download(
-        &self,
-        resource: &str,
-        media_type: &str,
-        upload_id: &str,
-    ) -> Result<Vec<u8>> {
-        let url = self.url(&format!(
-            "/{}/{}/{}/download",
-            resource, media_type, upload_id
-        ));
-        let resp = api_request_raw(&self.http, reqwest::Method::GET, &url, None, self.auth())?;
+    pub fn media_download(&self, resource: &str, media_type: &str, id: &str) -> Result<Vec<u8>> {
+        // Downloads are POST /{resource}/{media}_download with the media id in
+        // the body (e.g. POST /system/audio_download {"audio_id": "…"}),
+        // returning the raw bytes — not a GET path-param route.
+        let url = self.url(&format!("/{}/{}_download", resource, media_type));
+        let mut body = serde_json::Map::new();
+        body.insert(format!("{media_type}_id"), Value::String(id.to_string()));
+        let resp = api_request_raw(
+            &self.http,
+            reqwest::Method::POST,
+            &url,
+            Some(Value::Object(body)),
+            self.auth(),
+        )?;
         let bytes = resp.bytes().context("Failed to read download response")?;
         Ok(bytes.to_vec())
     }
@@ -439,9 +360,25 @@ impl GlowClient {
             self.url(&format!("/{}/watch", api_path)),
             params.join("&"),
         );
-        let resp = self
-            .authed_request(reqwest::Method::GET, &url)
-            .header("Accept", "text/event-stream")
+        // The shared client carries a total request timeout that is fatal for
+        // an SSE watch — a long-running generation outlives it and the stream
+        // dies mid-flight with "operation timed out". Use a dedicated client
+        // with NO timeout: the stream is designed to run until the server
+        // closes it on the run's terminal frame (see the API's
+        // infra/stream/sse.py run-scoped break), so it won't hang.
+        let stream_client = blocking::Client::builder()
+            .build()
+            .unwrap_or_else(|_| blocking::Client::new());
+        let mut req = stream_client
+            .get(&url)
+            .header("Accept", "text/event-stream");
+        if let Some(ref t) = self.token {
+            req = req.header("Authorization", format!("Bearer {}", t));
+        }
+        if let Some(ref pid) = self.e2e_profile_id {
+            req = req.header("X-E2E-Profile-Id", pid);
+        }
+        let resp = req
             .send()
             .with_context(|| format!("Failed to connect to watch stream at {}", url))?;
 
@@ -616,24 +553,6 @@ mod tests {
     }
 
     #[test]
-    fn test_media_create_tus() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("POST", "/documents/file/create")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"upload_id": "up-2", "upload_url": "/documents/file/up-2"}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client
-            .media_create("documents", "file", "report.pdf", Some(1024))
-            .unwrap();
-        assert_eq!(result["upload_id"], "up-2");
-        mock.assert();
-    }
-
-    #[test]
     fn test_media_discover() {
         let mut server = mockito::Server::new();
         let mock = server
@@ -646,40 +565,6 @@ mod tests {
         let client = GlowClient::new(&server.url());
         let result = client.media_discover("scenarios", "video", None).unwrap();
         assert_eq!(result["types"][0], "mp4");
-        mock.assert();
-    }
-
-    #[test]
-    fn test_media_status() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("GET", "/documents/file/up-1/status")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"offset": 512, "length": 1024}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client.media_status("documents", "file", "up-1").unwrap();
-        assert_eq!(result["offset"], 512);
-        mock.assert();
-    }
-
-    #[test]
-    fn test_media_finalize() {
-        let mut server = mockito::Server::new();
-        let mock = server
-            .mock("POST", "/documents/file/up-1/finalize")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"finalized": true}"#)
-            .create();
-
-        let client = GlowClient::new(&server.url());
-        let result = client
-            .media_finalize("documents", "file", "up-1", None)
-            .unwrap();
-        assert_eq!(result["finalized"], true);
         mock.assert();
     }
 

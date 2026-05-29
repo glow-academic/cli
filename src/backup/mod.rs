@@ -57,7 +57,12 @@ pub fn list(instance_name: &str) -> Result<Vec<BackupEntry>> {
 pub fn create(instance_name: &str, label: Option<&str>) -> Result<PathBuf> {
     runtime::assert_docker_available()?;
     let i = Instance::open(instance_name)?;
-    let project_name = i.project_name();
+    // The database lives in the API stack — project `glow-<name>-api`,
+    // compose under `<instance>/api/` — not the bare `glow-<name>` / instance
+    // root. Use the api stack's dir + project name or compose can't find the
+    // `database` service ("service database is not running").
+    let project_name = i.api_project_name();
+    let api_dir = i.api_dir();
     let label = label.unwrap_or("manual").replace(['/', ' ', ':'], "-");
     let ts = compact_now();
     let filename = format!("manual-{label}-{ts}.sql.gz");
@@ -66,7 +71,7 @@ pub fn create(instance_name: &str, label: Option<&str>) -> Result<PathBuf> {
 
     println!("· dumping database (pg_dump | gzip) — this may take a minute");
     let dump = runtime::exec_capture(
-        &i.dir,
+        &api_dir,
         &project_name,
         "database",
         &[
@@ -101,7 +106,9 @@ pub fn delete(instance_name: &str, name: &str) -> Result<()> {
 pub fn restore(instance_name: &str, name: &str) -> Result<()> {
     runtime::assert_docker_available()?;
     let i = Instance::open(instance_name)?;
-    let project_name = i.project_name();
+    // API-stack project + dir (see create() — the database is in glow-<name>-api).
+    let project_name = i.api_project_name();
+    let api_dir = i.api_dir();
     let source = i.backups_dir().join(name);
     if !source.exists() {
         return Err(anyhow!(
@@ -127,21 +134,28 @@ pub fn restore(instance_name: &str, name: &str) -> Result<()> {
     }
 
     println!("· dropping + recreating database");
+    // The API servers keep live pools open against the target DB, so a bare
+    // DROP DATABASE fails with "is being accessed by other users". Terminate
+    // those sessions first, then DROP ... WITH (FORCE) (Postgres 13+) so any
+    // racing reconnect is severed as part of the drop.
     runtime::exec_capture(
-        &i.dir,
+        &api_dir,
         &project_name,
         "database",
         &[
             "sh",
             "-c",
-            "psql -U $POSTGRES_USER -d postgres -c \"DROP DATABASE IF EXISTS $POSTGRES_DB;\" \
+            "psql -U $POSTGRES_USER -d postgres -c \
+               \"SELECT pg_terminate_backend(pid) FROM pg_stat_activity \
+                 WHERE datname = '$POSTGRES_DB' AND pid <> pg_backend_pid();\" \
+             && psql -U $POSTGRES_USER -d postgres -c \"DROP DATABASE IF EXISTS $POSTGRES_DB WITH (FORCE);\" \
              && psql -U $POSTGRES_USER -d postgres -c \"CREATE DATABASE $POSTGRES_DB;\"",
         ],
     )?;
 
     println!("· streaming backup into database");
     runtime::exec_capture(
-        &i.dir,
+        &api_dir,
         &project_name,
         "database",
         &[
@@ -152,7 +166,7 @@ pub fn restore(instance_name: &str, name: &str) -> Result<()> {
     )?;
     // Cleanup the in-container file.
     let _ = runtime::exec_capture(
-        &i.dir,
+        &api_dir,
         &project_name,
         "database",
         &["rm", "-f", &in_container_path],
@@ -161,7 +175,7 @@ pub fn restore(instance_name: &str, name: &str) -> Result<()> {
     println!("· restarting servers to clear connection pools");
     // Best-effort restart of both colors so whichever is live gets a
     // fresh pool. compose restart is no-op for not-running services.
-    let _ = runtime::up(&i.dir, &project_name, &["server-blue", "server-green"]);
+    let _ = runtime::up(&api_dir, &project_name, &["server-blue", "server-green"]);
 
     println!("✓ restored from {}", source.display());
     Ok(())

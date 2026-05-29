@@ -529,8 +529,11 @@ pub fn status(name: &str) -> Result<()> {
         "server-blue",
         "server-green",
     ] {
-        let h =
-            runtime::container_health(&i.project_name(), svc).unwrap_or_else(|_| "missing".into());
+        // These services live in the API stack — project `glow-<name>-api`
+        // (container `glow-<name>-api-<svc>-1`). Using the bare project name
+        // misses every container, so health always read "starting".
+        let h = runtime::container_health(&i.api_project_name(), svc)
+            .unwrap_or_else(|_| "missing".into());
         println!("  {svc:18}  {h}");
     }
     Ok(())
