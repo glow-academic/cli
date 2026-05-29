@@ -10,7 +10,8 @@ demo-output/
 *.gif
 *.mov
 *.webm
-
 # Claude Code
 .claude/worktrees/
 .claude/plans/
+scripts/.demo-secrets.sh
+/tmp/glow-login.log

@@ -472,7 +472,13 @@ pub fn run() -> Result<()> {
                 let cid = client_id
                     .or(cli.client_id.clone())
                     .unwrap_or_else(|| "glow-cli".to_string());
-                let _ = auth::login(&glow_url, &cid)?;
+                // Confidential-client instances (and the dev stack) require a
+                // client_secret on the token exchange. When $GLOW_CLIENT_SECRET
+                // is set we thread it through the existing secret-aware path;
+                // otherwise this is a no-op and login stays a public-client
+                // (PKCE) flow.
+                let client_secret = std::env::var("GLOW_CLIENT_SECRET").ok();
+                let _ = auth::login_with_secret(&glow_url, &cid, client_secret.as_deref())?;
                 use colored::Colorize;
                 println!("{} Signed in to {}", "✓".green(), glow_url.bold());
             }
