@@ -78,16 +78,21 @@ services:
     volumes:
       # Seed modules read providers/models/roles from this file.
       - ../glow-deploy.yaml:/app/glow-deploy.yaml:ro
+      # The seed runner reads upload assets (text excerpts, seed videos,
+      # themes) from /app/uploads (DOCKER_ENV=1 resolves the uploads dir
+      # there). db-init MUST mount the same named volume that volume-init
+      # populates — without this mount it reads the image's empty
+      # /app/uploads and dies with FileNotFoundError on
+      # /app/uploads/text/*.txt during a fresh seed.
+      - uploads:/app/uploads
     depends_on:
       database:
         condition: service_healthy
       redis:
         condition: service_started
-      # db-init seeds from upload assets (text excerpts, seed videos, …)
-      # that volume-init copies into the uploads volume. It must wait for
-      # that copy to COMPLETE, not just start — otherwise it races and
-      # dies with FileNotFoundError on /app/uploads/text/*.txt on a fresh
-      # deploy. (keycloak + pgbouncer already gate on this; db-init didn't.)
+      # ...and wait for volume-init to COMPLETE (not just start) so the
+      # uploads volume is fully populated before the seed runner reads it.
+      # (keycloak + pgbouncer already gate on this; db-init didn't.)
       volume-init:
         condition: service_completed_successfully
     command: ["python", "-m", "database.init", "--setup", "${SEED_SETUP:-fresh}"]
