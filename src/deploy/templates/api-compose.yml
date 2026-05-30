@@ -83,6 +83,13 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      # db-init seeds from upload assets (text excerpts, seed videos, …)
+      # that volume-init copies into the uploads volume. It must wait for
+      # that copy to COMPLETE, not just start — otherwise it races and
+      # dies with FileNotFoundError on /app/uploads/text/*.txt on a fresh
+      # deploy. (keycloak + pgbouncer already gate on this; db-init didn't.)
+      volume-init:
+        condition: service_completed_successfully
     command: ["python", "-m", "database.init", "--setup", "${SEED_SETUP:-fresh}"]
     networks:
       - internal
