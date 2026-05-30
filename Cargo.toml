@@ -1,6 +1,6 @@
 [package]
 name = "cli"
-version = "1.0.9"
+version = "1.0.10"
 edition = "2021"
 default-run = "glow"
 
@@ -24,6 +24,9 @@ tokio = { version = "1", features = ["full"] }
 toml = "0.8"
 dirs = "5"
 open = "5"
+# Embed the VHS tapes into the binary so `glow record cli` has native
+# access with no checkout (the polish script is include_str!'d directly).
+include_dir = "0.7"
 
 # Deploy module
 dialoguer = { version = "0.11", features = ["password", "fuzzy-select"] }

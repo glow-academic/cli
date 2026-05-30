@@ -10,7 +10,7 @@
 #   make release            → optimized build
 #   make install            → install to ~/.cargo/bin
 
-.PHONY: build run exec test test-unit test-integration fmt clippy check release install clean watch coverage help sync-types demo-record demo-record-all demo-polish
+.PHONY: build run exec test test-unit test-integration fmt clippy check release install clean watch coverage help sync-types demo-record
 
 # Grab everything after the first word (the make target) as CLI args
 RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
@@ -73,23 +73,11 @@ sync-types: ## Fetch the OpenAPI spec and regenerate Rust types
 	@echo "{\"glow-api\":{\"version\":\"$$(curl -sf $(GLOW_API_URL)/ | jq -r .version)\",\"synced_at\":\"$$(date -u +%%Y-%%m-%%dT%%H:%%M:%%SZ)\"}}" | jq . > api-versions.json
 	@echo "✅ Types updated. Run 'cargo build' to check for breaking changes."
 
-# Record VHS terminal demos into demo-output/*.mp4.
-# Usage: make demo-record TOPIC=start-overview
+# Record a VHS terminal demo. Recording is now native to the binary
+# (`glow record cli`) — tapes + polish are embedded — so this is a thin
+# convenience that builds and delegates. Usage: make demo-record TOPIC=start-overview
 demo-record:
-	@./scripts/render-tapes.sh $(TOPIC)
-
-demo-record-all:
-	@./scripts/render-tapes.sh
-
-# Polish already-recorded raw demos into <name>.polished.mp4 on a soft gradient
-# background (same treatment + 1856x1156 framing as the web client's Playwright
-# demos). render-tapes.sh already polishes on record; this re-polishes without
-# re-recording. Skips files that are themselves polished.
-demo-polish:
-	@for f in demo-output/*.mp4; do \
-		case "$$f" in *.polished.mp4) continue;; esac; \
-		node scripts/polish-video.mjs "$$f"; \
-	done
+	cargo run --quiet -- record cli $(TOPIC)
 
 # Remove build artifacts
 clean:
@@ -122,9 +110,7 @@ help:
 	@echo "  clean            Remove build artifacts"
 	@echo "  watch            Auto-rebuild on file changes (needs cargo-watch)"
 	@echo "  coverage         Run tests with coverage report (needs cargo-llvm-cov)"
-	@echo "  demo-record      Record one VHS tape (+polish): make demo-record TOPIC=start-overview"
-	@echo "  demo-record-all  Record every tape in tapes/ (+polish)"
-	@echo "  demo-polish      Re-polish raw demo-output/*.mp4 onto gradient bg (no re-record)"
+	@echo "  demo-record      Record a cli demo (delegates to 'glow record cli'): make demo-record TOPIC=start-overview"
 
 # Catch trailing args from "make run ..." so Make doesn't error on them
 %:

@@ -19,6 +19,7 @@ mod config;
 mod deploy;
 mod glow;
 mod output;
+mod record;
 mod render;
 mod resource;
 mod serve;
@@ -225,6 +226,18 @@ enum Commands {
         action: BackupCommands,
     },
 
+    /// Record a demo video against a running instance.
+    ///
+    /// `glow record client <workflow>` drives the web UI with Playwright;
+    /// `glow record cli <workflow>` drives a terminal session with VHS.
+    /// Both default to the active instance and polish the result (unless
+    /// `--raw`). Host tools (Node + Playwright / vhs / ffmpeg) must be
+    /// installed — the command fails fast with an install hint otherwise.
+    Record {
+        #[command(subcommand)]
+        action: RecordCommands,
+    },
+
     /// Interact with a resource on the Glow instance (e.g. glow personas search)
     #[command(external_subcommand)]
     Resource(Vec<String>),
@@ -276,6 +289,53 @@ enum BackupCommands {
         #[arg(long, default_value = "default")]
         name: String,
         file: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum RecordCommands {
+    /// Record a web-UI demo with Playwright. The spec ships in the
+    /// deployed client image (`e2e/demos/<workflow>.spec.ts`); it's run
+    /// by the host's Playwright against the live client.
+    Client {
+        /// Demo workflow name (the spec file's basename).
+        workflow: String,
+        /// Client origin to drive. Defaults to the instance's locally
+        /// published client port, else `http://localhost:3000`.
+        #[arg(long)]
+        base_url: Option<String>,
+        /// Deployed instance whose client to record.
+        #[arg(long, default_value = "default")]
+        name: String,
+        /// Keep the raw recording — skip the polish step.
+        #[arg(long)]
+        raw: bool,
+        /// Write the final artifact here instead of the recorder's `demo-output/`.
+        #[arg(long)]
+        out: Option<String>,
+    },
+    /// Record a terminal demo with VHS, driving `glow` against the api.
+    /// The tape is embedded in this binary (`<workflow>.tape`).
+    Cli {
+        /// Demo workflow name (the tape's basename).
+        workflow: String,
+        /// API/instance URL the recorded commands hit. Defaults to the
+        /// active instance, else `http://localhost:8000`.
+        #[arg(long)]
+        instance_url: Option<String>,
+        /// Keep the raw recording — skip the polish step.
+        #[arg(long)]
+        raw: bool,
+        /// Write the final artifact here instead of the temp `demo-output/`.
+        #[arg(long)]
+        out: Option<String>,
+    },
+    /// List the available workflows (embedded cli tapes + client specs
+    /// from the running image).
+    List {
+        /// Instance to inspect for client workflows.
+        #[arg(long, default_value = "default")]
+        name: String,
     },
 }
 
@@ -637,6 +697,49 @@ pub fn run() -> Result<()> {
             }
             BackupCommands::Delete { name, file } => {
                 backup::delete(&name, &file)?;
+            }
+        },
+
+        // ── Demo recording ───────────────────────────────────
+        Commands::Record { action } => match action {
+            RecordCommands::Client {
+                workflow,
+                base_url,
+                name,
+                raw,
+                out,
+            } => {
+                record::client(
+                    record::ClientArgs {
+                        workflow,
+                        base_url,
+                        name,
+                        raw,
+                        out,
+                    },
+                    &cfg,
+                )?;
+            }
+            RecordCommands::Cli {
+                workflow,
+                instance_url,
+                raw,
+                out,
+            } => {
+                // Honor the global `--instance-url` as a fallback target.
+                let instance_url = instance_url.or_else(|| cli.instance_url.clone());
+                record::cli_surface(
+                    record::CliArgs {
+                        workflow,
+                        instance_url,
+                        raw,
+                        out,
+                    },
+                    &cfg,
+                )?;
+            }
+            RecordCommands::List { name } => {
+                record::list(&name)?;
             }
         },
 
