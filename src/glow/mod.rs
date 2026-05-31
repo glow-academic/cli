@@ -18,22 +18,14 @@ pub struct GlowClient {
     base_url: String,
     http: blocking::Client,
     token: Option<String>,
-    /// Optional ``X-E2E-Profile-Id`` to send alongside the bearer when
-    /// the auth-bypass path is enabled server-side. Set via
-    /// ``GLOW_E2E_PROFILE_ID`` env var — used by VHS recording flows
-    /// so a tape can impersonate any seeded profile without going
-    /// through the OAuth redirect. Mirrors Playwright's
-    /// ``authAs(context, profileId)`` in ``e2e/helpers/auth.ts``.
-    e2e_profile_id: Option<String>,
 }
 
 impl GlowClient {
     pub fn new(base_url: &str) -> Self {
         // ``GLOW_TOKEN`` env wins over the stored OAuth token — gives
-        // VHS/CI flows a way to skip the login dance entirely. Mirrors
-        // how Playwright reads ``E2E_BYPASS_TOKEN`` from env without
-        // requiring a real OAuth round-trip. The stored token remains
-        // the canonical path for interactive ``glow login`` users.
+        // CI / recording flows a way to inject a real token without the
+        // interactive login dance. The stored token (``glow login``)
+        // remains the canonical path for interactive users.
         let token = std::env::var("GLOW_TOKEN")
             .ok()
             .filter(|s| !s.is_empty())
@@ -43,18 +35,10 @@ impl GlowClient {
                     .map(|t| t.access_token)
             });
 
-        // ``GLOW_E2E_PROFILE_ID`` impersonates a specific seeded profile
-        // when the bypass token is in use. No effect when the backend's
-        // ``E2E_BYPASS_TOKEN`` env isn't set — server-side gate.
-        let e2e_profile_id = std::env::var("GLOW_E2E_PROFILE_ID")
-            .ok()
-            .filter(|s| !s.is_empty());
-
         GlowClient {
             base_url: base_url.trim_end_matches('/').to_string(),
             http: blocking::Client::new(),
             token,
-            e2e_profile_id,
         }
     }
 
@@ -78,18 +62,12 @@ impl GlowClient {
 
     fn auth(&self) -> Auth<'_> {
         match &self.token {
-            Some(t) => Auth::Bearer {
-                token: t,
-                e2e_profile_id: self.e2e_profile_id.as_deref(),
-            },
+            Some(t) => Auth::Bearer { token: t },
             None => Auth::None,
         }
     }
 
     /// Build an authenticated request (for custom requests like uploads).
-    /// Sets ``X-E2E-Profile-Id`` alongside the bearer when the env-driven
-    /// impersonation is active — keeps multipart upload paths consistent
-    /// with the JSON request path that goes through ``apply_auth``.
     pub(crate) fn authed_request(
         &self,
         method: reqwest::Method,
@@ -98,9 +76,6 @@ impl GlowClient {
         let mut req = self.http.request(method, url);
         if let Some(ref t) = self.token {
             req = req.header("Authorization", format!("Bearer {}", t));
-        }
-        if let Some(ref pid) = self.e2e_profile_id {
-            req = req.header("X-E2E-Profile-Id", pid);
         }
         req
     }
@@ -374,9 +349,6 @@ impl GlowClient {
             .header("Accept", "text/event-stream");
         if let Some(ref t) = self.token {
             req = req.header("Authorization", format!("Bearer {}", t));
-        }
-        if let Some(ref pid) = self.e2e_profile_id {
-            req = req.header("X-E2E-Profile-Id", pid);
         }
         let resp = req
             .send()
@@ -684,7 +656,6 @@ mod tests {
             base_url: "http://localhost".into(),
             http: blocking::Client::new(),
             token: None,
-            e2e_profile_id: None,
         };
         matches!(client.auth(), Auth::None);
     }
@@ -695,7 +666,6 @@ mod tests {
             base_url: "http://localhost".into(),
             http: blocking::Client::new(),
             token: Some("tok".into()),
-            e2e_profile_id: None,
         };
         matches!(client.auth(), Auth::Bearer { .. });
     }

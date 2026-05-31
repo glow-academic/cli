@@ -47,11 +47,12 @@ pub struct ClientArgs {
     pub workflow: String,
     pub base_url: Option<String>,
     pub name: String,
+    pub instance_url: Option<String>,
     pub raw: bool,
     pub out: Option<String>,
 }
 
-pub fn client(args: ClientArgs, _cfg: &crate::config::Config) -> Result<()> {
+pub fn client(args: ClientArgs, cfg: &crate::config::Config) -> Result<()> {
     crate::deploy::runtime::assert_docker_available()?;
 
     // The client lives in docker — resolve the running container we
@@ -95,6 +96,32 @@ pub fn client(args: ClientArgs, _cfg: &crate::config::Config) -> Result<()> {
         anyhow!("`node` not found in PATH — Playwright runs on Node. Install Node 20+ first.")
     })?;
 
+    // Mirror the client's ESM module setup so its (ES module)
+    // playwright.config.ts loads in the runner — the heavy deps are
+    // provisioned once; these small config files are ours to write.
+    ensure_recorder_scaffold(&home)?;
+
+    // Auth: record drives the UI as the CLI's logged-in identity. The
+    // browser session is adopted from this token (the client's
+    // /api/session/adopt route), and the e2e helpers use it for their
+    // direct API calls (INTERNAL_API_BASE). No static bypass token.
+    let token_url = args
+        .instance_url
+        .clone()
+        .or_else(|| cfg.active_instance_url().map(str::to_string))
+        .or_else(|| cfg.glow_url.clone())
+        .unwrap_or_else(|| "http://localhost:8000".to_string());
+    let token = match std::env::var("GLOW_RECORD_TOKEN") {
+        Ok(t) if !t.is_empty() => t,
+        _ => crate::auth::get_token(&token_url)
+            .map_err(|e| {
+                anyhow!(
+                    "not logged in ({e}).\n  run `glow login` first — recording authenticates as your CLI identity."
+                )
+            })?
+            .access_token,
+    };
+
     // Pull the versioned specs out of the running container into the
     // runner. Replace any prior copy so stale specs can't linger.
     let _ = std::fs::remove_dir_all(home.join("e2e"));
@@ -126,6 +153,8 @@ pub fn client(args: ClientArgs, _cfg: &crate::config::Config) -> Result<()> {
         .env("PLAYWRIGHT_BASE_URL", &base_url)
         .env("PLAYWRIGHT_NO_SERVER", "1")
         .env("PLAYWRIGHT_DEMO", "1")
+        .env("GLOW_RECORD_TOKEN", &token)
+        .env("INTERNAL_API_BASE", &token_url)
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
@@ -341,6 +370,33 @@ fn docker_cp(container: &str, src: &str, dst: &Path) -> Result<()> {
 fn recorder_home() -> Result<PathBuf> {
     let home = dirs::home_dir().ok_or_else(|| anyhow!("no home dir"))?;
     Ok(home.join(".glow").join("recorder").join("client"))
+}
+
+/// Ensure the recorder dir mirrors the client's ESM module setup so its
+/// `playwright.config.ts` (an ES module importing CommonJS `@next/env`) loads.
+/// The client is `"type": "module"`; without that here, Playwright treats the
+/// config as CJS and the `@next/env` default import resolves to `undefined`.
+/// The heavy deps are provisioned once; these two small config files are ours.
+fn ensure_recorder_scaffold(home: &Path) -> Result<()> {
+    let pkg_path = home.join("package.json");
+    let mut pkg: serde_json::Value = std::fs::read_to_string(&pkg_path)
+        .ok()
+        .and_then(|s| serde_json::from_str(&s).ok())
+        .unwrap_or_else(|| serde_json::json!({ "name": "glow-recorder", "private": true }));
+    if pkg.get("type").and_then(|t| t.as_str()) != Some("module") {
+        pkg["type"] = serde_json::Value::String("module".into());
+        std::fs::write(&pkg_path, serde_json::to_string_pretty(&pkg)?)
+            .context("write recorder package.json")?;
+    }
+    let ts_path = home.join("tsconfig.json");
+    if !ts_path.exists() {
+        std::fs::write(
+            &ts_path,
+            "{\n  \"compilerOptions\": {\n    \"esModuleInterop\": true,\n    \"allowSyntheticDefaultImports\": true,\n    \"module\": \"commonjs\",\n    \"moduleResolution\": \"node\",\n    \"target\": \"es2020\",\n    \"skipLibCheck\": true\n  }\n}\n",
+        )
+        .context("write recorder tsconfig.json")?;
+    }
+    Ok(())
 }
 
 /// Polish (unless `raw`), report where the artifact landed, and move it

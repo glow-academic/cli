@@ -714,6 +714,7 @@ pub fn run() -> Result<()> {
                         workflow,
                         base_url,
                         name,
+                        instance_url: cli.instance_url.clone(),
                         raw,
                         out,
                     },
