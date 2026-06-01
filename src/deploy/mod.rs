@@ -481,7 +481,32 @@ pub fn start(name: &str) -> Result<()> {
 pub fn destroy(name: &str) -> Result<()> {
     runtime::assert_docker_available()?;
     let i = Instance::open(name)?;
-    runtime::down_destroy(&i.dir, &i.project_name())?;
+
+    // Two-stack layout: the instance has no top-level docker-compose.yml — it's
+    // `api/docker-compose.yml` + `client/docker-compose.yml`, each its own
+    // compose project. The old single `down_destroy(&i.dir, …)` looked for a
+    // compose file that doesn't exist → "no such file or directory", aborting
+    // and leaving every container + volume + the shared network orphaned.
+    //
+    // Tear down the client stack first (its containers join the shared network),
+    // then the api stack (which owns the network and removes it on the way out).
+    // Skip a stack whose compose file is absent (e.g. an api-only topology).
+    let mut errors: Vec<String> = Vec::new();
+    for (dir, project, label) in [
+        (i.client_dir(), i.client_project_name(), "client"),
+        (i.api_dir(), i.api_project_name(), "api"),
+    ] {
+        if !dir.join("docker-compose.yml").exists() {
+            continue;
+        }
+        if let Err(e) = runtime::down_destroy(&dir, &project) {
+            errors.push(format!("{label} stack: {e}"));
+        }
+    }
+    if !errors.is_empty() {
+        anyhow::bail!("destroy incomplete — some stacks failed:\n  {}", errors.join("\n  "));
+    }
+
     // We deliberately don't `rm -rf` the instance dir here — the user's
     // glow-deploy.yaml + backups are theirs. They can rm by hand if they
     // really want a clean slate.
