@@ -86,6 +86,17 @@ pub fn start(project_dir: &Path, project_name: &str) -> Result<()> {
     run(cmd, "docker compose start")
 }
 
+/// `docker compose restart <services…>` — restart containers in place.
+/// Used to clear a Keycloak node's stale in-memory Infinispan cache after a
+/// blue/green color-swap: the restart re-reads the shared DB so the
+/// newly-active node sees clients the other node created.
+pub fn restart(project_dir: &Path, project_name: &str, services: &[&str]) -> Result<()> {
+    let mut cmd = compose(project_dir, project_name);
+    cmd.arg("restart");
+    cmd.args(services);
+    run(cmd, "docker compose restart")
+}
+
 /// `docker compose down -v --remove-orphans` — destroy everything.
 pub fn down_destroy(project_dir: &Path, project_name: &str) -> Result<()> {
     let cmd = {

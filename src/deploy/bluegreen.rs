@@ -106,12 +106,26 @@ pub fn bring_up_client_target(
 /// calling back into `env::render` because at this point we only want
 /// to flip two keys without disturbing anything else.
 pub fn switch_traffic(env_path: &Path, project_name: &str, target_env: &str) -> Result<()> {
+    let project_dir = env_path.parent().context("env_path has no parent")?;
+
+    // The two Keycloak nodes share one DB+schema but aren't clustered, so the
+    // standby's in-memory Infinispan cache goes stale while the other color
+    // serves. Activating it as-is means it can't see `glow-client`/`admin-cli`
+    // (created by the other node) → browser login "Client not found" until a
+    // manual restart. Restart the target Keycloak now — while the OLD color is
+    // still serving, so there's no auth downtime — to force a fresh DB read,
+    // then wait for it to come back healthy before flipping traffic.
+    let keycloak = format!("keycloak-{target_env}");
+    println!("  · restarting {keycloak} to clear stale cache before swap");
+    runtime::restart(project_dir, project_name, &[&keycloak])?;
+    println!("  · waiting for {keycloak} to become healthy (up to 3min)");
+    healthcheck::wait_healthy(project_name, &keycloak, &keycloak, Duration::from_secs(180))?;
+
     println!("  · flipping ACTIVE_ENV → {target_env} in api .env");
     flip_env_key(env_path, "ACTIVE_ENV", target_env)?;
     flip_env_key(env_path, "ACTIVE_KC_ENV", target_env)?;
 
     println!("  · restarting api nginx so the new upstream takes effect");
-    let project_dir = env_path.parent().context("env_path has no parent")?;
     runtime::up(project_dir, project_name, &["nginx"])?;
 
     Ok(())
