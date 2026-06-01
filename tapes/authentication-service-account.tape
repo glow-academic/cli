@@ -11,7 +11,7 @@ Set TypingSpeed 35ms
 # so the STORED token is genuinely what authenticates the call below — i.e. the
 # real `glow login --token` path, not the env shortcut.
 Hide
-Type `unset GLOW_TOKEN GLOW_E2E_PROFILE_ID`
+Type `unset GLOW_TOKEN`
 Enter
 Sleep 400ms
 Type "clear"

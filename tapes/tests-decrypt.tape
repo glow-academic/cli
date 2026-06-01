@@ -21,7 +21,6 @@ Hide
 Env PATH "/Users/ashoksaravanan/Coding/glow-academic-cli/target/release:/opt/homebrew/bin:/usr/bin:/bin"
 Env GLOW_INSTANCE_URL "http://localhost:8000"
 Env GLOW_TOKEN "90e4f963cb1ffd0853553e97f851fc6c1180690426b9c4c6a3ec332ee14a65c9"
-Env GLOW_E2E_PROFILE_ID "102ea140-ca00-5c6a-9133-68e18a675a0e"
 Type "INV=019e485a-e5fa-71a2-8c6f-5abb9c4cd33b; KEY=019e748d-ef25-709b-b04c-418ec2fa05cd"
 Enter
 Type "clear"

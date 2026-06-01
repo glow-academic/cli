@@ -23,6 +23,6 @@ Sleep 500ms
 # Raw HTTP: curl --no-buffer (-N) against /persona/watch. The response is
 # Content-Type: text/event-stream — one `data:` line per envelope, streamed as
 # the generator emits them. The server closes the stream on the terminal frame.
-Type `curl -sN "$GLOW_INSTANCE_URL/persona/watch?run_id=$RID" -H "Authorization: Bearer $GLOW_TOKEN" -H "X-E2E-Profile-Id: $GLOW_E2E_PROFILE_ID" -H "Accept: text/event-stream"`
+Type `curl -sN "$GLOW_INSTANCE_URL/persona/watch?run_id=$RID" -H "Authorization: Bearer $GLOW_TOKEN" -H "Accept: text/event-stream"`
 Enter
 Sleep 14s

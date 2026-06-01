@@ -10,7 +10,7 @@ Set TypingSpeed 35ms
 # Strip the inherited bypass env off-camera so the stored token is genuinely
 # what authenticates (render-tapes.sh exports GLOW_TOKEN, which would win).
 Hide
-Type `unset GLOW_TOKEN GLOW_E2E_PROFILE_ID`
+Type `unset GLOW_TOKEN`
 Enter
 Sleep 400ms
 Type "clear"

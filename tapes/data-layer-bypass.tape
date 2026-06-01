@@ -22,6 +22,6 @@ Sleep 400ms
 
 # ...but sending X-Bypass-Cache: 1 forces a fresh read past the cache
 # (x-cache-hit: 0) — see the new row without waiting for the refresh cycle.
-Type `curl -s -D - -o /dev/null -X POST "$GLOW_INSTANCE_URL/system/groups" -H "Authorization: Bearer $GLOW_TOKEN" -H "X-E2E-Profile-Id: $GLOW_E2E_PROFILE_ID" -H "X-Bypass-Cache: 1" -H "Content-Type: application/json" -d '{"page_size":3}' | grep -i x-cache-hit`
+Type `curl -s -D - -o /dev/null -X POST "$GLOW_INSTANCE_URL/system/groups" -H "Authorization: Bearer $GLOW_TOKEN" -H "X-Bypass-Cache: 1" -H "Content-Type: application/json" -d '{"page_size":3}' | grep -i x-cache-hit`
 Enter
 Sleep 3000ms

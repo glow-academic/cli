@@ -1,7 +1,7 @@
 # Smoke tape — proves the bypass-auth path works end-to-end through
 # VHS, and shows off the human-readable table rendering (src/render.rs).
 # Hits a real ``personas search`` / ``attempts search`` against the local
-# uvicorn on :8000 using GLOW_TOKEN + GLOW_E2E_PROFILE_ID. Mirror of what
+# uvicorn on :8000 using GLOW_TOKEN. Mirror of what
 # Playwright's authAs() does on the browser side.
 
 Output demo-output/_smoke-personas-search.mp4
@@ -17,7 +17,6 @@ Set TypingSpeed 40ms
 Env PATH "/Users/ashoksaravanan/Coding/glow-academic-cli/target/release:/opt/homebrew/bin:/usr/bin:/bin"
 Env GLOW_INSTANCE_URL "http://localhost:8000"
 Env GLOW_TOKEN "90e4f963cb1ffd0853553e97f851fc6c1180690426b9c4c6a3ec332ee14a65c9"
-Env GLOW_E2E_PROFILE_ID "102ea140-ca00-5c6a-9133-68e18a675a0e"
 
 # Pretty table — names tinted with each persona's own color, AI/MCP/draft
 # badges in the FLAGS column, a dimmed "N of M" footer.
