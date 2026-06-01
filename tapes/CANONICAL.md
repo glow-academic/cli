@@ -9,9 +9,11 @@ instance), not `glow … --help`. These clips are embedded one-to-one in the doc
 - All tapes record at **1600×900** (FontSize 24) → `scripts/polish-video.mjs`
   wraps them on the gradient background → **1856×1156** (same framing as the
   web/Playwright clips).
-- `scripts/render-tapes.sh` exports the bypass-auth env
-  (`GLOW_INSTANCE_URL` / `GLOW_TOKEN` / `GLOW_E2E_PROFILE_ID`) so tapes inherit
-  it — **no per-tape `Env` block**; canonical tapes just run real commands.
+- `scripts/render-tapes.sh` exports the auth env
+  (`GLOW_INSTANCE_URL` / `GLOW_TOKEN`) so tapes inherit it — **no per-tape
+  `Env` block**; canonical tapes just run real commands. (Impersonation, when a
+  tape must act as a specific profile, goes through `glow profiles emulate`,
+  not the removed `GLOW_E2E_PROFILE_ID` / `X-E2E-Profile-Id` bypass.)
 - Transfer to docs is **manual**: when a clip is final,
   `cp demo-output/<topic>.polished.mp4 ../glow-academic-docs/public/demos/<topic>.mp4`,
   then in docs `node scripts/gen-demo-manifest.mjs` + commit. (No cross-repo script.)
@@ -67,10 +69,11 @@ exports just generate a server-side ZIP and return its name/row_count).
 `chat-live`, `realtime-chat-live` (`glow attempts chat live`), `streaming-cli`/`-connect`/`-overview`/`-terminal`, `realtime-connect` (`glow attempts watch <run_id>`), `invocation-trace`, `tools-invocation`. `attempts watch` streams a run's SSE *until a terminal event* — only meaningful while a **`generate` is in flight** (otherwise it just emits the terminal frame). So these need an active AI run = same bucket as generate. `attempts-stop` (truncate a streaming reply) is here too.
 
 ## Tier 4 — MCP (RESOLVED ✅, all 3 recorded)
-Two fixes landed: (1) API — `McpOAuthMiddleware` now honors the E2E bypass via the
-shared `try_e2e_bypass` helper; (2) CLI — `mcp_jsonrpc` in `commands/glow/helpers.rs`
-now routes through `GlowClient::authed_request` (sends `GLOW_TOKEN` + `X-E2E-Profile-Id`)
-instead of the stored-login token. `glow mcp list-tools`/`call` now work with the bypass.
+CLI — `mcp_jsonrpc` in `commands/glow/helpers.rs` routes through
+`GlowClient::authed_request` (sends the real `GLOW_TOKEN`) instead of the
+stored-login token, so `glow mcp list-tools`/`call` work against a live
+instance. (The old static `E2E_BYPASS` / `X-E2E-Profile-Id` path was removed
+in cli v1.0.13 — auth is real-token only now.)
 
 ## Tier 5 — deploy / instance ops (need Docker / real infra; some destructive)
 `start-deploy`, `start-init` (interactive wizard), `topology-airgapped`/`-api-only`/`-exposed`,
