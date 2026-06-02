@@ -243,7 +243,7 @@ impl GlowClient {
         let part = blocking::multipart::Part::bytes(data).file_name(filename);
         let form = blocking::multipart::Form::new().part("file", part);
 
-        let url = self.url(&format!("/{}/{}/upload", resource, media_type));
+        let url = self.url(&format!("/{}/{}_upload", resource, media_type));
         let resp = self
             .authed_request(reqwest::Method::POST, &url)
             .multipart(form)
@@ -518,7 +518,7 @@ mod tests {
 
         let client = GlowClient::new(&server.url());
         let result = client
-            .media_upload("documents", "file", file_path.to_str().unwrap())
+            .media_upload("document", "file", file_path.to_str().unwrap())
             .unwrap();
         assert_eq!(result["upload_id"], "up-1");
         mock.assert();
