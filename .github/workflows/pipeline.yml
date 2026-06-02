@@ -219,7 +219,10 @@ jobs:
 
           if [ "$BRANCH" = "beta" ]; then
             FORMULA="glow-beta"
-            TARBALL_PREFIX="glow-beta"
+            # Tarballs are always named glow-<target>.tar.gz (the `-beta` suffix
+            # is only on the binaries *inside*); the formula name is glow-beta,
+            # but the artifact prefix is plain glow.
+            TARBALL_PREFIX="glow"
           else
             FORMULA="glow"
             TARBALL_PREFIX="glow"
