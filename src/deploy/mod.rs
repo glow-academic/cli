@@ -504,7 +504,10 @@ pub fn destroy(name: &str) -> Result<()> {
         }
     }
     if !errors.is_empty() {
-        anyhow::bail!("destroy incomplete — some stacks failed:\n  {}", errors.join("\n  "));
+        anyhow::bail!(
+            "destroy incomplete — some stacks failed:\n  {}",
+            errors.join("\n  ")
+        );
     }
 
     // We deliberately don't `rm -rf` the instance dir here — the user's
