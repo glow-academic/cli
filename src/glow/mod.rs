@@ -505,7 +505,7 @@ mod tests {
     fn test_media_upload() {
         let mut server = mockito::Server::new();
         let mock = server
-            .mock("POST", "/documents/file/upload")
+            .mock("POST", "/document/file_upload")
             .with_status(200)
             .with_header("content-type", "application/json")
             .with_body(r#"{"upload_id": "up-1", "filename": "test.txt"}"#)
