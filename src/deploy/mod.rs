@@ -580,10 +580,19 @@ fn pre_deploy_backup(instance: &Instance) -> Result<()> {
     // Run pg_dump inside the DB container, gzip in pipe, write to host.
     // We shell out using docker compose exec which the runtime module
     // proxies. Capture stdout to file.
-    let project_dir = &instance.dir;
-    let project_name = instance.project_name();
+    //
+    // The `database` service lives in the API stack — compose project
+    // `glow-<name>-api`, files under `<instance>/api/` — NOT the bare
+    // instance root (which has no docker-compose.yml at all in the
+    // two-stack layout). Using the root dir/project here meant compose
+    // ran without the api stack's `.env`, so `$POSTGRES_USER` fell
+    // through to the `${DB_USER:-myuser}` default instead of the real
+    // role `glow`, and the dump failed with `role "myuser" does not
+    // exist`. Mirror `backup::create()` and target the api stack. (#123)
+    let project_dir = instance.api_dir();
+    let project_name = instance.api_project_name();
     let dump = runtime::exec_capture(
-        project_dir,
+        &project_dir,
         &project_name,
         "database",
         &[
