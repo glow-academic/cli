@@ -381,15 +381,31 @@ pub(crate) fn cmd_media_preview(
     resource: &str,
     media_type: &str,
     upload_id: &str,
+    output_path: Option<&str>,
     mode: OutputMode,
 ) -> Result<()> {
-    let response = client.media_preview(resource, media_type, upload_id)?;
-    output::print_result(mode, &response, |resp| {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(resp).unwrap_or_else(|_| format!("{:?}", resp))
-        );
-    });
+    use colored::Colorize;
+
+    // The API returns a PNG preview of the first page as raw bytes.
+    let bytes = client.media_preview(resource, media_type, upload_id)?;
+    match output_path {
+        Some(path) => {
+            std::fs::write(path, &bytes)
+                .map_err(|e| anyhow::anyhow!("Failed to write to {}: {}", path, e))?;
+            if mode == OutputMode::Human {
+                println!(
+                    "{} Wrote {} byte PNG preview to {}",
+                    "OK".green().bold(),
+                    bytes.len(),
+                    path,
+                );
+            }
+        }
+        None => {
+            use std::io::Write;
+            std::io::stdout().write_all(&bytes)?;
+        }
+    }
     Ok(())
 }
 

@@ -1397,7 +1397,15 @@ fn dispatch_media(
         "preview" => {
             let id = parse_flag(rest, "--id")?
                 .ok_or_else(|| anyhow::anyhow!("--id <upload_id> is required for preview"))?;
-            glow_cmd::cmd_media_preview(client, resource, media.slug(), &id, mode)
+            let output = parse_flag(rest, "--output")?;
+            glow_cmd::cmd_media_preview(
+                client,
+                resource,
+                media.slug(),
+                &id,
+                output.as_deref(),
+                mode,
+            )
         }
         other => anyhow::bail!(
             "Unknown media action '{}'. Available: upload, download, discover, preview",
