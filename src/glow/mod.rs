@@ -226,8 +226,8 @@ impl GlowClient {
     //   GET  /{resource}/{media}/{id}/status      — TUS status
     //   PATCH /{resource}/{media}/{id}/chunk      — TUS chunk
     //   POST /{resource}/{media}/{id}/finalize    — TUS finalize
-    //   GET  /{resource}/{media}/{id}/download    — download
-    //   GET  /{resource}/{media}/{id}/preview     — preview
+    //   POST /{resource}/{media}_download         — download (id in body)
+    //   POST /{resource}/{media}_preview          — preview (id in body)
 
     /// Upload a file via multipart form
     pub fn media_upload(&self, resource: &str, media_type: &str, file_path: &str) -> Result<Value> {
@@ -294,17 +294,23 @@ impl GlowClient {
     }
 
     /// Preview a media file
-    pub fn media_preview(
-        &self,
-        resource: &str,
-        media_type: &str,
-        upload_id: &str,
-    ) -> Result<Value> {
-        let url = self.url(&format!(
-            "/{}/{}/{}/preview",
-            resource, media_type, upload_id
-        ));
-        api_request(&self.http, reqwest::Method::GET, &url, None, self.auth())
+    pub fn media_preview(&self, resource: &str, media_type: &str, id: &str) -> Result<Vec<u8>> {
+        // Previews are POST /{resource}/{media}_preview with the media id in
+        // the body (e.g. POST /document/file_preview {"file_id": "…"}),
+        // returning a PNG preview of the first page as raw bytes — not a GET
+        // path-param route.
+        let url = self.url(&format!("/{}/{}_preview", resource, media_type));
+        let mut body = serde_json::Map::new();
+        body.insert(format!("{media_type}_id"), Value::String(id.to_string()));
+        let resp = api_request_raw(
+            &self.http,
+            reqwest::Method::POST,
+            &url,
+            Some(Value::Object(body)),
+            self.auth(),
+        )?;
+        let bytes = resp.bytes().context("Failed to read preview response")?;
+        Ok(bytes.to_vec())
     }
 
     // ── Watch (per-artifact, run-scoped SSE) ─────────────────
@@ -543,16 +549,19 @@ mod tests {
     #[test]
     fn test_media_preview() {
         let mut server = mockito::Server::new();
+        // PNG magic bytes — the API returns a PNG preview of the first page.
+        let png_bytes: &[u8] = &[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
         let mock = server
-            .mock("GET", "/documents/file/up-1/preview")
+            .mock("POST", "/documents/file_preview")
+            .match_body(mockito::Matcher::Json(json!({"file_id": "up-1"})))
             .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(r#"{"columns": ["name"], "rows": 3}"#)
+            .with_header("content-type", "image/png")
+            .with_body(png_bytes)
             .create();
 
         let client = GlowClient::new(&server.url());
         let result = client.media_preview("documents", "file", "up-1").unwrap();
-        assert_eq!(result["rows"], 3);
+        assert_eq!(result, png_bytes);
         mock.assert();
     }
 
