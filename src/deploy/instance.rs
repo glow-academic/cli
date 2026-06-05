@@ -173,6 +173,16 @@ pub struct DeployState {
     /// Seed setup used on the *initial* deploy. Future redeploys preserve
     /// the DB unless the user explicitly opts back into reseeding.
     pub initial_seed_setup: Option<String>,
+    /// The instance's EFFECTIVE seed setup — what the live DB was actually
+    /// seeded with (e.g. `university`). Set on first deploy and updated on
+    /// any `--reseed <setup>`. A plain redeploy renders `SEED_SETUP` from
+    /// this so the api's `database.init` guard (#240) sees a *matching*
+    /// setup → idempotent skip → data preserved, no `--reseed` needed.
+    ///
+    /// Pre-existing state files predate this field and carry only
+    /// `initial_seed_setup`; `effective_seed_setup()` falls back to that.
+    #[serde(default)]
+    pub seed_setup: Option<String>,
     /// ISO-8601 timestamps for the audit trail.
     pub first_deployed_at: Option<String>,
     pub last_deployed_at: Option<String>,
@@ -209,5 +219,59 @@ impl DeployState {
             Some("blue") => "green",
             _ => "blue",
         }
+    }
+
+    /// The instance's effective seed setup, with migration fallback.
+    ///
+    /// Newer state files carry `seed_setup`; older ones (written before the
+    /// field existed) carry only `initial_seed_setup`. Prefer the new field,
+    /// fall back to the legacy one — so a plain redeploy of a pre-existing
+    /// instance still recovers the right setup.
+    pub fn effective_seed_setup(&self) -> Option<String> {
+        self.seed_setup
+            .clone()
+            .or_else(|| self.initial_seed_setup.clone())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn effective_seed_setup_prefers_new_field() {
+        let s = DeployState {
+            seed_setup: Some("university".into()),
+            initial_seed_setup: Some("fresh".into()),
+            ..Default::default()
+        };
+        assert_eq!(s.effective_seed_setup(), Some("university".into()));
+    }
+
+    #[test]
+    fn effective_seed_setup_falls_back_to_initial() {
+        // Pre-existing instance: only the legacy field is populated.
+        let s = DeployState {
+            seed_setup: None,
+            initial_seed_setup: Some("university".into()),
+            ..Default::default()
+        };
+        assert_eq!(s.effective_seed_setup(), Some("university".into()));
+    }
+
+    #[test]
+    fn legacy_state_json_deserializes_with_default_seed_setup() {
+        // A state file written before `seed_setup` existed must still parse
+        // (the field is `#[serde(default)]`) and recover via the fallback.
+        let legacy = r#"{
+            "active_env": "blue",
+            "api_version": "v1.0.0",
+            "initial_seed_setup": "university",
+            "first_deployed_at": "2026-01-01T00:00:00Z",
+            "last_deployed_at": "2026-01-01T00:00:00Z"
+        }"#;
+        let s: DeployState = serde_json::from_str(legacy).unwrap();
+        assert_eq!(s.seed_setup, None);
+        assert_eq!(s.effective_seed_setup(), Some("university".into()));
     }
 }

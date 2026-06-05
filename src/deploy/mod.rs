@@ -201,13 +201,12 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
         active_env: prev_env.clone(),
         active_kc_env: prev_env.clone(),
         project_name: instance.api_project_name(),
-        seed_setup: if is_first_deploy {
-            args.seed_setup.clone().or(cfg.setup.clone())
-        } else if args.seed_setup.is_some() {
-            args.seed_setup.clone()
-        } else {
-            None
-        },
+        seed_setup: resolve_seed_setup(
+            is_first_deploy,
+            args.seed_setup.as_deref(),
+            cfg.setup.as_deref(),
+            &state,
+        ),
         db_backup: args.db_backup.clone(),
         grace_period_minutes: args.grace_minutes,
         app_prefix: String::new(),
@@ -345,6 +344,9 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
         state.first_deployed_at = Some(now.clone());
         state.last_deployed_at = Some(now);
         state.initial_seed_setup = env_inputs.seed_setup.clone();
+        // Remember the effective setup so future plain redeploys render a
+        // matching SEED_SETUP (db-init idempotent skip, data preserved).
+        state.seed_setup = env_inputs.seed_setup.clone();
         state.save(&instance.state_file())?;
 
         // Point each nginx at its freshly-promoted color.
@@ -423,6 +425,14 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
     }
 
     state.api_version = Some(args.api_version);
+    // A `--reseed <setup>` on redeploy re-seeds the DB, so update the
+    // remembered effective setup. A plain redeploy (no override) leaves it
+    // untouched — it already drove this run's SEED_SETUP.
+    if let Some(s) = &env_inputs.seed_setup {
+        if args.seed_setup.is_some() {
+            state.seed_setup = Some(s.clone());
+        }
+    }
     state.last_deployed_at = Some(chrono_iso8601_now());
     state.save(&instance.state_file())?;
 
@@ -567,6 +577,36 @@ pub fn status(name: &str) -> Result<()> {
     Ok(())
 }
 
+/// Resolve the `SEED_SETUP` value to render into the api `.env` for this run.
+///
+/// - First deploy: the explicit `--seed-setup` override, else the config's
+///   `setup`, else `None` (compose falls back to `fresh`).
+/// - Redeploy with `--reseed <setup>` (i.e. an explicit `seed_arg`): that
+///   override — it re-seeds destructively.
+/// - Plain redeploy (no override): the instance's PERSISTED effective setup
+///   (`seed_setup`, falling back to the legacy `initial_seed_setup`). This is
+///   the fix for the post-#240 fragility: without it, redeploy rendered no
+///   `SEED_SETUP`, compose defaulted to `fresh`, and the api's `database.init`
+///   guard failed-loud on the fresh-over-`university` mismatch — blocking
+///   every plain redeploy. Rendering the persisted setup makes db-init see a
+///   matching setup → idempotent skip → data preserved, no `--reseed` needed.
+fn resolve_seed_setup(
+    is_first_deploy: bool,
+    seed_arg: Option<&str>,
+    cfg_setup: Option<&str>,
+    state: &DeployState,
+) -> Option<String> {
+    if is_first_deploy {
+        seed_arg.or(cfg_setup).map(str::to_string)
+    } else if let Some(s) = seed_arg {
+        // `--reseed <setup>` — explicit destructive override.
+        Some(s.to_string())
+    } else {
+        // Plain redeploy — default to the instance's remembered setup.
+        state.effective_seed_setup()
+    }
+}
+
 // ── helpers ────────────────────────────────────────────────────────
 
 /// Pre-deploy snapshot — pg_dump → gzip → backups/backup-deploy-<ts>.sql.gz.
@@ -660,4 +700,65 @@ fn days_to_ymd(days: i64) -> (i64, u32, u32) {
     let m = if mp < 10 { mp + 3 } else { mp - 9 } as u32;
     let y_adj = if m <= 2 { y + 1 } else { y };
     (y_adj, m, d)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn state_with(seed: Option<&str>, initial: Option<&str>) -> DeployState {
+        DeployState {
+            seed_setup: seed.map(str::to_string),
+            initial_seed_setup: initial.map(str::to_string),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn first_deploy_prefers_arg_then_cfg_then_none() {
+        let s = DeployState::default();
+        // explicit --seed-setup wins.
+        assert_eq!(
+            resolve_seed_setup(true, Some("university"), Some("fresh"), &s),
+            Some("university".into())
+        );
+        // falls back to cfg.setup.
+        assert_eq!(
+            resolve_seed_setup(true, None, Some("university"), &s),
+            Some("university".into())
+        );
+        // nothing specified → None (compose defaults to `fresh`).
+        assert_eq!(resolve_seed_setup(true, None, None, &s), None);
+    }
+
+    #[test]
+    fn plain_redeploy_uses_persisted_setup() {
+        // The fix: no --reseed → render the instance's remembered setup,
+        // NOT None. cfg.setup is ignored on redeploy.
+        let s = state_with(Some("university"), Some("university"));
+        assert_eq!(
+            resolve_seed_setup(false, None, Some("fresh"), &s),
+            Some("university".into())
+        );
+    }
+
+    #[test]
+    fn plain_redeploy_falls_back_to_initial_when_seed_setup_absent() {
+        // Migration case: a pre-existing state file has only
+        // `initial_seed_setup` (the `seed_setup` field defaults to None).
+        let s = state_with(None, Some("university"));
+        assert_eq!(
+            resolve_seed_setup(false, None, None, &s),
+            Some("university".into())
+        );
+    }
+
+    #[test]
+    fn reseed_overrides_persisted_setup_on_redeploy() {
+        let s = state_with(Some("university"), Some("university"));
+        assert_eq!(
+            resolve_seed_setup(false, Some("fresh"), None, &s),
+            Some("fresh".into())
+        );
+    }
 }
