@@ -56,6 +56,15 @@ pub struct ClientArgs {
     /// switches the whole flow to docker-free local mode, so a remote
     /// demo can be recorded from a dev machine without the deploy box.
     pub specs_dir: Option<String>,
+    /// Override the base URL the e2e helpers use for their **direct REST
+    /// calls** (`INTERNAL_API_BASE` — session adoption, attemptDemo's
+    /// `/attempt/search`, …). In docker mode this defaults to the
+    /// CLI's instance/api URL (the loopback API). In local mode it
+    /// defaults to `--base-url` (the public demo origin) — but the box
+    /// only publicly proxies /socket.io, /mcp and OIDC, *not* REST, so a
+    /// remote recording typically needs this pointed at a reachable API
+    /// (e.g. an SSH-tunnel `http://localhost:18080`).
+    pub internal_api_base: Option<String>,
 }
 
 pub fn client(args: ClientArgs, cfg: &crate::config::Config) -> Result<()> {
@@ -190,7 +199,15 @@ pub fn client(args: ClientArgs, cfg: &crate::config::Config) -> Result<()> {
         .env("PLAYWRIGHT_NO_SERVER", "1")
         .env("PLAYWRIGHT_DEMO", "1")
         .env("GLOW_RECORD_TOKEN", &token)
-        .env("INTERNAL_API_BASE", &token_url)
+        .env(
+            "INTERNAL_API_BASE",
+            internal_api_base(
+                args.internal_api_base.as_deref(),
+                local_specs.is_some(),
+                &base_url,
+                &token_url,
+            ),
+        )
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
@@ -411,6 +428,30 @@ fn local_base_url(base_url: Option<&str>) -> String {
     }
 }
 
+/// Resolve `INTERNAL_API_BASE` — the origin the e2e helpers use for their
+/// direct REST calls (session adoption, `/attempt/search`, …).
+///
+///   * An explicit `--internal-api-base` always wins (adding a scheme if
+///     bare), so an operator can point it at a reachable API — e.g. an
+///     SSH-tunnel `http://localhost:18080` when recording a remote demo
+///     (the box only publicly proxies /socket.io, /mcp and OIDC, not REST).
+///   * In local mode it defaults to `base_url` (the public demo origin),
+///     which is the right answer when REST *is* reachable at that origin.
+///   * In docker mode it defaults to `token_url` (the CLI's loopback API),
+///     preserving the existing behavior exactly.
+fn internal_api_base(
+    explicit: Option<&str>,
+    local_mode: bool,
+    base_url: &str,
+    token_url: &str,
+) -> String {
+    match explicit {
+        Some(u) => with_scheme(u),
+        None if local_mode => base_url.to_string(),
+        None => token_url.to_string(),
+    }
+}
+
 /// Mirror the docker_cp layout from a local client checkout: copy its
 /// `e2e/` tree and `playwright.config.ts` into the recorder home.
 fn copy_local_specs(specs: &Path, home: &Path) -> Result<()> {
@@ -582,6 +623,38 @@ mod tests {
         assert_eq!(
             local_base_url(Some("glow.ashoksaravanan.com")),
             "https://glow.ashoksaravanan.com"
+        );
+    }
+
+    /// INTERNAL_API_BASE resolution: explicit `--internal-api-base` always
+    /// wins (with a scheme added if bare); otherwise local mode defaults to
+    /// the base-url (public demo origin) while docker mode preserves the
+    /// existing default of the loopback api/token url.
+    #[test]
+    fn internal_api_base_resolution() {
+        let base = "https://glow.ashoksaravanan.com";
+        let token = "http://localhost:8000";
+
+        // docker mode (local_mode = false): unchanged — defaults to token url.
+        assert_eq!(internal_api_base(None, false, base, token), token);
+
+        // local mode without an override: defaults to the base-url.
+        assert_eq!(internal_api_base(None, true, base, token), base);
+
+        // explicit override wins in either mode.
+        assert_eq!(
+            internal_api_base(Some("http://localhost:18080"), true, base, token),
+            "http://localhost:18080"
+        );
+        assert_eq!(
+            internal_api_base(Some("http://localhost:18080"), false, base, token),
+            "http://localhost:18080"
+        );
+
+        // a bare host gets a scheme, mirroring the base-url handling.
+        assert_eq!(
+            internal_api_base(Some("api.internal"), true, base, token),
+            "https://api.internal"
         );
     }
 
