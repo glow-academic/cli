@@ -315,6 +315,14 @@ enum RecordCommands {
         /// `--base-url <remote>` (defaults to `http://localhost:3000`).
         #[arg(long)]
         specs_dir: Option<String>,
+        /// Base URL for the e2e helpers' direct REST calls (session
+        /// adoption, `/attempt/search`, …). Defaults to the CLI's
+        /// instance/api URL in docker mode, or `--base-url` in local mode.
+        /// Point this at a reachable API when recording a remote demo: the
+        /// box only publicly proxies /socket.io, /mcp and OIDC (not REST),
+        /// so use e.g. an SSH-tunnel `http://localhost:18080`.
+        #[arg(long)]
+        internal_api_base: Option<String>,
         /// Keep the raw recording — skip the polish step.
         #[arg(long)]
         raw: bool,
@@ -715,6 +723,7 @@ pub fn run() -> Result<()> {
                 base_url,
                 name,
                 specs_dir,
+                internal_api_base,
                 raw,
                 out,
             } => {
@@ -727,6 +736,7 @@ pub fn run() -> Result<()> {
                         raw,
                         out,
                         specs_dir,
+                        internal_api_base,
                     },
                     &cfg,
                 )?;
