@@ -50,36 +50,63 @@ pub struct ClientArgs {
     pub instance_url: Option<String>,
     pub raw: bool,
     pub out: Option<String>,
+    /// Local mode: source the runner's specs from this local client
+    /// checkout (containing `e2e/` + `playwright.config.ts`) instead of
+    /// `docker cp`ing them out of the deployed image. Its presence
+    /// switches the whole flow to docker-free local mode, so a remote
+    /// demo can be recorded from a dev machine without the deploy box.
+    pub specs_dir: Option<String>,
 }
 
 pub fn client(args: ClientArgs, cfg: &crate::config::Config) -> Result<()> {
-    crate::deploy::runtime::assert_docker_available()?;
+    // Local mode is gated purely on `--specs-dir`: when set, we skip
+    // docker entirely (no daemon, no Instance/DeployState, no container)
+    // and overlay the specs from the given local checkout. The default
+    // (docker) path below is unchanged.
+    let local_specs = args.specs_dir.as_deref().map(PathBuf::from);
 
-    // The client lives in docker — resolve the running container we
-    // deployed for this instance, guarding the api_only case (no client).
-    let inst = Instance::open(&args.name)?;
-    let dc = DeployConfig::load(&inst.deploy_yaml()).ok();
-    if let Some(dc) = &dc {
-        if dc.topology == Topology::ApiOnly {
+    let mut container: Option<String> = None;
+    let base_url;
+
+    if let Some(specs) = &local_specs {
+        if !specs.join("e2e").is_dir() || !specs.join("playwright.config.ts").is_file() {
             bail!(
-                "instance `{}` is api_only topology — there's no client to record.\n  use `glow record cli <tape>` for a terminal demo.",
-                args.name
+                "--specs-dir `{}` is not a client checkout (need `e2e/` and `playwright.config.ts`).",
+                specs.display()
             );
         }
-    }
-    let state = DeployState::load(&inst.state_file())?;
-    let color = state.active_client_env.as_deref().ok_or_else(|| {
-        anyhow!(
-            "no running client for instance `{}` — deploy one first (`glow deploy`).",
-            args.name
-        )
-    })?;
-    let container = running_client_container(&inst, color)?;
+        // No deploy config to derive a loopback port from in local mode,
+        // so require `--base-url` or fall back to the dev default.
+        base_url = local_base_url(args.base_url.as_deref());
+    } else {
+        crate::deploy::runtime::assert_docker_available()?;
 
-    let base_url = match args.base_url.as_deref() {
-        Some(u) => with_scheme(u),
-        None => client_url(dc.as_ref()),
-    };
+        // The client lives in docker — resolve the running container we
+        // deployed for this instance, guarding the api_only case (no client).
+        let inst = Instance::open(&args.name)?;
+        let dc = DeployConfig::load(&inst.deploy_yaml()).ok();
+        if let Some(dc) = &dc {
+            if dc.topology == Topology::ApiOnly {
+                bail!(
+                    "instance `{}` is api_only topology — there's no client to record.\n  use `glow record cli <tape>` for a terminal demo.",
+                    args.name
+                );
+            }
+        }
+        let state = DeployState::load(&inst.state_file())?;
+        let color = state.active_client_env.as_deref().ok_or_else(|| {
+            anyhow!(
+                "no running client for instance `{}` — deploy one first (`glow deploy`).",
+                args.name
+            )
+        })?;
+        container = Some(running_client_container(&inst, color)?);
+
+        base_url = match args.base_url.as_deref() {
+            Some(u) => with_scheme(u),
+            None => client_url(dc.as_ref()),
+        };
+    }
 
     // Host runtime: a Playwright runner provisioned once on the box. We
     // overlay the versioned specs from the image into it and run there so
@@ -122,21 +149,30 @@ pub fn client(args: ClientArgs, cfg: &crate::config::Config) -> Result<()> {
             .access_token,
     };
 
-    // Pull the versioned specs out of the running container into the
-    // runner. Replace any prior copy so stale specs can't linger.
+    // Source the versioned specs into the runner. Replace any prior copy
+    // so stale specs can't linger. In local mode they come from the given
+    // checkout; otherwise they're `docker cp`d out of the running image.
     let _ = std::fs::remove_dir_all(home.join("e2e"));
-    docker_cp(&container, "/app/e2e", &home.join("e2e"))?;
-    docker_cp(
-        &container,
-        "/app/playwright.config.ts",
-        &home.join("playwright.config.ts"),
-    )?;
+    if let Some(specs) = &local_specs {
+        copy_local_specs(specs, &home)?;
+    } else {
+        let container = container.as_deref().expect("container set in docker mode");
+        docker_cp(container, "/app/e2e", &home.join("e2e"))?;
+        docker_cp(
+            container,
+            "/app/playwright.config.ts",
+            &home.join("playwright.config.ts"),
+        )?;
+    }
 
     let rel = format!("e2e/demos/{}.spec.ts", args.workflow);
     if !home.join(&rel).exists() {
-        bail!(
-            "no demo spec `{rel}` in the deployed client image (container {container}).\n  list available workflows with `glow record list`"
-        );
+        let src = match (&local_specs, &container) {
+            (Some(specs), _) => format!("--specs-dir `{}`", specs.display()),
+            (_, Some(c)) => format!("the deployed client image (container {c})"),
+            _ => "the client specs".to_string(),
+        };
+        bail!("no demo spec `{rel}` in {src}.\n  list available workflows with `glow record list`");
     }
 
     println!(
@@ -363,6 +399,47 @@ fn docker_cp(container: &str, src: &str, dst: &Path) -> Result<()> {
     Ok(())
 }
 
+// ── local-mode helpers ──────────────────────────────────────────────
+
+/// Resolve the client origin for local mode. There's no deploy config to
+/// derive a loopback port from, so honor an explicit `--base-url` (adding
+/// a scheme if bare) and otherwise fall back to the dev default.
+fn local_base_url(base_url: Option<&str>) -> String {
+    match base_url {
+        Some(u) => with_scheme(u),
+        None => "http://localhost:3000".to_string(),
+    }
+}
+
+/// Mirror the docker_cp layout from a local client checkout: copy its
+/// `e2e/` tree and `playwright.config.ts` into the recorder home.
+fn copy_local_specs(specs: &Path, home: &Path) -> Result<()> {
+    copy_dir_all(&specs.join("e2e"), &home.join("e2e"))
+        .with_context(|| format!("copy specs from {}", specs.display()))?;
+    std::fs::copy(
+        specs.join("playwright.config.ts"),
+        home.join("playwright.config.ts"),
+    )
+    .context("copy playwright.config.ts from --specs-dir")?;
+    Ok(())
+}
+
+/// Recursively copy a directory tree (like `cp -r src dst`).
+fn copy_dir_all(src: &Path, dst: &Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dst)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let from = entry.path();
+        let to = dst.join(entry.file_name());
+        if entry.file_type()?.is_dir() {
+            copy_dir_all(&from, &to)?;
+        } else {
+            std::fs::copy(&from, &to)?;
+        }
+    }
+    Ok(())
+}
+
 // ── shared helpers ──────────────────────────────────────────────────
 
 /// Host directory holding the provisioned Playwright runner (the generic
@@ -485,4 +562,54 @@ fn client_url(dc: Option<&DeployConfig>) -> String {
 fn local_url_from_port_spec(spec: &str) -> String {
     let port = spec.rsplit(':').next().unwrap_or(spec);
     format!("http://127.0.0.1:{port}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Local mode defaults base_url to the dev origin when `--base-url`
+    /// is absent, and otherwise honors it (adding a scheme if bare) —
+    /// without ever touching the deploy config or docker.
+    #[test]
+    fn local_base_url_defaults_and_honors_flag() {
+        assert_eq!(local_base_url(None), "http://localhost:3000");
+        assert_eq!(
+            local_base_url(Some("https://glow.ashoksaravanan.com")),
+            "https://glow.ashoksaravanan.com"
+        );
+        // bare origin gets a scheme, mirroring the docker path's with_scheme.
+        assert_eq!(
+            local_base_url(Some("glow.ashoksaravanan.com")),
+            "https://glow.ashoksaravanan.com"
+        );
+    }
+
+    /// Local mode sources specs from `--specs-dir` (no docker): the e2e
+    /// tree and playwright.config.ts land in the recorder home exactly as
+    /// the docker_cp path would produce them.
+    #[test]
+    fn copy_local_specs_mirrors_checkout() {
+        let tmp = std::env::temp_dir().join(format!("glow-record-test-{}", std::process::id()));
+        let specs = tmp.join("checkout");
+        let home = tmp.join("home");
+        let _ = std::fs::remove_dir_all(&tmp);
+        std::fs::create_dir_all(specs.join("e2e/demos")).unwrap();
+        std::fs::write(specs.join("e2e/demos/foo.spec.ts"), "// spec").unwrap();
+        std::fs::write(specs.join("e2e/helpers.ts"), "// helper").unwrap();
+        std::fs::write(specs.join("playwright.config.ts"), "// config").unwrap();
+        std::fs::create_dir_all(&home).unwrap();
+
+        copy_local_specs(&specs, &home).unwrap();
+
+        assert!(home.join("e2e/demos/foo.spec.ts").is_file());
+        assert!(home.join("e2e/helpers.ts").is_file());
+        assert!(home.join("playwright.config.ts").is_file());
+        assert_eq!(
+            std::fs::read_to_string(home.join("playwright.config.ts")).unwrap(),
+            "// config"
+        );
+
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
 }

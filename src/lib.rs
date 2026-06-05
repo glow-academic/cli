@@ -307,6 +307,14 @@ enum RecordCommands {
         /// Deployed instance whose client to record.
         #[arg(long, default_value = "default")]
         name: String,
+        /// Local mode: source the Playwright specs from this local client
+        /// checkout (containing `e2e/` + `playwright.config.ts`) instead
+        /// of `docker cp`ing them out of a deployed image. Its presence
+        /// switches to docker-free local mode, so you can record a remote
+        /// demo from a dev machine without the deploy box — pair it with
+        /// `--base-url <remote>` (defaults to `http://localhost:3000`).
+        #[arg(long)]
+        specs_dir: Option<String>,
         /// Keep the raw recording — skip the polish step.
         #[arg(long)]
         raw: bool,
@@ -706,6 +714,7 @@ pub fn run() -> Result<()> {
                 workflow,
                 base_url,
                 name,
+                specs_dir,
                 raw,
                 out,
             } => {
@@ -717,6 +726,7 @@ pub fn run() -> Result<()> {
                         instance_url: cli.instance_url.clone(),
                         raw,
                         out,
+                        specs_dir,
                     },
                     &cfg,
                 )?;
