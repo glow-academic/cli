@@ -21,7 +21,15 @@ Type "clear"
 Enter
 Sleep 400ms
 
+# Resolve a real attempt_id off-camera (the library reseeds, so don't
+# hardcode one — capture the first row from the same search).
+Hide
+Type `ATTEMPT=$(glow attempts search --page-size 1 --json | jq -r '.data[0].attempt_id')`
+Enter
+Sleep 2000ms
+Show
+
 # Export it — a denormalized ZIP with the certificate of completion baked in.
-Type `glow attempts export --body '{"attempt_id":"019e51c8-cb24-7b2b-9d6b-fbf1e903aa8a","view":"single"}'`
+Type `glow attempts export --body "{\"attempt_id\":\"$ATTEMPT\",\"view\":\"single\"}"`
 Enter
 Sleep 3000ms
