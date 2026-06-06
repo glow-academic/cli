@@ -76,7 +76,13 @@ services:
       # seed runner never needs to round-trip through it.
       - SKIP_KEYCLOAK_SYNC=1
     volumes:
-      # Seed modules read providers/models/roles from this file.
+      # Seed modules read providers/models/roles from this file. A
+      # gitignored `glow-deploy.local.yaml` in the instance dir (which the
+      # seed loader prefers over this committed file) is mounted alongside
+      # via the auto-generated docker-compose.override.yml — only when it
+      # exists (see compose::assemble_api_override). It can't be mounted
+      # here unconditionally: a bind of a missing host path would
+      # materialize an empty dir the loader then tries to parse as YAML.
       - ../glow-deploy.yaml:/app/glow-deploy.yaml:ro
       # The seed runner reads upload assets (text excerpts, seed videos,
       # themes) from /app/uploads (DOCKER_ENV=1 resolves the uploads dir
