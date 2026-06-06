@@ -202,7 +202,7 @@ jobs:
         # If DEPLOY_APP_ID isn't set yet (first run before App is
         # installed), this step will fail loudly — that's intentional;
         # set up the App + secrets and re-run, don't paper over it.
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.DEPLOY_APP_ID }}
           private-key: ${{ secrets.DEPLOY_APP_PRIVATE_KEY }}
