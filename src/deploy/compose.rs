@@ -167,9 +167,7 @@ mod tests {
     fn override_mounts_local_overlay_into_db_init() {
         let body = assemble_api_override(Topology::Airgapped, true).unwrap();
         assert!(body.contains("db-init:"));
-        assert!(body.contains(
-            "../glow-deploy.local.yaml:/app/glow-deploy.local.yaml:ro"
-        ));
+        assert!(body.contains("../glow-deploy.local.yaml:/app/glow-deploy.local.yaml:ro"));
         // Airgapped → no public port fragment.
         assert!(!body.contains("API_HTTP_PORT"));
     }
