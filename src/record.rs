@@ -265,6 +265,13 @@ pub fn cli_surface(args: CliArgs, cfg: &crate::config::Config) -> Result<()> {
     let tape_path = work.join(&tape_name);
     std::fs::write(&tape_path, tape.contents()).context("write embedded tape")?;
 
+    // Some tapes feed real assets to commands via a relative path
+    // (`glow attempts audio_upload --file tapes/fixtures/clip.wav`). vhs runs
+    // with cwd == `work`, so materialize the embedded `tapes/fixtures/` here
+    // (under `work/tapes/fixtures/`) so that relative reference resolves.
+    // `extract` fails on pre-existing files, so clear any prior copy first.
+    materialize_fixtures(&work)?;
+
     // Make the *running* glow resolve as a bare `glow` inside vhs's shell
     // so recorded tapes drive this exact binary.
     let mut path = String::new();
@@ -315,6 +322,29 @@ pub fn cli_surface(args: CliArgs, cfg: &crate::config::Config) -> Result<()> {
     }
 
     finish(&raw_video, args.raw, args.out.as_deref())
+}
+
+/// Materialize the embedded `tapes/fixtures/` assets into the cli render
+/// workdir so a tape's relative `tapes/fixtures/<file>` reference resolves
+/// (vhs runs with cwd == `work`). Lands files at `work/tapes/fixtures/…`.
+/// No-op (Ok) when the embed has no `fixtures/` dir.
+fn materialize_fixtures(work: &Path) -> Result<()> {
+    let Some(fixtures) = TAPES.get_dir("fixtures") else {
+        return Ok(());
+    };
+    // `Dir::extract` refuses to overwrite, and `work` is reused across
+    // records, so clear any prior copy. `extract` joins the embed-relative
+    // paths (`fixtures/<file>`) onto the base, so base == `work/tapes`.
+    let tapes_dir = work.join("tapes");
+    let _ = std::fs::remove_dir_all(tapes_dir.join("fixtures"));
+    // `extract` writes each embed-relative path (`fixtures/<file>`) onto the
+    // base but only creates dirs for nested `Dir` entries, not the parent of
+    // the top-level files — so create `tapes/fixtures/` ourselves first.
+    std::fs::create_dir_all(tapes_dir.join("fixtures")).context("create tape fixtures dir")?;
+    fixtures
+        .extract(&tapes_dir)
+        .context("materialize embedded tape fixtures")?;
+    Ok(())
 }
 
 // ── List ────────────────────────────────────────────────────────────
@@ -684,5 +714,35 @@ mod tests {
         );
 
         let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    /// The cli render path materializes the embedded `tapes/fixtures/` into
+    /// `work/tapes/fixtures/` so a tape's relative `tapes/fixtures/<file>`
+    /// reference resolves under vhs's cwd. Idempotent across re-records.
+    #[test]
+    fn materialize_fixtures_lands_assets_under_tapes() {
+        // The embed must actually carry the fixtures dir, else the fix is moot.
+        assert!(
+            TAPES.get_dir("fixtures").is_some(),
+            "tapes/fixtures/ must be embedded via include_dir!"
+        );
+
+        let work = std::env::temp_dir().join(format!("glow-fixtures-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&work);
+        std::fs::create_dir_all(&work).unwrap();
+
+        materialize_fixtures(&work).unwrap();
+        // The exact relative path tapes use (e.g. group-media-downloads) must
+        // resolve from the workdir vhs runs in.
+        assert!(
+            work.join("tapes/fixtures/clip.wav").is_file(),
+            "tapes/fixtures/clip.wav should resolve from the render workdir"
+        );
+
+        // Re-running over the same workdir must not fail on pre-existing files.
+        materialize_fixtures(&work).unwrap();
+        assert!(work.join("tapes/fixtures/clip.wav").is_file());
+
+        let _ = std::fs::remove_dir_all(&work);
     }
 }

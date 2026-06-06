@@ -10,11 +10,15 @@ Set TypingSpeed 35ms
 # Auth + instance URL come from scripts/render-tapes.sh (bypass token) — these
 # are REAL calls against the local instance, not --help.
 
-# Setup off-camera: pull a real chat_entry_id from a completed attempt.
-# The command substitution blocks until the lookup completes, so $CEID is
-# set before the on-camera export.
+# Setup off-camera: resolve a real attempt_id (the library reseeds, so don't
+# hardcode one — take the first row from a search), then pull its
+# chat_entry_id. The command substitutions block, so $CEID is set before the
+# on-camera export.
 Hide
-Type `CEID=$(glow attempts get --body '{"attempt_id":"019e51c8-cb24-7b2b-9d6b-fbf1e903aa8a"}' --json | jq -r '.chat_entry_id')`
+Type `ATTEMPT=$(glow attempts search --page-size 1 --json | jq -r '.data[0].attempt_id')`
+Enter
+Sleep 2000ms
+Type `CEID=$(glow attempts get --body "{\"attempt_id\":\"$ATTEMPT\"}" --json | jq -r '.chat_entry_id')`
 Enter
 Sleep 2500ms
 Show
