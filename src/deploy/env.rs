@@ -47,10 +47,22 @@ const OWNED_KEYS: &[&str] = &[
     "GLOW_NETWORK",
 ];
 
-/// Keys the CLI mutates on every redeploy of the client stack.
-/// The client stack has no persistent secrets of its own — it
-/// reuses the api's SECRET_KEY / AUTH_CLIENT_SECRET via these env
-/// vars — so every key in the client .env is owned.
+/// The one persistent secret the client stack owns: the AES key Next.js
+/// 15 uses to encrypt Server Action closure args. It must (a) be the SAME
+/// across the blue and green app containers and all their Node workers —
+/// otherwise an arg encrypted by one instance can't be decrypted by the
+/// one nginx routes the follow-up to, yielding HTTP 500 `Invalid Server
+/// Actions request` — and (b) be STABLE across redeploys, so in-flight
+/// sessions survive. We therefore generate it ONCE on first client deploy
+/// and preserve it on every redeploy. Both compose colors read it from the
+/// single shared .env, so blue == green is structural. It is deliberately
+/// NOT in CLIENT_OWNED_KEYS (those are re-derived/clobbered each redeploy).
+const SERVER_ACTIONS_ENC_KEY: &str = "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY";
+
+/// Keys the CLI mutates on every redeploy of the client stack. These are
+/// re-derived from the api's .env + topology each redeploy. The client's
+/// one persistent secret (SERVER_ACTIONS_ENC_KEY) is intentionally absent
+/// here — it is written once and preserved.
 const CLIENT_OWNED_KEYS: &[&str] = &[
     "CLIENT_VERSION",
     "ACTIVE_CLIENT_ENV",
@@ -227,6 +239,19 @@ pub fn render_client(path: &Path, inputs: &ClientEnvInputs) -> Result<()> {
         BTreeMap::new()
     };
 
+    // Persistent client secret: generate once, preserve thereafter.
+    // Regenerating on every redeploy would change the AES key out from
+    // under in-flight Server Action sessions; an absent/blank entry means
+    // each Next instance invents its own ephemeral key and nginx-balanced
+    // requests across blue/green fail to decrypt each other's args.
+    if env
+        .get(SERVER_ACTIONS_ENC_KEY)
+        .map(|v| v.is_empty())
+        .unwrap_or(true)
+    {
+        env.insert(SERVER_ACTIONS_ENC_KEY.into(), random_base64(32));
+    }
+
     upsert_in(
         &mut env,
         CLIENT_OWNED_KEYS,
@@ -396,6 +421,17 @@ fn random_hex(n_bytes: usize) -> String {
     buf.iter().map(|b| format!("{b:02x}")).collect()
 }
 
+/// `n_bytes` of CSPRNG randomness, standard-base64-encoded — the exact
+/// shape `openssl rand -base64 <n_bytes>` produces. Next.js 15 expects
+/// NEXT_SERVER_ACTIONS_ENCRYPTION_KEY to be a base64-encoded 32-byte
+/// (256-bit) AES key.
+fn random_base64(n_bytes: usize) -> String {
+    use rand::RngCore;
+    let mut buf = vec![0u8; n_bytes];
+    rand::thread_rng().fill_bytes(&mut buf);
+    base64::engine::general_purpose::STANDARD.encode(buf)
+}
+
 // ── topology-driven env derivation ─────────────────────────────────
 
 /// Derive the api stack's public `ORIGIN` and `CLIENT_ORIGINS`
@@ -451,4 +487,122 @@ fn derive_auth_client_secret(secret_key: &str) -> String {
     let derived: [u8; 32] =
         pbkdf2_hmac_array::<Sha256, 32>(secret_key.as_bytes(), b"glow-auth-secret-v1", 100_000);
     base64::engine::general_purpose::STANDARD.encode(derived)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use base64::Engine;
+
+    fn sample_client_inputs() -> ClientEnvInputs {
+        ClientEnvInputs {
+            client_version: "v1.0.20".into(),
+            active_client_env: "blue".into(),
+            project_name: "glow-test-client".into(),
+            glow_network: "glow-test-net".into(),
+            client_http_port: "127.0.0.1:18080".into(),
+            domain: "demo.example.com".into(),
+            public_api_url: "https://demo.example.com".into(),
+            internal_api_base: "http://glow-test-nginx:80".into(),
+            auth_secret: "deadbeef".into(),
+            auth_issuer: "https://demo.example.com".into(),
+            auth_issuer_internal: "http://glow-test-nginx:80".into(),
+            auth_client_id: "glow-client".into(),
+            auth_client_secret: "kc-secret".into(),
+            nextauth_url: "https://demo.example.com".into(),
+            mcp_backend: "glow-test-nginx:80".into(),
+        }
+    }
+
+    fn render_to_tmp(inputs: &ClientEnvInputs) -> (tempfile::TempDir, std::path::PathBuf) {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join(".env");
+        render_client(&path, inputs).unwrap();
+        (dir, path)
+    }
+
+    /// First client deploy renders a non-empty Server Actions key that is a
+    /// valid base64-encoded 32-byte (256-bit) AES key, exactly the shape
+    /// Next.js 15 expects. Because both compose colors read this single
+    /// .env value via `${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}`, blue == green
+    /// is guaranteed structurally.
+    #[test]
+    fn renders_base64_32_server_actions_key() {
+        let (_dir, path) = render_to_tmp(&sample_client_inputs());
+        let env = parse(&fs::read_to_string(&path).unwrap());
+        let key = env
+            .get(SERVER_ACTIONS_ENC_KEY)
+            .expect("NEXT_SERVER_ACTIONS_ENCRYPTION_KEY must be rendered into the client .env");
+        assert!(!key.is_empty(), "key must be non-empty");
+        let decoded = base64::engine::general_purpose::STANDARD
+            .decode(key)
+            .expect("key must be valid standard base64");
+        assert_eq!(
+            decoded.len(),
+            32,
+            "key must decode to 32 bytes (256-bit AES)"
+        );
+    }
+
+    /// Redeploys must REUSE the existing key (idempotent) — regenerating it
+    /// would change the AES key out from under in-flight Server Action
+    /// sessions. Owned keys around it are still re-derived.
+    #[test]
+    fn server_actions_key_is_stable_across_render_passes() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join(".env");
+
+        render_client(&path, &sample_client_inputs()).unwrap();
+        let first = parse(&fs::read_to_string(&path).unwrap())
+            .get(SERVER_ACTIONS_ENC_KEY)
+            .cloned()
+            .unwrap();
+
+        // Second pass with different owned inputs (simulating a redeploy at
+        // a new client version): the persistent secret must not change.
+        let mut next = sample_client_inputs();
+        next.client_version = "v1.0.21".into();
+        render_client(&path, &next).unwrap();
+        let second_env = parse(&fs::read_to_string(&path).unwrap());
+
+        assert_eq!(
+            second_env.get(SERVER_ACTIONS_ENC_KEY),
+            Some(&first),
+            "Server Actions key must be preserved (not regenerated) on redeploy"
+        );
+        // Sanity: owned keys still get re-derived.
+        assert_eq!(
+            second_env.get("CLIENT_VERSION").map(String::as_str),
+            Some("v1.0.21")
+        );
+    }
+
+    /// A pre-existing instance whose .env was written before this fix (key
+    /// absent) gets a freshly generated key — but one already present is
+    /// kept verbatim.
+    #[test]
+    fn preexisting_key_is_kept_blank_or_missing_is_filled() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join(".env");
+
+        // Seed an .env that already pins a specific key.
+        let pinned = base64::engine::general_purpose::STANDARD.encode([7u8; 32]);
+        fs::write(&path, format!("{SERVER_ACTIONS_ENC_KEY}={pinned}\n")).unwrap();
+        render_client(&path, &sample_client_inputs()).unwrap();
+        assert_eq!(
+            parse(&fs::read_to_string(&path).unwrap()).get(SERVER_ACTIONS_ENC_KEY),
+            Some(&pinned),
+            "an existing key must be preserved verbatim"
+        );
+
+        // A blank value is treated as absent and filled.
+        let path2 = dir.path().join(".env2");
+        fs::write(&path2, format!("{SERVER_ACTIONS_ENC_KEY}=\n")).unwrap();
+        render_client(&path2, &sample_client_inputs()).unwrap();
+        let filled = parse(&fs::read_to_string(&path2).unwrap())
+            .get(SERVER_ACTIONS_ENC_KEY)
+            .cloned()
+            .unwrap();
+        assert!(!filled.is_empty(), "a blank key must be regenerated");
+    }
 }
