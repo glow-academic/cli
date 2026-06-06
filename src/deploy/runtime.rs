@@ -32,8 +32,27 @@ pub fn assert_docker_available() -> Result<()> {
     Ok(())
 }
 
+/// The set of `--file` arguments compose should be invoked with, in
+/// merge order. Always the base `docker-compose.yml`; plus the
+/// cli-generated `docker-compose.override.yml` when it's present.
+///
+/// Passing `--file` explicitly disables compose's auto-discovery of
+/// `docker-compose.override.yml`, so we MUST list it ourselves — otherwise
+/// the override (db-init local-overlay mount + public-port binding written
+/// by `assemble_api_override`) is silently dropped. Compose deep-merges
+/// `--file`s in order: the override layers onto the base, with list-valued
+/// keys like `volumes`/`ports` appending.
+fn compose_files(project_dir: &Path) -> Vec<std::path::PathBuf> {
+    let mut files = vec![project_dir.join("docker-compose.yml")];
+    let override_file = project_dir.join("docker-compose.override.yml");
+    if override_file.exists() {
+        files.push(override_file);
+    }
+    files
+}
+
 /// Build a `docker compose` Command pre-configured with the right
-/// project dir, project name, and env file. Caller appends the
+/// project dir, project name, and compose files. Caller appends the
 /// subcommand + args.
 pub fn compose(project_dir: &Path, project_name: &str) -> Command {
     let mut cmd = Command::new("docker");
@@ -41,9 +60,10 @@ pub fn compose(project_dir: &Path, project_name: &str) -> Command {
         .arg("--project-directory")
         .arg(project_dir)
         .arg("--project-name")
-        .arg(project_name)
-        .arg("--file")
-        .arg(project_dir.join("docker-compose.yml"));
+        .arg(project_name);
+    for file in compose_files(project_dir) {
+        cmd.arg("--file").arg(file);
+    }
     // .env is auto-loaded from project_dir by compose; no need to pass.
     cmd
 }
@@ -229,4 +249,77 @@ fn run(mut cmd: Command, label: &str) -> Result<()> {
         bail!("`{label}` exited {}", status.code().unwrap_or(-1));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::tempdir;
+
+    #[test]
+    fn compose_files_base_only_when_no_override() {
+        let dir = tempdir().unwrap();
+        fs::write(dir.path().join("docker-compose.yml"), "services: {}\n").unwrap();
+        let files = compose_files(dir.path());
+        assert_eq!(files, vec![dir.path().join("docker-compose.yml")]);
+    }
+
+    #[test]
+    fn compose_files_includes_override_when_present() {
+        let dir = tempdir().unwrap();
+        fs::write(dir.path().join("docker-compose.yml"), "services: {}\n").unwrap();
+        fs::write(
+            dir.path().join("docker-compose.override.yml"),
+            "services: {}\n",
+        )
+        .unwrap();
+        let files = compose_files(dir.path());
+        // Base first (merge order matters: override deep-merges onto base).
+        assert_eq!(
+            files,
+            vec![
+                dir.path().join("docker-compose.yml"),
+                dir.path().join("docker-compose.override.yml"),
+            ]
+        );
+    }
+
+    /// End-to-end on the built Command: the override path must appear as a
+    /// `--file` arg iff the file exists in project_dir.
+    #[test]
+    fn compose_command_passes_override_file_when_present() {
+        let dir = tempdir().unwrap();
+        fs::write(dir.path().join("docker-compose.yml"), "services: {}\n").unwrap();
+
+        let cmd = compose(dir.path(), "proj");
+        let args: Vec<String> = cmd
+            .get_args()
+            .map(|a| a.to_string_lossy().into_owned())
+            .collect();
+        let override_arg = dir
+            .path()
+            .join("docker-compose.override.yml")
+            .to_string_lossy()
+            .into_owned();
+        assert!(
+            !args.contains(&override_arg),
+            "override must not be passed when absent: {args:?}"
+        );
+
+        fs::write(
+            dir.path().join("docker-compose.override.yml"),
+            "services: {}\n",
+        )
+        .unwrap();
+        let cmd = compose(dir.path(), "proj");
+        let args: Vec<String> = cmd
+            .get_args()
+            .map(|a| a.to_string_lossy().into_owned())
+            .collect();
+        assert!(
+            args.contains(&override_arg),
+            "override must be passed when present: {args:?}"
+        );
+    }
 }
