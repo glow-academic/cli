@@ -27,6 +27,12 @@ services:
       - AUTH_CLIENT_SECRET=${AUTH_CLIENT_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - AUTH_TRUST_HOST=${AUTH_TRUST_HOST:-true}
+      # Persistent, instance-wide AES key Next.js 15 uses to encrypt
+      # Server Action closure args. MUST be identical across blue/green
+      # (and all Node workers) or nginx-balanced requests fail arg
+      # decryption with HTTP 500 `Invalid Server Actions request`.
+      # Generated once and persisted in .env (see env::render_client).
+      - NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000"]
       interval: 10s
@@ -56,6 +62,9 @@ services:
       - AUTH_CLIENT_SECRET=${AUTH_CLIENT_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
       - AUTH_TRUST_HOST=${AUTH_TRUST_HOST:-true}
+      # Same key as app-blue — both colors read it from the shared .env,
+      # so they are guaranteed identical. See app-blue for why this matters.
+      - NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000"]
       interval: 10s
