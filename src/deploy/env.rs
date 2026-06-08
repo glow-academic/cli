@@ -9,8 +9,13 @@
 //! Keys we OWN (overwritten on every redeploy):
 //!   - API_VERSION, ORIGIN, CLIENT_ORIGINS, ACTIVE_ENV, ACTIVE_KC_ENV
 //!   - COMPOSE_PROJECT_NAME (derived from instance name)
-//!   - DB_BACKUP, SEED_SETUP
+//!   - DB_BACKUP, SEED_SETUP, FORCE_RESEED
 //!   - GRACE_PERIOD_MINUTES, APP_PREFIX
+//!
+//! FORCE_RESEED is special: it is TRANSIENT — rendered (`=1`) only on a
+//! redeploy invoked with an explicit `--reseed`, and explicitly REMOVED
+//! on every other render. It must never persist, or every future plain
+//! redeploy would force the api to drop+reseed and wipe data.
 //!
 //! Keys we PRESERVE (written once on first deploy):
 //!   - SECRET_KEY, DEPLOYMENT_TOKEN
@@ -42,6 +47,7 @@ const OWNED_KEYS: &[&str] = &[
     "COMPOSE_PROJECT_NAME",
     "DB_BACKUP",
     "SEED_SETUP",
+    "FORCE_RESEED",
     "GRACE_PERIOD_MINUTES",
     "APP_PREFIX",
     "GLOW_NETWORK",
@@ -99,6 +105,14 @@ pub struct EnvInputs {
     pub active_kc_env: String,
     pub project_name: String,
     pub seed_setup: Option<String>,
+    /// TRANSIENT force-reseed flag. True ONLY when this redeploy was
+    /// invoked with an explicit `--reseed` (i.e. `seed_arg.is_some()`),
+    /// NOT derived from the persisted seed_setup state. When true we
+    /// render `FORCE_RESEED=1` so the api's db-init drops+reseeds even
+    /// when the DB already has tables and SEED_SETUP is unchanged; when
+    /// false we REMOVE any stale FORCE_RESEED so a plain redeploy never
+    /// wipes data.
+    pub force_reseed: bool,
     pub db_backup: Option<String>,
     pub grace_period_minutes: u32,
     pub app_prefix: String,
@@ -214,6 +228,14 @@ pub fn render(path: &Path, inputs: &EnvInputs) -> Result<()> {
         upsert(&mut env, "SEED_SETUP", s);
     } else {
         env.remove("SEED_SETUP");
+    }
+    // TRANSIENT: render FORCE_RESEED=1 ONLY when this run was invoked with
+    // an explicit `--reseed`; otherwise REMOVE it so a stale flag from a
+    // prior reseed never causes a future plain redeploy to wipe data.
+    if inputs.force_reseed {
+        upsert(&mut env, "FORCE_RESEED", "1");
+    } else {
+        env.remove("FORCE_RESEED");
     }
     if let Some(b) = &inputs.db_backup {
         upsert(&mut env, "DB_BACKUP", b);
@@ -493,6 +515,102 @@ fn derive_auth_client_secret(secret_key: &str) -> String {
 mod tests {
     use super::*;
     use base64::Engine;
+
+    fn sample_api_inputs() -> EnvInputs {
+        EnvInputs {
+            api_version: "v1.0.93".into(),
+            origin: "https://demo.example.com".into(),
+            client_origins: "https://demo.example.com".into(),
+            active_env: "blue".into(),
+            active_kc_env: "blue".into(),
+            project_name: "glow-test-api".into(),
+            seed_setup: Some("university".into()),
+            force_reseed: false,
+            db_backup: None,
+            grace_period_minutes: 2,
+            app_prefix: String::new(),
+            glow_network: "glow-test-net".into(),
+        }
+    }
+
+    /// A redeploy invoked with `--reseed university` (force_reseed=true,
+    /// seed_setup=Some) must render BOTH `FORCE_RESEED=1` and the matching
+    /// `SEED_SETUP=university`, so the api's db-init drops+reseeds even when
+    /// the DB already has tables and SEED_SETUP is unchanged.
+    #[test]
+    fn reseed_renders_force_reseed_and_seed_setup() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join(".env");
+        // Pre-existing .env (a redeploy, not a first deploy).
+        fs::write(&path, "SECRET_KEY=deadbeef\nSEED_SETUP=university\n").unwrap();
+
+        let mut inputs = sample_api_inputs();
+        inputs.force_reseed = true;
+        inputs.seed_setup = Some("university".into());
+        render(&path, &inputs).unwrap();
+
+        let env = parse(&fs::read_to_string(&path).unwrap());
+        assert_eq!(env.get("FORCE_RESEED").map(String::as_str), Some("1"));
+        assert_eq!(
+            env.get("SEED_SETUP").map(String::as_str),
+            Some("university")
+        );
+        // Preserved secret untouched.
+        assert_eq!(env.get("SECRET_KEY").map(String::as_str), Some("deadbeef"));
+    }
+
+    /// A PLAIN redeploy (force_reseed=false) must render NO `FORCE_RESEED`,
+    /// and must REMOVE any stale `FORCE_RESEED=1` left in the .env by a prior
+    /// `--reseed` run — otherwise every future redeploy would force a
+    /// destructive drop+reseed and wipe data.
+    #[test]
+    fn plain_redeploy_removes_stale_force_reseed() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join(".env");
+        // Simulate a prior `--reseed` having left FORCE_RESEED=1 behind.
+        fs::write(
+            &path,
+            "SECRET_KEY=deadbeef\nSEED_SETUP=university\nFORCE_RESEED=1\n",
+        )
+        .unwrap();
+
+        let mut inputs = sample_api_inputs();
+        inputs.force_reseed = false; // plain redeploy
+        inputs.seed_setup = Some("university".into()); // persisted setup re-rendered
+        render(&path, &inputs).unwrap();
+
+        let env = parse(&fs::read_to_string(&path).unwrap());
+        assert!(
+            !env.contains_key("FORCE_RESEED"),
+            "stale FORCE_RESEED must be removed on a plain redeploy"
+        );
+        // Persisted setup is still rendered (data preserved, no reseed).
+        assert_eq!(
+            env.get("SEED_SETUP").map(String::as_str),
+            Some("university")
+        );
+    }
+
+    /// A first deploy (no existing .env) with no `--reseed` generates secrets
+    /// and renders NO `FORCE_RESEED` — the empty DB is seeded regardless.
+    #[test]
+    fn first_deploy_renders_no_force_reseed() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join(".env");
+
+        let mut inputs = sample_api_inputs();
+        inputs.force_reseed = false;
+        render(&path, &inputs).unwrap();
+
+        let env = parse(&fs::read_to_string(&path).unwrap());
+        assert!(
+            !env.contains_key("FORCE_RESEED"),
+            "first deploy must not render FORCE_RESEED"
+        );
+        // First-deploy secret generation is unaffected.
+        assert!(env.contains_key("SECRET_KEY"));
+        assert!(env.contains_key("DEPLOYMENT_TOKEN"));
+    }
 
     fn sample_client_inputs() -> ClientEnvInputs {
         ClientEnvInputs {
