@@ -7,11 +7,13 @@ Set FontSize 24
 Set Padding 20
 Set TypingSpeed 35ms
 
-# Strip the inherited bypass env (render-tapes.sh exports GLOW_TOKEN) off-camera
-# so the STORED token is genuinely what authenticates the call below — i.e. the
-# real `glow login --token` path, not the env shortcut.
+# Capture the recorder-supplied service token, then strip GLOW_TOKEN from the
+# env off-camera so the STORED token is genuinely what authenticates the call
+# below — i.e. the real `glow login --token` path, not the env shortcut. The
+# token is the pre-issued service credential the recorder injects (never
+# hardcoded here).
 Hide
-Type `unset GLOW_TOKEN`
+Type `SA_TOKEN="$GLOW_TOKEN"; unset GLOW_TOKEN`
 Enter
 Sleep 400ms
 Type "clear"
@@ -23,7 +25,7 @@ Sleep 800ms
 
 # Headless CI flow: a service account authenticates with a pre-issued token —
 # no browser, no OAuth redirect. The runner just stores the JWT.
-Type `glow login --token 90e4f963cb1ffd0853553e97f851fc6c1180690426b9c4c6a3ec332ee14a65c9`
+Type `glow login --token "$SA_TOKEN"`
 Enter
 Sleep 2200ms
 

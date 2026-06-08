@@ -13,7 +13,14 @@ Set TypingSpeed 35ms
 Hide
 Type `set +m`
 Enter
-Type `ATT=019e73be-7c48-7fa8-a771-4139b972d3f9; CE=019e73be-7ce4-76e2-ae90-172d6671b2c8; UP=019e73be-7c45-750f-9fe2-3dbecf549950`
+# Resolve real ids off-camera (the library reseeds, so don't hardcode them):
+# the first searched attempt with a chat, its chat_entry_id, and its learner
+# (user) persona.
+Type `ATT=$(glow attempts search --page-size 5 --json | jq -r '[.data[]|select(.attempt_id)][0].attempt_id')`
+Enter
+Type `CE=$(glow attempts get --body "{\"attempt_id\":\"$ATT\"}" --json | jq -r .chat_entry_id)`
+Enter
+Type `UP=$(glow attempts get --body "{\"attempt_id\":\"$ATT\"}" --json | jq -r .attempt.user_persona_id)`
 Enter
 Type `glow attempts chat message --body "{\"chat_id\":\"$CE\",\"text\":\"Can you explain the whole rubric to me in detail?\",\"persona_id\":\"$UP\"}" >/dev/null 2>&1`
 Enter

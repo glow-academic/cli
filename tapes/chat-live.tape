@@ -15,7 +15,16 @@ Set TypingSpeed 35ms
 Hide
 Type `set +m`
 Enter
-Type `CE=019e73be-7ce4-76e2-ae90-172d6671b2c8; UP=019e73be-7c45-750f-9fe2-3dbecf549950; ASST=019e73be-7ce2-78c6-a2f3-57110e0ed9b7`
+# Resolve real ids off-camera (the library reseeds, so don't hardcode them):
+# the first searched attempt's chat_entry_id (CE) + its learner persona (UP),
+# and an assistant persona (ASST = any chat persona other than the learner).
+Type `ATT=$(glow attempts search --page-size 5 --json | jq -r '[.data[]|select(.attempt_id)][0].attempt_id')`
+Enter
+Type `CE=$(glow attempts get --body "{\"attempt_id\":\"$ATT\"}" --json | jq -r .chat_entry_id)`
+Enter
+Type `UP=$(glow attempts get --body "{\"attempt_id\":\"$ATT\"}" --json | jq -r .attempt.user_persona_id)`
+Enter
+Type `ASST=$(glow attempts chat get --body "{\"chat_id\":\"$CE\"}" --json | jq -r --arg up "$UP" '[.personas[]|select(.persona_id!=$up)][0].persona_id')`
 Enter
 Type `( sleep 9; glow attempts chat message --body "{\"chat_id\":\"$CE\",\"text\":\"Of course — which question's score felt off to you?\",\"persona_id\":\"$ASST\"}" >/dev/null 2>&1; sleep 9; glow attempts chat message --body "{\"chat_id\":\"$CE\",\"text\":\"Let's walk through the Q3 rubric together, step by step.\",\"persona_id\":\"$ASST\"}" >/dev/null 2>&1 ) &`
 Enter

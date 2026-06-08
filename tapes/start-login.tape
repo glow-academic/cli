@@ -18,8 +18,6 @@ Set TypingSpeed 35ms
 
 # --- off-camera: dev binary, instance + secret env, arm the bridge ---
 Hide
-Env PATH "/Users/ashoksaravanan/Coding/glow-academic-cli/target/release:/opt/homebrew/bin:/usr/bin:/bin"
-Env GLOW_INSTANCE_URL "http://localhost:8000"
 Type "source ./scripts/.demo-secrets.sh"
 Enter
 Type "rm -f /tmp/glow-login.log; glow logout >/dev/null 2>&1"
@@ -28,7 +26,7 @@ Type "set +m"
 Enter
 Type `TOKENS="$HOME/Library/Application Support/glow/tokens.json"`
 Enter
-Type `( for i in $(seq 1 150); do U=$(grep -oE "http://localhost:8000/authorize[^ ]*" /tmp/glow-login.log 2>/dev/null | head -1); [ -n "$U" ] && { node scripts/demo-login-bridge.mjs "$U" >/dev/null 2>&1; break; }; sleep 0.1; done ) &`
+Type `( for i in $(seq 1 150); do U=$(grep -oE "${GLOW_INSTANCE_URL}/authorize[^ ]*" /tmp/glow-login.log 2>/dev/null | head -1); [ -n "$U" ] && { node scripts/demo-login-bridge.mjs "$U" >/dev/null 2>&1; break; }; sleep 0.1; done ) &`
 Enter
 Type "clear"
 Enter
@@ -41,7 +39,7 @@ Enter
 Sleep 7s
 
 # The bearer + refresh metadata landed in the local config store, keyed by
-# instance URL. Scoped to localhost, JWTs truncated.
-Type `jq '."http://localhost:8000" | {token_type, expires_in, access_token: (.access_token[:20] + "…"), token_endpoint}' "$TOKENS"`
+# instance URL. Scoped to the recorded instance, JWTs truncated.
+Type `jq --arg u "$GLOW_INSTANCE_URL" '.[$u] | {token_type, expires_in, access_token: (.access_token[:20] + "…"), token_endpoint}' "$TOKENS"`
 Enter
 Sleep 4s

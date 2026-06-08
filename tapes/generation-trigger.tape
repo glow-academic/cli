@@ -13,4 +13,6 @@ Sleep 800ms
 # in ~200ms with a run_id + group_id while the model generates in the background.
 Type `glow personas generate --body '{"instructions":["A calm, experienced ICU charge nurse who mentors students"]}'`
 Enter
-Sleep 4000ms
+# Fire-and-return: the POST returns a run_id + group_id quickly, but give the
+# round-trip headroom on a live DGX-backed instance.
+Sleep 6s
