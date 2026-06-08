@@ -67,6 +67,7 @@ services:
       - SEED_TARGET_PG_URL=postgresql://${DB_USER:-myuser}:${DB_PASSWORD:-mypassword}@database:5432/glowapi
       - SEED_TARGET_REDIS_URL=redis://redis:6379/0
       - SEED_SETUP=${SEED_SETUP:-fresh}
+      - SEED_FORCE=${SEED_FORCE:-}
       - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
       - AUTH_SECRET=${SECRET_KEY:-dev-secret-key-change-in-production}
       # globals.py picks /app/uploads when DOCKER_ENV=1 (otherwise it

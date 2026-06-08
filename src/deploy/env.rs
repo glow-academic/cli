@@ -9,13 +9,17 @@
 //! Keys we OWN (overwritten on every redeploy):
 //!   - API_VERSION, ORIGIN, CLIENT_ORIGINS, ACTIVE_ENV, ACTIVE_KC_ENV
 //!   - COMPOSE_PROJECT_NAME (derived from instance name)
-//!   - DB_BACKUP, SEED_SETUP, FORCE_RESEED
+//!   - DB_BACKUP, SEED_SETUP, SEED_FORCE
 //!   - GRACE_PERIOD_MINUTES, APP_PREFIX
 //!
-//! FORCE_RESEED is special: it is TRANSIENT — rendered (`=1`) only on a
+//! SEED_FORCE is special: it is TRANSIENT — rendered (`=1`) only on a
 //! redeploy invoked with an explicit `--reseed`, and explicitly REMOVED
 //! on every other render. It must never persist, or every future plain
 //! redeploy would force the api to drop+reseed and wipe data.
+//! SEED_FORCE is the env the api db-init (`python -m database.init`)
+//! actually reads — `os.environ.get("SEED_FORCE")` in init.py drives
+//! `_seed_decision` to bypass the same-setup skip and run the safe
+//! staging-swap reseed.
 //!
 //! Keys we PRESERVE (written once on first deploy):
 //!   - SECRET_KEY, DEPLOYMENT_TOKEN
@@ -47,7 +51,7 @@ const OWNED_KEYS: &[&str] = &[
     "COMPOSE_PROJECT_NAME",
     "DB_BACKUP",
     "SEED_SETUP",
-    "FORCE_RESEED",
+    "SEED_FORCE",
     "GRACE_PERIOD_MINUTES",
     "APP_PREFIX",
     "GLOW_NETWORK",
@@ -108,9 +112,9 @@ pub struct EnvInputs {
     /// TRANSIENT force-reseed flag. True ONLY when this redeploy was
     /// invoked with an explicit `--reseed` (i.e. `seed_arg.is_some()`),
     /// NOT derived from the persisted seed_setup state. When true we
-    /// render `FORCE_RESEED=1` so the api's db-init drops+reseeds even
+    /// render `SEED_FORCE=1` so the api's db-init drops+reseeds even
     /// when the DB already has tables and SEED_SETUP is unchanged; when
-    /// false we REMOVE any stale FORCE_RESEED so a plain redeploy never
+    /// false we REMOVE any stale SEED_FORCE so a plain redeploy never
     /// wipes data.
     pub force_reseed: bool,
     pub db_backup: Option<String>,
@@ -229,13 +233,15 @@ pub fn render(path: &Path, inputs: &EnvInputs) -> Result<()> {
     } else {
         env.remove("SEED_SETUP");
     }
-    // TRANSIENT: render FORCE_RESEED=1 ONLY when this run was invoked with
+    // TRANSIENT: render SEED_FORCE=1 ONLY when this run was invoked with
     // an explicit `--reseed`; otherwise REMOVE it so a stale flag from a
     // prior reseed never causes a future plain redeploy to wipe data.
+    // SEED_FORCE is the env init.py actually reads (os.environ.get("SEED_FORCE")
+    // → _seed_decision bypasses the same-setup skip → staging-swap reseed).
     if inputs.force_reseed {
-        upsert(&mut env, "FORCE_RESEED", "1");
+        upsert(&mut env, "SEED_FORCE", "1");
     } else {
-        env.remove("FORCE_RESEED");
+        env.remove("SEED_FORCE");
     }
     if let Some(b) = &inputs.db_backup {
         upsert(&mut env, "DB_BACKUP", b);
@@ -534,11 +540,12 @@ mod tests {
     }
 
     /// A redeploy invoked with `--reseed university` (force_reseed=true,
-    /// seed_setup=Some) must render BOTH `FORCE_RESEED=1` and the matching
+    /// seed_setup=Some) must render BOTH `SEED_FORCE=1` and the matching
     /// `SEED_SETUP=university`, so the api's db-init drops+reseeds even when
-    /// the DB already has tables and SEED_SETUP is unchanged.
+    /// the DB already has tables and SEED_SETUP is unchanged. SEED_FORCE is
+    /// the env init.py actually reads.
     #[test]
-    fn reseed_renders_force_reseed_and_seed_setup() {
+    fn reseed_renders_seed_force_and_seed_setup() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join(".env");
         // Pre-existing .env (a redeploy, not a first deploy).
@@ -550,7 +557,7 @@ mod tests {
         render(&path, &inputs).unwrap();
 
         let env = parse(&fs::read_to_string(&path).unwrap());
-        assert_eq!(env.get("FORCE_RESEED").map(String::as_str), Some("1"));
+        assert_eq!(env.get("SEED_FORCE").map(String::as_str), Some("1"));
         assert_eq!(
             env.get("SEED_SETUP").map(String::as_str),
             Some("university")
@@ -559,18 +566,18 @@ mod tests {
         assert_eq!(env.get("SECRET_KEY").map(String::as_str), Some("deadbeef"));
     }
 
-    /// A PLAIN redeploy (force_reseed=false) must render NO `FORCE_RESEED`,
-    /// and must REMOVE any stale `FORCE_RESEED=1` left in the .env by a prior
+    /// A PLAIN redeploy (force_reseed=false) must render NO `SEED_FORCE`,
+    /// and must REMOVE any stale `SEED_FORCE=1` left in the .env by a prior
     /// `--reseed` run — otherwise every future redeploy would force a
     /// destructive drop+reseed and wipe data.
     #[test]
-    fn plain_redeploy_removes_stale_force_reseed() {
+    fn plain_redeploy_removes_stale_seed_force() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join(".env");
-        // Simulate a prior `--reseed` having left FORCE_RESEED=1 behind.
+        // Simulate a prior `--reseed` having left SEED_FORCE=1 behind.
         fs::write(
             &path,
-            "SECRET_KEY=deadbeef\nSEED_SETUP=university\nFORCE_RESEED=1\n",
+            "SECRET_KEY=deadbeef\nSEED_SETUP=university\nSEED_FORCE=1\n",
         )
         .unwrap();
 
@@ -581,8 +588,8 @@ mod tests {
 
         let env = parse(&fs::read_to_string(&path).unwrap());
         assert!(
-            !env.contains_key("FORCE_RESEED"),
-            "stale FORCE_RESEED must be removed on a plain redeploy"
+            !env.contains_key("SEED_FORCE"),
+            "stale SEED_FORCE must be removed on a plain redeploy"
         );
         // Persisted setup is still rendered (data preserved, no reseed).
         assert_eq!(
@@ -592,9 +599,9 @@ mod tests {
     }
 
     /// A first deploy (no existing .env) with no `--reseed` generates secrets
-    /// and renders NO `FORCE_RESEED` — the empty DB is seeded regardless.
+    /// and renders NO `SEED_FORCE` — the empty DB is seeded regardless.
     #[test]
-    fn first_deploy_renders_no_force_reseed() {
+    fn first_deploy_renders_no_seed_force() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join(".env");
 
@@ -604,8 +611,8 @@ mod tests {
 
         let env = parse(&fs::read_to_string(&path).unwrap());
         assert!(
-            !env.contains_key("FORCE_RESEED"),
-            "first deploy must not render FORCE_RESEED"
+            !env.contains_key("SEED_FORCE"),
+            "first deploy must not render SEED_FORCE"
         );
         // First-deploy secret generation is unaffected.
         assert!(env.contains_key("SECRET_KEY"));
