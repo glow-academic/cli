@@ -24,4 +24,6 @@ Sleep 600ms
 # the model generates the agent config in the background.
 Type `glow agents generate --body "{\"draft_id\":\"$DID\"}"`
 Enter
-Sleep 4000ms
+# Fire-and-return: the POST returns a run_id + group_id quickly, but give the
+# round-trip headroom on a live DGX-backed instance.
+Sleep 6s

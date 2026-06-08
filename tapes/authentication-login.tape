@@ -21,8 +21,6 @@ Set TypingSpeed 35ms
 
 # --- off-camera: dev binary on PATH, instance + secret env, arm the bridge ---
 Hide
-Env PATH "/Users/ashoksaravanan/Coding/glow-academic-cli/target/release:/opt/homebrew/bin:/usr/bin:/bin"
-Env GLOW_INSTANCE_URL "http://localhost:8000"
 Type "source ./scripts/.demo-secrets.sh"
 Enter
 Type "rm -f /tmp/glow-login.log; glow logout >/dev/null 2>&1"
@@ -35,7 +33,7 @@ Enter
 # Watcher: as soon as `glow login` prints its /authorize URL into the log,
 # hand it to the headless Playwright bridge, which fills the Keycloak form
 # and lets the redirect chain land on the CLI's localhost callback.
-Type `( for i in $(seq 1 150); do U=$(grep -oE "http://localhost:8000/authorize[^ ]*" /tmp/glow-login.log 2>/dev/null | head -1); [ -n "$U" ] && { node scripts/demo-login-bridge.mjs "$U" >/dev/null 2>&1; break; }; sleep 0.1; done ) &`
+Type `( for i in $(seq 1 150); do U=$(grep -oE "${GLOW_INSTANCE_URL}/authorize[^ ]*" /tmp/glow-login.log 2>/dev/null | head -1); [ -n "$U" ] && { node scripts/demo-login-bridge.mjs "$U" >/dev/null 2>&1; break; }; sleep 0.1; done ) &`
 Enter
 Type "clear"
 Enter

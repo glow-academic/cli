@@ -15,4 +15,5 @@ Sleep 800ms
 # terminal event — exiting 0 on the green "Run completed." line.
 Type `glow personas generate --wait --body '{"instructions":["A calm, experienced ICU charge nurse who mentors students"]}'`
 Enter
-Sleep 16s
+# Live DGX generation takes ~13-19s; wait past the terminal "Run completed." line.
+Sleep 22s

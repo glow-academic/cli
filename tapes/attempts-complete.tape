@@ -12,8 +12,15 @@ Set TypingSpeed 35ms
 
 Sleep 800ms
 
+# Resolve a real home_id off-camera (the library reseeds, so don't hardcode one).
+Hide
+Type `HOME=$(glow attempts home --json | jq -r '.items[0].home_id')`
+Enter
+Sleep 2000ms
+Show
+
 # Start an attempt and capture its id...
-Type `ATT=$(glow attempts start --body '{"home_id":"019e485b-3526-70e1-bf97-df0d45d308ad"}' --json | jq -r .attempt_id); echo "started: $ATT"`
+Type `ATT=$(glow attempts start --body "{\"home_id\":\"$HOME\"}" --json | jq -r .attempt_id); echo "started: $ATT"`
 Enter
 Sleep 2600ms
 

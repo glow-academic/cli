@@ -7,9 +7,13 @@ Set FontSize 24
 Set Padding 20
 Set TypingSpeed 35ms
 
-# Setup off-camera: start an attempt to get a real chat_id.
+# Setup off-camera: resolve a real home_id (the library reseeds, so don't
+# hardcode one), then start an attempt to get a real chat_id.
 Hide
-Type `CID=$(glow attempts start --body '{"home_id":"019e485b-3526-70e1-bf97-df0d45d308ad"}' --json | jq -r .chat_id)`
+Type `HOME=$(glow attempts home --json | jq -r '.items[0].home_id')`
+Enter
+Sleep 2000ms
+Type `CID=$(glow attempts start --body "{\"home_id\":\"$HOME\"}" --json | jq -r .chat_id)`
 Enter
 Sleep 2500ms
 Type "clear"

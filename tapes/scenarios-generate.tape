@@ -14,4 +14,6 @@ Sleep 800ms
 # continues in the background.
 Type `glow scenarios generate --body '{"prompt":"Three office-hours variants escalating in intensity"}'`
 Enter
-Sleep 4500ms
+# Fire-and-return: the POST returns a run_id quickly, but give the round-trip
+# headroom on a live DGX-backed instance.
+Sleep 6s

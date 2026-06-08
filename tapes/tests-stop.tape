@@ -13,9 +13,6 @@ Set Padding 20
 Set TypingSpeed 35ms
 
 Hide
-Env PATH "/Users/ashoksaravanan/Coding/glow-academic-cli/target/release:/opt/homebrew/bin:/usr/bin:/bin"
-Env GLOW_INSTANCE_URL "http://localhost:8000"
-Env GLOW_TOKEN "90e4f963cb1ffd0853553e97f851fc6c1180690426b9c4c6a3ec332ee14a65c9"
 # Off-camera: start a test + materialize a cell so there's a run to stop.
 Type `EVAL=$(glow tests benchmark --json | jq -r '.evals[0].eval_id')`
 Enter

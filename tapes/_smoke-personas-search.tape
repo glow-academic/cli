@@ -1,8 +1,8 @@
-# Smoke tape — proves the bypass-auth path works end-to-end through
-# VHS, and shows off the human-readable table rendering (src/render.rs).
-# Hits a real ``personas search`` / ``attempts search`` against the local
-# uvicorn on :8000 using GLOW_TOKEN. Mirror of what
-# Playwright's authAs() does on the browser side.
+# Smoke tape — proves the auth path works end-to-end through VHS, and shows
+# off the human-readable table rendering (src/render.rs). Hits a real
+# ``personas search`` / ``attempts search`` against the recorder-supplied
+# instance using the recorder-supplied GLOW_TOKEN (set by `glow record`, not
+# hardcoded here). Mirror of what Playwright's authAs() does on the browser side.
 
 Output demo-output/_smoke-personas-search.mp4
 
@@ -12,11 +12,6 @@ Set Height 900
 Set FontSize 24
 Set Padding 20
 Set TypingSpeed 40ms
-
-# Use the freshly-built dev binary, not the stale 1.0.5 on PATH.
-Env PATH "/Users/ashoksaravanan/Coding/glow-academic-cli/target/release:/opt/homebrew/bin:/usr/bin:/bin"
-Env GLOW_INSTANCE_URL "http://localhost:8000"
-Env GLOW_TOKEN "90e4f963cb1ffd0853553e97f851fc6c1180690426b9c4c6a3ec332ee14a65c9"
 
 # Pretty table — names tinted with each persona's own color, AI/MCP/draft
 # badges in the FLAGS column, a dimmed "N of M" footer.
@@ -29,11 +24,16 @@ Type "glow attempts search --page-size 6"
 Enter
 Sleep 4s
 
-# Detail view: ``get <id>`` renders the selected values as a key-value
-# panel (name tinted by its color, a color swatch, departments, …). The id
-# below is from the fixed local seed ("Aggressive (High)"); swap it if you
-# reseed. ``--json`` from a search row gives you the id to paste here.
-Type "glow personas get f55438bb-2ae6-54f5-b184-2f3d4ec5d945"
+# Detail view: ``get <id>`` renders the selected values as a key-value panel
+# (name tinted by its color, a color swatch, departments, …). Resolve a real
+# persona id off-camera from the search above (the library reseeds, so don't
+# hardcode one) and feed it to `get`.
+Hide
+Type `PID=$(glow personas search --page-size 1 --json | jq -r '.personas[0].id // .personas[0].persona_id')`
+Enter
+Sleep 2000ms
+Show
+Type "glow personas get $PID"
 Enter
 Sleep 4s
 
