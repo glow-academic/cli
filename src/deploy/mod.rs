@@ -207,6 +207,11 @@ pub fn deploy(args: DeployArgs) -> Result<()> {
             cfg.setup.as_deref(),
             &state,
         ),
+        // TRANSIENT force-reseed: set FORCE_RESEED=1 iff an explicit
+        // `--reseed <setup>` was passed THIS invocation. Derived from the
+        // arg (NOT the persisted seed_setup state), so a plain redeploy
+        // renders no FORCE_RESEED and clears any stale one.
+        force_reseed: args.seed_setup.is_some(),
         db_backup: args.db_backup.clone(),
         grace_period_minutes: args.grace_minutes,
         app_prefix: String::new(),
