@@ -65,9 +65,29 @@ server {
         proxy_buffering    off;
     }
 
-    # Keycloak (proxied under APP_PREFIX)
+    # Keycloak (proxied under APP_PREFIX), KC_HTTP_RELATIVE_PATH=${APP_PREFIX}/auth.
+    #
+    # IMPORTANT: only Keycloak's OWN sub-paths are proxied to Keycloak. A blanket
+    # `^~ ${APP_PREFIX}/auth/` would also swallow the API's auth-RESOURCE CRUD
+    # (/auth/search, /auth/create, /auth/{uuid}, /auth/draft, /auth/bulk, …) and
+    # 404 them at Keycloak. Those API routes are NOT listed here on purpose: they
+    # fall through to the catch-all `^~ ${APP_PREFIX}/` → $server_backend above,
+    # exactly like /department/* and /profile/* do.
+    #
+    # nginx picks the LONGEST matching prefix, so these `^~ /auth/<kc>/` blocks
+    # beat the general `^~ ${APP_PREFIX}/` for Keycloak traffic, while everything
+    # else under /auth/ reaches the API. The exact-match `= /auth/client-config`
+    # below stays on the API (exact match outranks every prefix).
+    #
+    # KC sub-paths (OIDC LOGIN DEPENDS ON THESE — do not remove):
+    #   realms/    → .well-known/openid-configuration, authorize, token, certs,
+    #                logout, login-actions, broker  (the entire OIDC flow + login page)
+    #   resources/ → login-theme CSS/img referenced by the rendered login page
+    #   js/        → keycloak.js adapter
+    #   admin/     → Keycloak Admin REST (server-to-server identity sync)
+    #
     # rewrite strips APP_PREFIX so Keycloak sees /auth/… (variable proxy_pass skips auto-strip)
-    location ^~ ${APP_PREFIX}/auth/ {
+    location ^~ ${APP_PREFIX}/auth/realms/ {
         rewrite ^${APP_PREFIX}(/auth/.*)$ $1 break;
         proxy_pass         http://$keycloak_backend;
         proxy_http_version 1.1;
@@ -76,6 +96,42 @@ server {
         proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
         # Force HTTPS for Keycloak - ensures Keycloak detects HTTPS correctly for OAuth redirects
         # Since public URL is HTTPS, always set this to https
+        proxy_set_header   X-Forwarded-Proto https;
+        proxy_set_header   X-Forwarded-Host  $host;
+        proxy_redirect     off;
+    }
+
+    location ^~ ${APP_PREFIX}/auth/resources/ {
+        rewrite ^${APP_PREFIX}(/auth/.*)$ $1 break;
+        proxy_pass         http://$keycloak_backend;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $http_host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto https;
+        proxy_set_header   X-Forwarded-Host  $host;
+        proxy_redirect     off;
+    }
+
+    location ^~ ${APP_PREFIX}/auth/js/ {
+        rewrite ^${APP_PREFIX}(/auth/.*)$ $1 break;
+        proxy_pass         http://$keycloak_backend;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $http_host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto https;
+        proxy_set_header   X-Forwarded-Host  $host;
+        proxy_redirect     off;
+    }
+
+    location ^~ ${APP_PREFIX}/auth/admin/ {
+        rewrite ^${APP_PREFIX}(/auth/.*)$ $1 break;
+        proxy_pass         http://$keycloak_backend;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $http_host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
         proxy_set_header   X-Forwarded-Proto https;
         proxy_set_header   X-Forwarded-Host  $host;
         proxy_redirect     off;
