@@ -132,10 +132,27 @@ pub fn client(args: ClientArgs, cfg: &crate::config::Config) -> Result<()> {
         anyhow!("`node` not found in PATH — Playwright runs on Node. Install Node 20+ first.")
     })?;
 
+    // Per-invocation isolation. Every TRANSIENT artifact of a run — the
+    // copied specs + playwright.config.ts, the auth/storage-state file
+    // (`e2e/.auth/superadmin.json`), Playwright's `test-results`
+    // (`.playwright-artifacts-*`), and the temp page video + its `saveAs`
+    // target (`demo-output/<workflow>.webm`) — is keyed off `process.cwd()`.
+    // Running every stream from the shared recorder home made concurrent
+    // `glow record` invocations collide: double-written storage-state read
+    // back corrupted, and one stream's cleanup clobbered another's artifacts
+    // (→ `video.saveAs: ENOENT`, no video). So each run gets its own working
+    // dir under the home; only the heavy `node_modules` (resolved via Node's
+    // parent-dir module lookup) and the final polished library stay shared.
+    let run_dir = recorder_run_dir(&home, &args.workflow, &base_url);
+    let _ = std::fs::remove_dir_all(&run_dir);
+    std::fs::create_dir_all(&run_dir).context("create per-run recorder workdir")?;
+
     // Mirror the client's ESM module setup so its (ES module)
     // playwright.config.ts loads in the runner — the heavy deps are
-    // provisioned once; these small config files are ours to write.
-    ensure_recorder_scaffold(&home)?;
+    // provisioned once; these small config files are ours to write. Written
+    // into the run dir so the `"type": "module"` package.json sits at the
+    // Playwright cwd (its node_modules still resolves up to `home`).
+    ensure_recorder_scaffold(&run_dir)?;
 
     // Auth: record drives the UI as the CLI's logged-in identity. The
     // browser session is adopted from this token (the client's
@@ -158,24 +175,23 @@ pub fn client(args: ClientArgs, cfg: &crate::config::Config) -> Result<()> {
             .access_token,
     };
 
-    // Source the versioned specs into the runner. Replace any prior copy
-    // so stale specs can't linger. In local mode they come from the given
+    // Source the versioned specs into the run dir (fresh per invocation, so
+    // no stale specs can linger). In local mode they come from the given
     // checkout; otherwise they're `docker cp`d out of the running image.
-    let _ = std::fs::remove_dir_all(home.join("e2e"));
     if let Some(specs) = &local_specs {
-        copy_local_specs(specs, &home)?;
+        copy_local_specs(specs, &run_dir)?;
     } else {
         let container = container.as_deref().expect("container set in docker mode");
-        docker_cp(container, "/app/e2e", &home.join("e2e"))?;
+        docker_cp(container, "/app/e2e", &run_dir.join("e2e"))?;
         docker_cp(
             container,
             "/app/playwright.config.ts",
-            &home.join("playwright.config.ts"),
+            &run_dir.join("playwright.config.ts"),
         )?;
     }
 
     let rel = format!("e2e/demos/{}.spec.ts", args.workflow);
-    if !home.join(&rel).exists() {
+    if !run_dir.join(&rel).exists() {
         let src = match (&local_specs, &container) {
             (Some(specs), _) => format!("--specs-dir `{}`", specs.display()),
             (_, Some(c)) => format!("the deployed client image (container {c})"),
@@ -192,7 +208,7 @@ pub fn client(args: ClientArgs, cfg: &crate::config::Config) -> Result<()> {
     );
 
     let status = Command::new(&pw)
-        .current_dir(&home)
+        .current_dir(&run_dir)
         .arg("test")
         .arg(&rel)
         .env("PLAYWRIGHT_BASE_URL", &base_url)
@@ -213,20 +229,28 @@ pub fn client(args: ClientArgs, cfg: &crate::config::Config) -> Result<()> {
         .stderr(Stdio::inherit())
         .status()
         .context("spawn playwright")?;
-    if !status.success() {
-        bail!("playwright exited {}", status.code().unwrap_or(-1));
-    }
 
-    let raw_video = home.join(format!("demo-output/{}.webm", args.workflow));
-    if !raw_video.exists() {
-        bail!(
-            "recording finished but no video at {}\n  does the spec call saveDemoVideo(page, \"{}\")?",
-            raw_video.display(),
-            args.workflow
-        );
-    }
-
-    finish(&raw_video, args.raw, args.out.as_deref())
+    // Finalize within a closure so the per-run workdir is always cleaned up
+    // afterwards — even on failure — and never a shared dir. The final
+    // polished artifact lands in the shared `home/demo-output` library
+    // (unchanged location), so only the transient run dir is removed.
+    let lib_dir = home.join("demo-output");
+    let result = (|| -> Result<()> {
+        if !status.success() {
+            bail!("playwright exited {}", status.code().unwrap_or(-1));
+        }
+        let raw_video = run_dir.join(format!("demo-output/{}.webm", args.workflow));
+        if !raw_video.exists() {
+            bail!(
+                "recording finished but no video at {}\n  does the spec call saveDemoVideo(page, \"{}\")?",
+                raw_video.display(),
+                args.workflow
+            );
+        }
+        finish(&raw_video, args.raw, args.out.as_deref(), &lib_dir)
+    })();
+    let _ = std::fs::remove_dir_all(&run_dir);
+    result
 }
 
 // ── CLI surface ─────────────────────────────────────────────────────
@@ -321,7 +345,15 @@ pub fn cli_surface(args: CliArgs, cfg: &crate::config::Config) -> Result<()> {
         );
     }
 
-    finish(&raw_video, args.raw, args.out.as_deref())
+    // The cli surface already renders into its own workdir; its durable
+    // library is that workdir's `demo-output/`, so the polished artifact
+    // stays put (no move) when `--out` is absent — unchanged behavior.
+    finish(
+        &raw_video,
+        args.raw,
+        args.out.as_deref(),
+        &work.join("demo-output"),
+    )
 }
 
 /// Materialize the embedded `tapes/fixtures/` assets into the cli render
@@ -520,6 +552,38 @@ fn recorder_home() -> Result<PathBuf> {
     Ok(home.join(".glow").join("recorder").join("client"))
 }
 
+/// A unique per-invocation working dir (under the recorder `home`) for all of
+/// one client run's TRANSIENT, mutable artifacts: the copied specs +
+/// `playwright.config.ts`, the per-run auth/storage-state file
+/// (`e2e/.auth/superadmin.json`), Playwright's `test-results`
+/// (`.playwright-artifacts-*`), and the temp page video + its `saveAs` target
+/// (`demo-output/<workflow>.webm`). All of these are resolved relative to the
+/// Playwright cwd, so giving each run its own cwd is what lets multiple
+/// `glow record` streams record concurrently without colliding on the shared
+/// home (corrupted storage-state double-writes; one stream's cleanup
+/// clobbering another's artifacts → `video.saveAs: ENOENT`).
+///
+/// Uniqueness is derived from the demo name + this process's pid + the
+/// base-url port — values that differ across concurrent streams — rather than
+/// `Math.random`/timestamps, which can be restricted in some contexts. The pid
+/// alone already disambiguates concurrent invocations (each is its own
+/// process); the name + port just make the dir self-describing.
+///
+/// The heavy shared `node_modules` stays in `home`: the run dir nests under
+/// `home/runs/<id>`, so Playwright's config imports resolve `node_modules` via
+/// Node's normal parent-dir module lookup. The final polished video still
+/// lands in the shared `home/demo-output` library — only this dir is transient.
+fn recorder_run_dir(home: &Path, workflow: &str, base_url: &str) -> PathBuf {
+    let port = base_url
+        .trim_end_matches('/')
+        .rsplit(':')
+        .next()
+        .and_then(|p| p.parse::<u32>().ok())
+        .unwrap_or(0);
+    let id = format!("{workflow}-{}-{port}", std::process::id());
+    home.join("runs").join(id)
+}
+
 /// Ensure the recorder dir mirrors the client's ESM module setup so its
 /// `playwright.config.ts` (an ES module importing CommonJS `@next/env`) loads.
 /// The client is `"type": "module"`; without that here, Playwright treats the
@@ -547,27 +611,35 @@ fn ensure_recorder_scaffold(home: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Polish (unless `raw`), report where the artifact landed, and move it
-/// to `out` when requested.
-fn finish(raw_video: &Path, raw: bool, out: Option<&str>) -> Result<()> {
+/// Polish (unless `raw`), report where the artifact landed, and move it to its
+/// home. With `--out` the caller picks the path; otherwise the artifact lands
+/// in `lib_dir` — the durable output library (the recorder home's
+/// `demo-output/` for the client surface, the render workdir's for cli). The
+/// raw recording is produced in a transient per-run dir, so the default branch
+/// moves the polished result OUT of it into the shared library before that dir
+/// is cleaned up.
+fn finish(raw_video: &Path, raw: bool, out: Option<&str>, lib_dir: &Path) -> Result<()> {
     let produced = if raw {
         raw_video.to_path_buf()
     } else {
         polish(raw_video)?
     };
     let dest = match out {
-        Some(o) => {
-            let dest = PathBuf::from(o);
-            if let Some(parent) = dest.parent() {
-                std::fs::create_dir_all(parent).ok();
-            }
-            std::fs::rename(&produced, &dest)
-                .or_else(|_| std::fs::copy(&produced, &dest).map(|_| ()))
-                .with_context(|| format!("move artifact to {}", dest.display()))?;
-            dest
-        }
-        None => produced,
+        Some(o) => PathBuf::from(o),
+        None => lib_dir.join(
+            produced
+                .file_name()
+                .expect("polished artifact has a file name"),
+        ),
     };
+    if dest != produced {
+        if let Some(parent) = dest.parent() {
+            std::fs::create_dir_all(parent).ok();
+        }
+        std::fs::rename(&produced, &dest)
+            .or_else(|_| std::fs::copy(&produced, &dest).map(|_| ()))
+            .with_context(|| format!("move artifact to {}", dest.display()))?;
+    }
     println!(
         "{} saved {}",
         "✓".green(),
@@ -714,6 +786,42 @@ mod tests {
         );
 
         let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    /// Per-invocation isolation: two concurrent `glow record client` runs get
+    /// DISJOINT working dirs, so they can't collide on the shared recorder
+    /// home's auth file / artifacts / video temp. Uniqueness comes from demo
+    /// name + pid + base-url port; the run dir nests under `home/runs/` so the
+    /// shared `node_modules` (and the polished `demo-output` library) stay put.
+    #[test]
+    fn recorder_run_dir_is_disjoint_per_invocation() {
+        let home = PathBuf::from("/tmp/glow-recorder-home");
+
+        // Different demos (e.g. two parallel streams) → different dirs, both
+        // nested under the shared home so node_modules resolves up to it.
+        let a = recorder_run_dir(&home, "simulations-overview", "http://127.0.0.1:18080");
+        let b = recorder_run_dir(&home, "invocation-fanout", "http://127.0.0.1:18080");
+        assert_ne!(a, b);
+        assert!(a.starts_with(home.join("runs")));
+        assert!(b.starts_with(home.join("runs")));
+
+        // Same demo against different ports (concurrent instances) → disjoint.
+        let p1 = recorder_run_dir(&home, "simulations-overview", "http://127.0.0.1:18080");
+        let p2 = recorder_run_dir(&home, "simulations-overview", "http://127.0.0.1:18081");
+        assert_ne!(p1, p2);
+
+        // The pid is baked in, so the dir carries this process's id and the
+        // port is parsed off the base url (trailing slash tolerated).
+        let pid = std::process::id();
+        assert_eq!(
+            recorder_run_dir(&home, "foo", "https://glow.example.com:443/"),
+            home.join("runs").join(format!("foo-{pid}-443")),
+        );
+        // A portless public origin still yields a stable, pid-unique dir.
+        assert_eq!(
+            recorder_run_dir(&home, "foo", "https://glow.example.com"),
+            home.join("runs").join(format!("foo-{pid}-0")),
+        );
     }
 
     /// The cli render path materializes the embedded `tapes/fixtures/` into
