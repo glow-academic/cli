@@ -29,24 +29,50 @@ fn flag_to_field(flag: &str) -> String {
 
 // ── attempts ────────────────────────────────────────────────────
 
-/// `glow attempts start <simulation_id> [--persona <id>] [--cohort <id>]`
-/// → POST /attempt/start with body { simulation_id, persona_id?, cohort_id? }
+/// `glow attempts start (--home <id> | --practice <id>) [--infinite-mode]`
+/// → POST /attempt/start with body { home_id | practice_id, infinite_mode }
+///
+/// An attempt is always created from a *home* entry (an assigned simulation)
+/// or a *practice* entry (a practice-available simulation) — the API's
+/// ``AttemptStartRequest`` accepts ONLY ``home_id`` / ``practice_id`` (plus
+/// ``infinite_mode``) and resolves the simulation, persona and chats from that
+/// parent entry itself. The previous shape (``simulation_id`` / ``persona_id``
+/// / ``cohort_id``) was wrong: every field was silently dropped by the
+/// ``extra="ignore"`` model, leaving both required ids None → 400 "Either
+/// home_id or practice_id is required." The home/practice ids are obtained via
+/// ``glow homes search`` / ``glow practices search`` (same as the client). One
+/// of ``--home`` / ``--practice`` is required.
 pub fn cmd_attempt_start(
     client: &GlowClient,
-    simulation_id: &str,
-    persona_id: Option<&str>,
-    cohort_id: Option<&str>,
+    home_id: Option<&str>,
+    practice_id: Option<&str>,
+    infinite_mode: bool,
     mode: OutputMode,
 ) -> Result<()> {
-    let mut body = json!({ "simulation_id": simulation_id });
-    if let Some(p) = persona_id {
-        body["persona_id"] = json!(p);
-    }
-    if let Some(c) = cohort_id {
-        body["cohort_id"] = json!(c);
-    }
+    let body = build_attempt_start_body(home_id, practice_id, infinite_mode)?;
     let body_str = serde_json::to_string(&body)?;
     cmd_resource_action(client, "attempt", "start", Some(&body_str), mode)
+}
+
+/// Build the `/attempt/start` body, enforcing exactly one of home/practice.
+/// ``infinite_mode`` is only honoured server-side for practice attempts but is
+/// harmless on home starts, so we always include it (mirrors the web client).
+fn build_attempt_start_body(
+    home_id: Option<&str>,
+    practice_id: Option<&str>,
+    infinite_mode: bool,
+) -> Result<serde_json::Value> {
+    match (home_id, practice_id) {
+        (Some(_), Some(_)) => anyhow::bail!(
+            "Pass only one of --home / --practice — an attempt starts from a single home or practice entry."
+        ),
+        (None, None) => anyhow::bail!(
+            "`glow attempts start` requires --home <home_id> or --practice <practice_id>. \
+             Find ids via `glow homes search` / `glow practices search`."
+        ),
+        (Some(h), None) => Ok(json!({ "home_id": h, "infinite_mode": infinite_mode })),
+        (None, Some(p)) => Ok(json!({ "practice_id": p, "infinite_mode": infinite_mode })),
+    }
 }
 
 /// `glow attempts message <chat_id> <text> [--audio <file>] [--persona <id>]`
@@ -104,49 +130,63 @@ pub fn cmd_attempt_message(
     cmd_resource_action(client, "attempt", "chat_message", Some(&body_str), mode)
 }
 
-/// `glow attempts grade <chat_id> [--score N]`
-/// → POST /attempt/chat_grade with { chat_id, score? }
+/// `glow attempts grade <chat_id> --score <N>`
+/// → POST /attempt/chat_grade with { chat_id, score }
+///
+/// ``GradeAttemptApiRequest.score`` is REQUIRED (``int = Field(...)``); sending
+/// the body without it yields an opaque 422. ``--score`` is therefore required
+/// at the CLI layer (enforced in the dispatcher) so the user gets a clear
+/// message instead of a server validation error.
 pub fn cmd_attempt_grade(
     client: &GlowClient,
     chat_id: &str,
-    score: Option<u32>,
+    score: u32,
     mode: OutputMode,
 ) -> Result<()> {
-    let mut body = json!({ "chat_id": chat_id });
-    if let Some(s) = score {
-        body["score"] = json!(s);
-    }
+    let body = json!({ "chat_id": chat_id, "score": score });
     let body_str = serde_json::to_string(&body)?;
     cmd_resource_action(client, "attempt", "chat_grade", Some(&body_str), mode)
 }
 
 // ── scenarios ───────────────────────────────────────────────────
 
-/// `glow scenarios generate <modality> <title> [--instructions <text>]`
-/// → POST /scenario/generate with { modality, title, instructions? }
+/// `glow scenarios generate <modality> [--instructions <text>]`
+/// → POST /scenario/generate with { modalities: [modality], instructions?: [text] }
 ///
-/// Matches the Scenario_Generate tool's args contract — modality is one
-/// of image/video; title becomes the asset's display name; instructions
-/// drives the generation prompt + becomes the asset description.
+/// Matches ``ArtifactGenerateRequest``: ``modalities`` is a LIST of output
+/// modalities (e.g. ["image"], ["video"], ["text"]) and ``instructions`` is a
+/// LIST of free-text prompt lines. There is NO ``title`` field — the asset name
+/// is derived server-side — so the old singular ``modality``/``title`` shape was
+/// broken (``modality`` was dropped as a server-internal alias, ``title`` was
+/// ignored, and a string ``instructions`` failed list validation).
 pub fn cmd_scenario_generate(
     client: &GlowClient,
     modality: &str,
-    title: &str,
     instructions: Option<&str>,
     mode: OutputMode,
 ) -> Result<()> {
-    let mut body = json!({ "modality": modality, "title": title });
-    if let Some(i) = instructions {
-        body["instructions"] = json!(i);
-    }
+    let body = build_scenario_generate_body(modality, instructions);
     let body_str = serde_json::to_string(&body)?;
     cmd_resource_action(client, "scenario", "generate", Some(&body_str), mode)
+}
+
+/// Build the `/scenario/generate` body with list-typed `modalities`/`instructions`.
+fn build_scenario_generate_body(modality: &str, instructions: Option<&str>) -> serde_json::Value {
+    let mut body = json!({ "modalities": [modality] });
+    if let Some(i) = instructions {
+        body["instructions"] = json!([i]);
+    }
+    body
 }
 
 // ── personas ────────────────────────────────────────────────────
 
 /// `glow personas search [--name <pattern>] [--page-size N] [--page-offset N]`
-/// → POST /persona/search with { name?, page_size?, page_offset? }
+/// → POST /persona/search with { search?, page_size?, page_offset? }
+///
+/// ``SearchPersonaApiRequest`` names the full-text field ``search`` (there is no
+/// ``name`` field), so the CLI's user-facing ``--name`` flag maps to the
+/// ``search`` body key. Sending ``name`` was silently dropped by ``extra="ignore"``.
 pub fn cmd_personas_search(
     client: &GlowClient,
     name: Option<&str>,
@@ -154,9 +194,20 @@ pub fn cmd_personas_search(
     page_offset: Option<u32>,
     mode: OutputMode,
 ) -> Result<()> {
+    let body = build_personas_search_body(name, page_size, page_offset);
+    let body_str = serde_json::to_string(&body)?;
+    cmd_resource_action(client, "persona", "search", Some(&body_str), mode)
+}
+
+/// Build the `/persona/search` body, mapping the `--name` flag to `search`.
+fn build_personas_search_body(
+    name: Option<&str>,
+    page_size: Option<u32>,
+    page_offset: Option<u32>,
+) -> serde_json::Value {
     let mut body = json!({});
     if let Some(n) = name {
-        body["name"] = json!(n);
+        body["search"] = json!(n);
     }
     if let Some(sz) = page_size {
         body["page_size"] = json!(sz);
@@ -164,8 +215,7 @@ pub fn cmd_personas_search(
     if let Some(off) = page_offset {
         body["page_offset"] = json!(off);
     }
-    let body_str = serde_json::to_string(&body)?;
-    cmd_resource_action(client, "persona", "search", Some(&body_str), mode)
+    body
 }
 
 // ── generic get (positional id) ─────────────────────────────────
@@ -192,22 +242,32 @@ pub fn cmd_resource_get(
 // ── simulations ─────────────────────────────────────────────────
 
 /// `glow simulations list [--cohort <id>] [--page-size N]` — sugar for search.
-/// → POST /simulation/search with { cohort_ids?, page_size? }
+/// → POST /simulation/search with { filter_cohort_ids?, page_size? }
+///
+/// ``SearchSimulationApiRequest`` names the cohort filter ``filter_cohort_ids``
+/// (a list); the CLI previously sent ``cohort_ids``, which ``extra="ignore"``
+/// silently dropped → the ``--cohort`` filter was a no-op.
 pub fn cmd_simulations_list(
     client: &GlowClient,
     cohort: Option<&str>,
     page_size: Option<u32>,
     mode: OutputMode,
 ) -> Result<()> {
+    let body = build_simulations_list_body(cohort, page_size);
+    let body_str = serde_json::to_string(&body)?;
+    cmd_resource_action(client, "simulation", "search", Some(&body_str), mode)
+}
+
+/// Build the `/simulation/search` body, mapping `--cohort` to `filter_cohort_ids`.
+fn build_simulations_list_body(cohort: Option<&str>, page_size: Option<u32>) -> serde_json::Value {
     let mut body = json!({});
     if let Some(c) = cohort {
-        body["cohort_ids"] = json!([c]);
+        body["filter_cohort_ids"] = json!([c]);
     }
     if let Some(sz) = page_size {
         body["page_size"] = json!(sz);
     }
-    let body_str = serde_json::to_string(&body)?;
-    cmd_resource_action(client, "simulation", "search", Some(&body_str), mode)
+    body
 }
 
 // ── profiles emulate / unemulate ────────────────────────────────
@@ -523,4 +583,81 @@ pub fn cmd_mcp_call(
         }
     }
     Ok(())
+}
+
+// ── request-serialization contract tests ────────────────────────
+//
+// These assert the EXACT field names the helpers serialize, pinning them
+// to the API's Pydantic request models. The API uses ``extra="ignore"``,
+// so a drifted field name is silently dropped (no error) — only a test
+// that inspects the wire body can catch it. Field references:
+//   attempt/start    → AttemptStartRequest (home_id | practice_id, infinite_mode)
+//   persona/search   → SearchPersonaApiRequest.search
+//   simulation/search→ SearchSimulationApiRequest.filter_cohort_ids
+//   scenario/generate→ ArtifactGenerateRequest.modalities/.instructions (lists)
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn attempt_start_home_body_uses_home_id() {
+        let body = build_attempt_start_body(Some("h-1"), None, false).unwrap();
+        assert_eq!(body["home_id"], json!("h-1"));
+        assert_eq!(body["infinite_mode"], json!(false));
+        assert!(body.get("practice_id").is_none());
+        // The old drifted keys must not appear.
+        assert!(body.get("simulation_id").is_none());
+        assert!(body.get("persona_id").is_none());
+        assert!(body.get("cohort_id").is_none());
+    }
+
+    #[test]
+    fn attempt_start_practice_body_uses_practice_id_and_infinite() {
+        let body = build_attempt_start_body(None, Some("p-1"), true).unwrap();
+        assert_eq!(body["practice_id"], json!("p-1"));
+        assert_eq!(body["infinite_mode"], json!(true));
+        assert!(body.get("home_id").is_none());
+    }
+
+    #[test]
+    fn attempt_start_requires_exactly_one_parent() {
+        assert!(build_attempt_start_body(None, None, false).is_err());
+        assert!(build_attempt_start_body(Some("h"), Some("p"), false).is_err());
+    }
+
+    #[test]
+    fn personas_search_maps_name_to_search() {
+        let body = build_personas_search_body(Some("ada"), Some(5), Some(10));
+        assert_eq!(body["search"], json!("ada"));
+        assert_eq!(body["page_size"], json!(5));
+        assert_eq!(body["page_offset"], json!(10));
+        // Drifted ``name`` key must not be present.
+        assert!(body.get("name").is_none());
+    }
+
+    #[test]
+    fn simulations_list_maps_cohort_to_filter_cohort_ids() {
+        let body = build_simulations_list_body(Some("c-1"), Some(3));
+        assert_eq!(body["filter_cohort_ids"], json!(["c-1"]));
+        assert_eq!(body["page_size"], json!(3));
+        // Drifted ``cohort_ids`` key must not be present.
+        assert!(body.get("cohort_ids").is_none());
+    }
+
+    #[test]
+    fn scenario_generate_uses_list_modalities_and_instructions() {
+        let body = build_scenario_generate_body("image", Some("a cat"));
+        assert_eq!(body["modalities"], json!(["image"]));
+        assert_eq!(body["instructions"], json!(["a cat"]));
+        // No singular ``modality`` and no ``title`` field on the model.
+        assert!(body.get("modality").is_none());
+        assert!(body.get("title").is_none());
+    }
+
+    #[test]
+    fn scenario_generate_omits_instructions_when_absent() {
+        let body = build_scenario_generate_body("video", None);
+        assert_eq!(body["modalities"], json!(["video"]));
+        assert!(body.get("instructions").is_none());
+    }
 }

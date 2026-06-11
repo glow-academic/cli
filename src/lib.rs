@@ -1033,16 +1033,22 @@ fn dispatch_resource_helper(
     use resource::Resource::*;
 
     match (resource, action) {
-        // glow attempts start <simulation_id> [--persona <id>] [--cohort <id>]
-        (Attempts, "start") if !rest.is_empty() && !rest[0].starts_with("--") => {
-            let sim_id = &rest[0];
-            let persona = parse_flag(&rest[1..], "--persona")?;
-            let cohort = parse_flag(&rest[1..], "--cohort")?;
+        // glow attempts start (--home <id> | --practice <id>) [--infinite-mode]
+        // — attempts are created from a home or practice entry; the API's
+        //   AttemptStartRequest accepts only home_id/practice_id (+ infinite_mode).
+        (Attempts, "start") => {
+            // Hand-written body wins — fall through to generic dispatch.
+            if parse_flag(rest, "--body")?.is_some() {
+                return Ok(None);
+            }
+            let home = parse_flag(rest, "--home")?;
+            let practice = parse_flag(rest, "--practice")?;
+            let infinite_mode = rest.iter().any(|a| a == "--infinite-mode");
             helpers::cmd_attempt_start(
                 client,
-                sim_id,
-                persona.as_deref(),
-                cohort.as_deref(),
+                home.as_deref(),
+                practice.as_deref(),
+                infinite_mode,
                 mode,
             )?;
             Ok(Some(()))
@@ -1075,21 +1081,27 @@ fn dispatch_resource_helper(
             if !rest.is_empty() && !rest[0].starts_with("--") =>
         {
             let chat_id = &rest[0];
+            // ``score`` is required by GradeAttemptApiRequest — enforce it here
+            // so a missing flag gives a clear message instead of a server 422.
             let score = parse_flag(&rest[1..], "--score")?
-                .map(|s| s.parse::<u32>())
-                .transpose()
+                .ok_or_else(|| anyhow::anyhow!("`glow attempts grade` requires --score <N>."))?
+                .parse::<u32>()
                 .context("--score must be an integer")?;
             helpers::cmd_attempt_grade(client, chat_id, score, mode)?;
             Ok(Some(()))
         }
-        // glow scenarios generate <modality> <title> [--instructions <text>]
+        // glow scenarios generate <modality> [--instructions <text>]
+        // — modalities/instructions are list-typed on ArtifactGenerateRequest;
+        //   there is no title field. ``--wait`` is handled by the generic
+        //   generate intercept below, so defer when present.
         (Scenarios, "generate")
-            if rest.len() >= 2 && !rest[0].starts_with("--") && !rest[1].starts_with("--") =>
+            if !rest.is_empty()
+                && !rest[0].starts_with("--")
+                && !rest.iter().any(|a| a == "--wait" || a == "--body") =>
         {
             let modality = &rest[0];
-            let title = &rest[1];
-            let instructions = parse_flag(&rest[2..], "--instructions")?;
-            helpers::cmd_scenario_generate(client, modality, title, instructions.as_deref(), mode)?;
+            let instructions = parse_flag(&rest[1..], "--instructions")?;
+            helpers::cmd_scenario_generate(client, modality, instructions.as_deref(), mode)?;
             Ok(Some(()))
         }
         // glow personas search [--name <pat>] [--page-size N] [--page-offset N]
