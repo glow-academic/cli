@@ -77,8 +77,12 @@ fn probe_readiness_status(project_dir: &Path, project_name: &str, service: &str)
          except u.HTTPError as e:\n    print(e.code)\n\
          except Exception:\n    print(0)\n"
     );
-    let (_ok, stdout, _stderr) =
-        runtime::exec_status(project_dir, project_name, service, &["python3", "-c", &script])?;
+    let (_ok, stdout, _stderr) = runtime::exec_status(
+        project_dir,
+        project_name,
+        service,
+        &["python3", "-c", &script],
+    )?;
     // The probe prints exactly one integer line; tolerate trailing noise.
     let code = stdout
         .lines()
@@ -130,7 +134,10 @@ pub fn wait_ready(
 
         match verdict {
             Readiness::Ready => {
-                println!("    ✓ {label} READY — serves authed requests ({}s)", elapsed.as_secs());
+                println!(
+                    "    ✓ {label} READY — serves authed requests ({}s)",
+                    elapsed.as_secs()
+                );
                 return Ok(());
             }
             Readiness::NotReady | Readiness::Unreachable => {}
@@ -271,7 +278,10 @@ pub fn monitor_after_switch(
     } else {
         "healthy"
     };
-    println!("    ✓ {label} stayed {what} through {}s grace window", grace.as_secs());
+    println!(
+        "    ✓ {label} stayed {what} through {}s grace window",
+        grace.as_secs()
+    );
     Ok(())
 }
 
