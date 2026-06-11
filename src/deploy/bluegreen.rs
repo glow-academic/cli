@@ -78,6 +78,24 @@ pub fn bring_up_api_target(project_dir: &Path, project_name: &str, target_env: &
     println!("  · waiting for {server} to become healthy (up to 4min)");
     healthcheck::wait_healthy(project_name, &server, &server, Duration::from_secs(240))?;
 
+    // READINESS GATE (DEP1): the docker healthcheck above is liveness-only
+    // — it hits `GET /`, which returns a static `{"status":"ok"}` even if
+    // the app can't actually serve real traffic (DB/Redis/Keycloak
+    // misconfigured, runtime error on real routes). Before we let this
+    // color become swap-eligible, require it to serve a real authed request
+    // (a clean 401 from `/system/health`). A color that's "up but broken"
+    // never passes this, so the swap is never committed to it and the old
+    // color keeps serving. Generous timeout: never fail a slow-but-healthy
+    // boot, only a genuinely-broken color.
+    println!("  · readiness gate: {server} must serve an authed request (up to 4min)");
+    healthcheck::wait_ready(
+        project_dir,
+        project_name,
+        &server,
+        &server,
+        Duration::from_secs(240),
+    )?;
+
     Ok(())
 }
 
@@ -155,8 +173,9 @@ pub fn monitor_then_commit_or_rollback(
 ) -> Result<()> {
     let server = format!("server-{new_env}");
     let project = instance.api_project_name();
+    let project_dir = instance.api_dir();
 
-    match healthcheck::monitor_after_switch(&project, &server, &server, grace) {
+    match healthcheck::monitor_after_switch(Some(&project_dir), &project, &server, &server, grace) {
         Ok(()) => {
             state.active_env = Some(new_env.into());
             state.active_kc_env = Some(new_env.into());
@@ -193,7 +212,10 @@ pub fn monitor_client_then_commit_or_rollback(
     let app = format!("app-{new_env}");
     let project = instance.client_project_name();
 
-    match healthcheck::monitor_after_switch(&project, &app, &app, grace) {
+    // Client color: liveness-only (the readiness probe targets the api's
+    // `/system/health` + in-container `python3`, neither of which the
+    // Next.js client color exposes). DEP1 is an api-promotion bug.
+    match healthcheck::monitor_after_switch(None, &project, &app, &app, grace) {
         Ok(()) => {
             state.active_client_env = Some(new_env.into());
             state.save(&instance.state_file())?;
