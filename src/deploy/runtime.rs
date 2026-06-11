@@ -171,6 +171,33 @@ pub fn exec_capture(
     Ok(out.stdout)
 }
 
+/// `docker compose exec -T <service> <cmd…>` returning the raw exit
+/// outcome WITHOUT bailing on non-zero. Unlike `exec_capture`, a non-zero
+/// exit is a normal, expected result the caller interprets (used by the
+/// readiness probe, where exit-code 0/1 IS the signal). Returns
+/// `(success, stdout, stderr)`. Only `Err`s if the process couldn't be
+/// spawned at all (e.g. the container isn't running yet).
+pub fn exec_status(
+    project_dir: &Path,
+    project_name: &str,
+    service: &str,
+    argv: &[&str],
+) -> Result<(bool, String, String)> {
+    let mut cmd = compose(project_dir, project_name);
+    cmd.args(["exec", "-T", service]);
+    cmd.args(argv);
+    let out = cmd
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .with_context(|| format!("spawn docker compose exec {service}"))?;
+    Ok((
+        out.status.success(),
+        String::from_utf8_lossy(&out.stdout).trim().to_string(),
+        String::from_utf8_lossy(&out.stderr).trim().to_string(),
+    ))
+}
+
 /// Idempotent `docker network create`. The two stacks (api + client)
 /// share an external network so they can resolve each other by
 /// container name; compose declares it `external: true` and requires
