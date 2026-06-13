@@ -42,7 +42,7 @@
 // the generated gradient and use a solid color / custom backdrop instead.
 
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -93,6 +93,55 @@ function run(cmd, cmdArgs) {
       code === 0 ? resolve(stdout.trim()) : reject(new Error(stderr)),
     );
   });
+}
+
+// Detect leading "dead air" — the blank/loading-skeleton segment a recorder
+// captures before the page's real content renders. Playwright records the whole
+// context lifetime (video:'on'), so the raw clip opens on a white/loading frame;
+// we trim it here. Heuristic: a loading skeleton / blank frame is low-detail and
+// compresses small; real content (text, data, dense UI) compresses much larger.
+// Sample frame sizes across the front of the clip and cut at the first big jump.
+// Conservative by design — only trims a clear low->high transition, never motion,
+// and declines (returns 0) on short clips or when there's no clear jump (e.g. a
+// legitimately sparse first view), so it can't eat real content.
+async function detectLeadIn(input) {
+  let dur = 0;
+  try {
+    dur = parseFloat(
+      await run("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", input]),
+    ) || 0;
+  } catch {
+    return 0;
+  }
+  if (dur < 1.5) return 0; // too short to safely trim
+  const limit = Math.min(dur * 0.5, 8.0); // dead air is at the front
+  const step = 0.35;
+  const sizes = [];
+  for (let i = 0, t = 0; t <= limit; i++, t = +(i * step).toFixed(2)) {
+    const o = join(tmpdir(), `glow-lead-${process.pid}-${i}.png`);
+    try {
+      await run("ffmpeg", ["-y", "-nostdin", "-loglevel", "error", "-ss", String(t), "-i", input, "-frames:v", "1", o]);
+      sizes.push([t, statSync(o).size]);
+    } catch {
+      sizes.push([t, 0]);
+    } finally {
+      rmSync(o, { force: true });
+    }
+  }
+  if (sizes.length < 2) return 0;
+  const mx = Math.max(...sizes.map((s) => s[1]));
+  const f0 = sizes[0][1] || 1;
+  let contentStart = 0;
+  for (const [t, sz] of sizes) {
+    if (sz > 0.45 * mx && sz > 1.8 * f0) {
+      contentStart = t;
+      break;
+    }
+  }
+  // Trim to the first verified content frame so the clip OPENS on real content.
+  // (contentStart is a sampled high-detail frame; trimming exactly to it can drop
+  // at most one sample-step of just-rendered content — a fine trade for no dead air.)
+  return contentStart > 0.25 ? Math.min(contentStart, limit) : 0;
 }
 
 async function probeSize(input) {
@@ -194,6 +243,9 @@ async function main() {
   }
 
   const out = args.out ?? args.input.replace(/\.[^.]+$/, "") + ".polished.mp4";
+  // Trim leading dead air (blank/loading-skeleton lead-in) unless disabled.
+  const leadIn = process.env["NO_LEAD_TRIM"] ? 0 : await detectLeadIn(args.input);
+  if (leadIn > 0) console.log(`trimming ${leadIn.toFixed(2)}s of leading dead air`);
   const { w, h } = await probeSize(args.input);
   const padding = cfg.padding ?? Math.round(w * cfg.paddingRatio);
   const outW = w + padding * 2;
@@ -215,7 +267,9 @@ async function main() {
   }
 
   // ---- inputs --------------------------------------------------------------
-  const inputs = ["-i", args.input];
+  // Seek past the leading dead air on the recording input; setpts=PTS-STARTPTS
+  // (in the recording stage below) rebases timestamps so the clip starts clean.
+  const inputs = leadIn > 0 ? ["-ss", String(leadIn), "-i", args.input] : ["-i", args.input];
   let nextIdx = 1;
   const bgFilters = [];
   if (bgIsColor) {
