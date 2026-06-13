@@ -144,6 +144,45 @@ async function detectLeadIn(input) {
   return contentStart > 0.25 ? Math.min(contentStart, limit) : 0;
 }
 
+// Detect a trailing "dead hold" — the static final frame a recording sits on
+// after the last action completes (the recorder keeps capturing). Symmetric to
+// detectLeadIn but the signal is different: the tail is fully-rendered content
+// that simply STOPS changing, so we use freezedetect (a frozen run reaching the
+// end of the clip) rather than low-detail. Returns the time to cut to (keeping a
+// short, deliberate hold after the last motion); 0 = don't trim (ends in motion).
+async function detectTrailingHold(input, dur) {
+  if (!dur || dur < 1.5) return 0;
+  // freezedetect logs freeze_start/freeze_end to stderr.
+  const out = await runStderr("ffmpeg", ["-nostdin", "-i", input, "-vf", "freezedetect=n=-50dB:d=0.5", "-map", "0:v", "-f", "null", "-"]);
+  // freezedetect prints to stderr (surfaced via the rejected error above on some
+  // builds, or stdout on others); parse the last freeze_start with no matching
+  // later freeze_end (i.e. a freeze that runs to EOF).
+  const starts = [...out.matchAll(/freeze_start:\s*([0-9.]+)/g)].map((m) => parseFloat(m[1]));
+  const ends = [...out.matchAll(/freeze_end:\s*([0-9.]+)/g)].map((m) => parseFloat(m[1]));
+  if (!starts.length) return 0;
+  const lastStart = starts[starts.length - 1];
+  // A trailing hold = the final freeze_start has no freeze_end after it (it never
+  // unfreezes before EOF). If there's a matching later end, the clip resumed motion.
+  const hasLaterEnd = ends.some((e) => e > lastStart + 0.05);
+  if (hasLaterEnd) return 0;
+  const hold = 0.6; // keep a brief, deliberate beat on the final state
+  const cutTo = Math.min(dur, lastStart + hold);
+  // only trim if it saves something meaningful and leaves a sane clip
+  return dur - cutTo > 0.4 && cutTo > 0.8 ? cutTo : 0;
+}
+
+// Like run(), but resolves with STDERR (ffmpeg filters like freezedetect log
+// their metadata to stderr) and never rejects — for best-effort analysis passes.
+function runStderr(cmd, cmdArgs) {
+  return new Promise((resolve) => {
+    const child = spawn(cmd, cmdArgs, { stdio: ["ignore", "ignore", "pipe"] });
+    let stderr = "";
+    child.stderr.on("data", (d) => (stderr += d));
+    child.on("error", () => resolve(""));
+    child.on("close", () => resolve(stderr));
+  });
+}
+
 async function probeSize(input) {
   const out = await run("ffprobe", [
     "-v", "error",
@@ -243,9 +282,21 @@ async function main() {
   }
 
   const out = args.out ?? args.input.replace(/\.[^.]+$/, "") + ".polished.mp4";
-  // Trim leading dead air (blank/loading-skeleton lead-in) unless disabled.
-  const leadIn = process.env["NO_LEAD_TRIM"] ? 0 : await detectLeadIn(args.input);
+  // Trim leading + trailing dead air unless disabled. Leading = blank/loading
+  // skeleton; trailing = a static hold after the last action. Both come from the
+  // recorder capturing the whole context lifetime.
+  const noTrim = !!process.env["NO_LEAD_TRIM"];
+  const leadIn = noTrim ? 0 : await detectLeadIn(args.input);
+  let srcDur = 0;
+  try {
+    srcDur = parseFloat(await run("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", args.input])) || 0;
+  } catch {}
+  const trailCutTo = noTrim ? 0 : await detectTrailingHold(args.input, srcDur);
+  // Effective window [leadIn, end), where end = trailCutTo if trimming the tail.
+  const keepEnd = trailCutTo > leadIn + 0.5 ? trailCutTo : srcDur;
+  const keepDur = keepEnd - leadIn;
   if (leadIn > 0) console.log(`trimming ${leadIn.toFixed(2)}s of leading dead air`);
+  if (trailCutTo > 0 && keepEnd < srcDur - 0.05) console.log(`trimming trailing hold after ${keepEnd.toFixed(2)}s (was ${srcDur.toFixed(2)}s)`);
   const { w, h } = await probeSize(args.input);
   const padding = cfg.padding ?? Math.round(w * cfg.paddingRatio);
   const outW = w + padding * 2;
@@ -267,9 +318,12 @@ async function main() {
   }
 
   // ---- inputs --------------------------------------------------------------
-  // Seek past the leading dead air on the recording input; setpts=PTS-STARTPTS
-  // (in the recording stage below) rebases timestamps so the clip starts clean.
-  const inputs = leadIn > 0 ? ["-ss", String(leadIn), "-i", args.input] : ["-i", args.input];
+  // Seek past the leading dead air and (via -t) cap the trailing hold on the
+  // recording input; setpts=PTS-STARTPTS (in the recording stage below) rebases
+  // timestamps so the clip starts clean.
+  const seekArgs = leadIn > 0 ? ["-ss", String(leadIn)] : [];
+  const durArgs = keepEnd < srcDur - 0.05 && keepDur > 0.4 ? ["-t", String(keepDur)] : [];
+  const inputs = [...seekArgs, ...durArgs, "-i", args.input];
   let nextIdx = 1;
   const bgFilters = [];
   if (bgIsColor) {
