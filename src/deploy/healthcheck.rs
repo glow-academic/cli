@@ -24,7 +24,14 @@ use crate::deploy::runtime;
 /// import answers 5xx / connection-refused (`000`) instead — and is
 /// correctly rejected. `/system/health` is an authed artifact route, so
 /// without a token it short-circuits to 401 before touching the DB.
-const READINESS_PATH: &str = "/system/health";
+const READINESS_PATH: &str = "/readyz";
+
+/// Legacy probe path for images that predate `/readyz` (api < v1.1.37). It is
+/// an authed artifact route, so an unauthenticated probe short-circuits to 401
+/// before the DB is touched — the OLD readiness signal (proves "app booted +
+/// routed", not "deps healthy"). Used only as a fallback when `/readyz` 404s,
+/// so deploying/rolling-back a pre-/readyz image still works.
+const LEGACY_READINESS_PATH: &str = "/system/health";
 
 /// What a single readiness probe attempt concluded.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -45,14 +52,30 @@ pub enum Readiness {
 /// docker. `status == 0` is our sentinel for "no HTTP response at all"
 /// (connection refused / timeout) emitted by the in-container probe.
 ///
-/// We require the **exact** 401 the unauthenticated authed-route returns.
-/// Anything else — 5xx (app/runtime/dependency error), 502/503/504
-/// (gunicorn down / not bound), or a surprising 2xx/3xx (wrong app
-/// serving) — is NOT a pass. This is deliberately strict on the failure
-/// side and lenient on the time side (the caller retries through a
-/// generous grace window), so a slow-but-healthy boot is never failed for
-/// being slow, only a genuinely-broken color is failed.
+/// `/readyz` (DEP-A) actually pings DB + Redis and answers **200** only when
+/// both are healthy, **503** when a dependency is down. So a 200 now proves the
+/// color can serve real requests — exactly what the old 401-on-an-authed-route
+/// probe could NOT prove (that 401 was raised before any dependency was
+/// touched, so a broken-DB/Redis color sailed through and 500'd live traffic).
+/// 503 is the DEP-A catch. Strict-on-failure (any non-200 except the
+/// connection sentinel is NOT a pass), lenient-on-time (caller retries through
+/// a generous grace window). A 404 means the deployed image predates `/readyz`
+/// and is handled by the legacy fallback in [`probe_readiness_verdict`], not
+/// here (this pure fn treats it as not-ready).
 pub fn classify_readiness(status: u16) -> Readiness {
+    match status {
+        0 => Readiness::Unreachable,
+        200 => Readiness::Ready,
+        503 => Readiness::NotReady, // a dependency (DB/Redis) is down
+        _ => Readiness::NotReady,
+    }
+}
+
+/// Classify the LEGACY (`/system/health`, pre-/readyz) unauthenticated probe:
+/// a 401 means the app booted + routed + ran the auth dependency. This is the
+/// weaker old signal (does NOT prove deps healthy) used only when `/readyz`
+/// 404s on an image that predates it.
+pub fn classify_legacy(status: u16) -> Readiness {
     match status {
         0 => Readiness::Unreachable,
         401 => Readiness::Ready,
@@ -60,19 +83,29 @@ pub fn classify_readiness(status: u16) -> Readiness {
     }
 }
 
-/// In-container readiness probe: POST the authed route with no token and
-/// return the HTTP status code (or `0` if the connection itself failed).
-/// Runs via `docker compose exec` against the color's `server-<env>`
-/// container — same `python3` + `urllib` the compose HEALTHCHECK already
-/// relies on, so it needs no extra tooling, no host port mapping, no
-/// public URL, and crucially **no secrets/token**.
-fn probe_readiness_status(project_dir: &Path, project_name: &str, service: &str) -> Result<u16> {
-    // POST with no Authorization header. `getcode()` on the HTTPError gives
-    // us the status for the (expected) 401; a raw connection failure prints
-    // 0. Keep this a one-liner so it's a single, quoted exec arg.
+/// In-container HTTP probe: hit `path` (GET, or POST `{}` when `post`) with no
+/// token and return the status code (or `0` if the connection itself failed).
+/// Runs via `docker compose exec` against the color's `server-<env>` container
+/// — same `python3` + `urllib` the compose HEALTHCHECK already relies on, so it
+/// needs no extra tooling, no host port mapping, no public URL, and crucially
+/// **no secrets/token**.
+fn probe_status(
+    project_dir: &Path,
+    project_name: &str,
+    service: &str,
+    path: &str,
+    post: bool,
+) -> Result<u16> {
+    // `getcode()`/`e.code` give the status for a 2xx/HTTPError; a raw
+    // connection failure prints 0. One-liner so it's a single quoted exec arg.
+    let req = if post {
+        format!("u.Request('http://localhost:8000{path}',data=b'{{}}',method='POST',headers={{'Content-Type':'application/json'}})")
+    } else {
+        format!("u.Request('http://localhost:8000{path}')")
+    };
     let script = format!(
         "import urllib.request as u\n\
-         req=u.Request('http://localhost:8000{READINESS_PATH}',data=b'{{}}',method='POST',headers={{'Content-Type':'application/json'}})\n\
+         req={req}\n\
          try:\n    r=u.urlopen(req,timeout=5);print(r.getcode())\n\
          except u.HTTPError as e:\n    print(e.code)\n\
          except Exception:\n    print(0)\n"
@@ -90,6 +123,32 @@ fn probe_readiness_status(project_dir: &Path, project_name: &str, service: &str)
         .find_map(|l| l.trim().parse::<u16>().ok())
         .unwrap_or(0);
     Ok(code)
+}
+
+/// One readiness verdict for the color: GET `/readyz` (which actually pings
+/// DB+Redis). If the image predates `/readyz` (404), fall back to the legacy
+/// unauthenticated `/system/health` probe (401 = booted) so deploying or
+/// rolling back a pre-v1.1.37 image still works. Any probe spawn error is
+/// treated as `Unreachable` (still booting), never a hard failure.
+fn probe_readiness_verdict(project_dir: &Path, project_name: &str, service: &str) -> Readiness {
+    let code = match probe_status(project_dir, project_name, service, READINESS_PATH, false) {
+        Ok(c) => c,
+        Err(_) => return Readiness::Unreachable,
+    };
+    if code == 404 {
+        // No /readyz on this image — fall back to the legacy authed probe.
+        return match probe_status(
+            project_dir,
+            project_name,
+            service,
+            LEGACY_READINESS_PATH,
+            true,
+        ) {
+            Ok(c) => classify_legacy(c),
+            Err(_) => Readiness::Unreachable,
+        };
+    }
+    classify_readiness(code)
 }
 
 /// Poll the readiness probe on `server-<env>` until it reports `Ready`, or
@@ -127,10 +186,7 @@ pub fn wait_ready(
 
         // A spawn error (container not up yet) is treated as Unreachable, not
         // a hard failure — keep polling until the timeout.
-        let verdict = match probe_readiness_status(project_dir, project_name, service) {
-            Ok(code) => classify_readiness(code),
-            Err(_) => Readiness::Unreachable,
-        };
+        let verdict = probe_readiness_verdict(project_dir, project_name, service);
 
         match verdict {
             Readiness::Ready => {
@@ -251,10 +307,7 @@ pub fn monitor_after_switch(
         // rollback. `Unreachable` is tolerated transiently (restart/blip)
         // — only a sustained NOT-ready/unreachable streak rolls back.
         if let Some(dir) = readiness_dir {
-            let verdict = match probe_readiness_status(dir, project_name, service) {
-                Ok(code) => classify_readiness(code),
-                Err(_) => Readiness::Unreachable,
-            };
+            let verdict = probe_readiness_verdict(dir, project_name, service);
             match verdict {
                 Readiness::Ready => consecutive_not_ready = 0,
                 Readiness::NotReady | Readiness::Unreachable => {
@@ -289,26 +342,30 @@ pub fn monitor_after_switch(
 mod tests {
     use super::*;
 
-    // ── classify_readiness: the core gate decision ──────────────────
+    // ── classify_readiness (/readyz): the core gate decision ─────────
 
     #[test]
-    fn only_401_is_ready() {
-        // A clean 401 from the unauthenticated authed-route = the app
-        // booted, routed, and ran the auth dependency. This is the ONLY
-        // pass condition.
-        assert_eq!(classify_readiness(401), Readiness::Ready);
+    fn readyz_200_is_ready() {
+        // /readyz returns 200 only when DB+Redis are healthy — the only pass.
+        assert_eq!(classify_readiness(200), Readiness::Ready);
     }
 
     #[test]
-    fn server_errors_are_not_ready() {
-        // The exact DEP1 failure modes: a color that's "up" (liveness ok)
-        // but can't serve a real request answers 5xx / bad-gateway, NOT a
-        // clean 401. These must NOT pass the gate.
-        for code in [500u16, 502, 503, 504] {
+    fn readyz_503_is_the_dep_a_catch() {
+        // The whole point of DEP-A: /readyz answers 503 when a dependency
+        // (DB/Redis) is down. A broken-dependency color must NOT pass the gate.
+        assert_eq!(classify_readiness(503), Readiness::NotReady);
+    }
+
+    #[test]
+    fn readyz_server_errors_and_bad_status_not_ready() {
+        // 5xx / bad-gateway / a stray 401 (no longer a pass on /readyz) — none
+        // prove deps healthy.
+        for code in [401u16, 500, 502, 504] {
             assert_eq!(
                 classify_readiness(code),
                 Readiness::NotReady,
-                "HTTP {code} must not pass readiness"
+                "HTTP {code} must not pass /readyz readiness"
             );
         }
     }
@@ -320,12 +377,22 @@ mod tests {
     }
 
     #[test]
-    fn surprising_2xx_is_not_ready() {
-        // A 200 on an authed route means the auth gate did NOT run as
-        // expected (wrong app / misrouted) — treat as not-ready, not a
-        // pass. Strict-on-failure by design.
-        assert_eq!(classify_readiness(200), Readiness::NotReady);
+    fn readyz_404_pure_classify_is_not_ready() {
+        // A pure 404 is not-ready here; the legacy fallback (for pre-/readyz
+        // images) lives in probe_readiness_verdict, not this pure fn.
         assert_eq!(classify_readiness(404), Readiness::NotReady);
+    }
+
+    // ── classify_legacy (/system/health, pre-/readyz fallback) ───────
+
+    #[test]
+    fn legacy_401_is_ready_other_not() {
+        // The old signal: a clean 401 from the authed route = app booted.
+        assert_eq!(classify_legacy(401), Readiness::Ready);
+        assert_eq!(classify_legacy(0), Readiness::Unreachable);
+        for code in [200u16, 404, 500, 503] {
+            assert_eq!(classify_legacy(code), Readiness::NotReady);
+        }
     }
 
     // ── gate behavior simulated over a poll sequence ────────────────
@@ -349,10 +416,12 @@ mod tests {
 
     #[test]
     fn liveness_up_but_readiness_fails_does_not_pass_gate() {
-        // The DEP1 scenario: container is live (would be "healthy" to the
-        // old liveness gate) but every real request 500s/502s. The
-        // readiness gate never sees a 401 → never passes → the swap is NOT
-        // committed and auto-give-up fires.
+        // The DEP-A scenario: container is live (would be "healthy" to the
+        // old liveness gate) but a dependency is down, so /readyz answers 503
+        // (or the app 5xx's). The gate never sees a 200 → never passes → the
+        // swap is NOT committed. This is the broken-DB/Redis color the old
+        // pre-DB-401 probe wrongly passed.
+        assert!(!gate_passes(&[503, 503, 503, 503]));
         assert!(!gate_passes(&[502, 500, 500, 503, 500]));
         // Connection-refused throughout (hard-down) → also no pass.
         assert!(!gate_passes(&[0, 0, 0, 0]));
@@ -360,11 +429,12 @@ mod tests {
 
     #[test]
     fn readiness_passes_commits_swap() {
-        // A healthy color: slow to warm up (boot 5xx / refused for a
-        // while) but eventually serves the clean 401 → gate passes → swap
-        // commits. Proves a slow-but-healthy boot is NOT failed.
-        assert!(gate_passes(&[0, 0, 502, 401]));
-        assert!(gate_passes(&[401]));
+        // A healthy color: slow to warm up (boot 5xx / 503 while DB pool
+        // warms / refused for a while) but eventually /readyz returns 200 →
+        // gate passes → swap commits. Proves a slow-but-healthy boot is NOT
+        // failed for being slow.
+        assert!(gate_passes(&[0, 0, 503, 200]));
+        assert!(gate_passes(&[200]));
     }
 
     /// Faithful model of the grace-monitor's readiness rollback decision:
@@ -388,16 +458,17 @@ mod tests {
 
     #[test]
     fn grace_monitor_rolls_back_on_sustained_not_ready() {
-        // Promoted color goes bad mid-grace (e.g. DB pool drops) → 3 in a
-        // row → rollback.
-        assert!(grace_rolls_back(&[401, 401, 500, 500, 500]));
+        // Promoted color goes bad mid-grace (e.g. DB pool drops → /readyz
+        // 503) → 3 non-ready in a row → rollback.
+        assert!(grace_rolls_back(&[200, 200, 503, 503, 503]));
     }
 
     #[test]
     fn grace_monitor_tolerates_a_transient_blip() {
-        // A single/double blip that recovers does NOT roll back — avoids
-        // false rollbacks on a momentary restart/GC pause.
-        assert!(!grace_rolls_back(&[401, 0, 401, 502, 401]));
-        assert!(!grace_rolls_back(&[401, 500, 500, 401, 500]));
+        // A single/double blip that recovers (a ready 200 resets the streak)
+        // does NOT roll back — avoids false rollbacks on a momentary
+        // restart/GC pause.
+        assert!(!grace_rolls_back(&[200, 0, 200, 502, 200]));
+        assert!(!grace_rolls_back(&[200, 503, 503, 200, 503]));
     }
 }
